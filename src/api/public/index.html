@@ -107,66 +107,8 @@
     <!-- Main Content -->
     <div class="main-wrapper">
 
-        <!-- Sidebar Filters -->
-        <aside class="sidebar">
-            <h3 class="sidebar-title"><i class="fas fa-filter"></i> Filtros</h3>
-
-            <!-- Search -->
-            <div class="filter-group">
-                <label class="filter-label">Busca Rápida</label>
-                <input type="text" id="search-input" class="sidebar-search" placeholder="Ex: Civic 2020...">
-            </div>
-
-            <!-- Sites -->
-            <div class="filter-group">
-                <label class="filter-label">Leiloeiro</label>
-
-                <div class="filter-option" onclick="filtrarSite('')">
-                    <input type="radio" name="site" class="filter-checkbox" checked>
-                    <span>Todos os Leiloeiros</span>
-                </div>
-
-                <div class="filter-option" onclick="filtrarSite('freitas')">
-                    <input type="radio" name="site" class="filter-checkbox">
-                    <span>Freitas Leiloeiro</span>
-                </div>
-
-                <div class="filter-option" onclick="filtrarSite('sodre')">
-                    <input type="radio" name="site" class="filter-checkbox">
-                    <span>Sodré Santoro</span>
-                </div>
-
-                <div class="filter-option" onclick="filtrarSite('palacio')">
-                    <input type="radio" name="site" class="filter-checkbox">
-                    <span>Palácio dos Leilões</span>
-                </div>
-
-                <div class="filter-option" onclick="filtrarSite('copart')">
-                    <input type="radio" name="site" class="filter-checkbox">
-                    <span>Copart</span>
-                </div>
-            </div>
-
-            <!-- Type (Fake) -->
-            <div class="filter-group">
-                <label class="filter-label">Tipo de Dano</label>
-                <div class="filter-option">
-                    <input type="checkbox" class="filter-checkbox"> <span>Pequena Monta</span>
-                </div>
-                <div class="filter-option">
-                    <input type="checkbox" class="filter-checkbox"> <span>Média Monta</span>
-                </div>
-                <div class="filter-option">
-                    <input type="checkbox" class="filter-checkbox"> <span>Sucata</span>
-                </div>
-            </div>
-
-            <button class="btn-cta" style="width: 100%; margin-top: 1rem;" onclick="buscarVeiculos(1)">Aplicar
-                Filtros</button>
-        </aside>
-
-        <!-- Content Area -->
-        <main class="content-area">
+        <!-- Content Area (Full Width) -->
+        <main class="content-area" style="width: 100%;">
 
             <!-- Header Filter Results -->
             <div class="content-header">
@@ -179,20 +121,23 @@
                 </div>
 
                 <div>
-                    <select class="sidebar-search" style="width: auto; margin: 0;">
-                        <option>Mais Recentes</option>
-                        <option>Menor Preço</option>
-                        <option>Maior Preço</option>
+                    <select id="sort-order" class="search-input" style="width: auto; margin: 0; font-size: 0.9rem;"
+                        onchange="buscarVeiculos(1)">
+                        <option value="recente">Mais Recentes</option>
+                        <option value="preco_asc">Menor Preço</option>
+                        <option value="preco_desc">Maior Preço</option>
+                        <option value="ano_desc">Mais Novos</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Grid -->
+            <!-- Loading Spinner -->
             <div id="loading" style="text-align: center; padding: 3rem; display: none;">
                 <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i>
-                <p style="margin-top: 1rem; color: var(--text-muted);">Buscando nos leilões...</p>
+                <p style="margin-top: 1rem; color: var(--text-muted); font-weight: 500;">Buscando nos leilões...</p>
             </div>
 
+            <!-- Grid -->
             <div class="cards-grid" id="veiculos-container">
                 <!-- Cards Inseridos via JS -->
             </div>
@@ -205,15 +150,6 @@
 
     <!-- Script -->
     <script src="app.js"></script>
-    <script>
-        // Override renderPagination to use new classes
-        // (Seria melhor editar app.js, mas vou sobrescrever aqui para garantir estilo novo sem complicar diff)
-
-        // Espera app.js carregar
-        window.addEventListener('load', () => {
-            // Ajuste renderCard se precisar
-        });
-    </script>
 </body>
 
 </html>

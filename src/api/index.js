@@ -110,17 +110,44 @@ app.get('/veiculos', async (req, res) => {
 
         const query = {};
 
-        // Search text
-        if (search) {
+        // Search text (veiculo and descricao)
+        if (search && search.trim() !== '') {
             query.$or = [
                 { veiculo: { $regex: search, $options: 'i' } },
                 { descricao: { $regex: search, $options: 'i' } }
             ];
         }
 
+        // Filter by site
+        if (site && site.trim() !== '') {
+            query.site = { $regex: site, $options: 'i' };
+        }
+
+        // Filter by year
+        if ((anoMin && anoMin !== '') || (anoMax && anoMax !== '')) {
+            query.ano = {};
+            if (anoMin && anoMin !== '') query.ano.$gte = parseInt(anoMin);
+            if (anoMax && anoMax !== '') query.ano.$lte = parseInt(anoMax);
+        }
+
+        // Filter by KM
+        if (kmMax && kmMax !== '') {
+            query.km = { $lte: parseInt(kmMax) };
+        }
+
+        // Filter by Category
+        if (tipo && tipo.trim() !== '') {
+            query.tipo = { $regex: tipo, $options: 'i' };
+        }
+
+        // Filter by State
+        if (estado && estado.trim() !== '') {
+            query.localLeilao = { $regex: estado, $options: 'i' };
+        }
+
         const result = await db.paginate({
             colecao: 'veiculos',
-            filtro,
+            filtro: query,
             page: parseInt(page),
             limit: parseInt(limit)
         });

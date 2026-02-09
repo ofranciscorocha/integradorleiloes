@@ -9,7 +9,8 @@ let currentState = {
     anoMax: '',
     kmMax: '',
     tipo: '',
-    estado: ''
+    estado: '',
+    sort: 'recente'
 };
 
 // Utils
@@ -97,6 +98,8 @@ const buscarVeiculos = async (page = 1) => {
     const tipoFilter = document.getElementById('tipo-filter');
     const estadoFilter = document.getElementById('estado-filter');
 
+    const sortSelect = document.getElementById('sort-order');
+
     if (searchInput) currentState.search = searchInput.value;
     if (siteFilter) currentState.site = siteFilter.value;
     if (anoMinInput) currentState.anoMin = anoMinInput.value;
@@ -104,6 +107,7 @@ const buscarVeiculos = async (page = 1) => {
     if (kmMaxInput) currentState.kmMax = kmMaxInput.value;
     if (tipoFilter) currentState.tipo = tipoFilter.value;
     if (estadoFilter) currentState.estado = estadoFilter.value;
+    if (sortSelect) currentState.sort = sortSelect.value;
 
     const loading = document.getElementById('loading');
     const container = document.getElementById('veiculos-container');
@@ -124,7 +128,8 @@ const buscarVeiculos = async (page = 1) => {
             anoMax: currentState.anoMax,
             kmMax: currentState.kmMax,
             tipo: currentState.tipo,
-            estado: currentState.estado
+            estado: currentState.estado,
+            sort: currentState.sort
         });
 
         const res = await fetch(`${API_URL}/veiculos?${params}`);

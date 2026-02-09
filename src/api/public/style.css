@@ -85,15 +85,17 @@ body {
 
 /* Hero Section (Updated with User Background) */
 .hero-section {
-    background: linear-gradient(rgba(14, 79, 143, 0.4), rgba(15, 23, 42, 0.7)),
+    background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.6)),
         url('img/hero-bg.jpg');
     position: relative;
-    padding: 6rem 1rem 8rem 1rem;
+    padding: 8rem 1rem 10rem 1rem;
     color: white;
     text-align: center;
     background-size: cover;
-    background-position: center;
+    background-position: center bottom;
+    /* Better for car yard images */
     background-attachment: fixed;
+    border-bottom: 5px solid var(--secondary);
 }
 
 .hero-content {
@@ -401,11 +403,16 @@ body {
 
 /* Responsive */
 @media (max-width: 992px) {
-    .main-wrapper {
-        flex-direction: column;
+    .hero-title {
+        font-size: 2rem;
     }
 
-    .sidebar {
-        width: 100%;
+    .search-widget {
+        transform: translateY(2rem);
+        padding: 1rem;
+    }
+
+    .content-area {
+        margin-top: 2rem;
     }
 }
