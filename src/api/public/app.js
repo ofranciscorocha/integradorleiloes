@@ -6,7 +6,10 @@ let currentState = {
     search: '',
     site: '',
     anoMin: '',
-    anoMax: ''
+    anoMax: '',
+    kmMax: '',
+    tipo: '',
+    estado: ''
 };
 
 // Utils
@@ -90,11 +93,17 @@ const buscarVeiculos = async (page = 1) => {
     const siteFilter = document.getElementById('site-filter');
     const anoMinInput = document.getElementById('ano-min');
     const anoMaxInput = document.getElementById('ano-max');
+    const kmMaxInput = document.getElementById('km-max');
+    const tipoFilter = document.getElementById('tipo-filter');
+    const estadoFilter = document.getElementById('estado-filter');
 
     if (searchInput) currentState.search = searchInput.value;
     if (siteFilter) currentState.site = siteFilter.value;
     if (anoMinInput) currentState.anoMin = anoMinInput.value;
     if (anoMaxInput) currentState.anoMax = anoMaxInput.value;
+    if (kmMaxInput) currentState.kmMax = kmMaxInput.value;
+    if (tipoFilter) currentState.tipo = tipoFilter.value;
+    if (estadoFilter) currentState.estado = estadoFilter.value;
 
     const loading = document.getElementById('loading');
     const container = document.getElementById('veiculos-container');
@@ -112,7 +121,10 @@ const buscarVeiculos = async (page = 1) => {
             search: currentState.search,
             site: currentState.site,
             anoMin: currentState.anoMin,
-            anoMax: currentState.anoMax
+            anoMax: currentState.anoMax,
+            kmMax: currentState.kmMax,
+            tipo: currentState.tipo,
+            estado: currentState.estado
         });
 
         const res = await fetch(`${API_URL}/veiculos?${params}`);

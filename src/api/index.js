@@ -98,23 +98,21 @@ app.get('/veiculos', async (req, res) => {
     try {
         const {
             page = 1,
-            limit = 20,
-            site,
+            limit = 12,
             search,
+            site,
             anoMin,
-            anoMax
+            anoMax,
+            kmMax,
+            tipo,
+            estado
         } = req.query;
 
-        const filtro = {};
+        const query = {};
 
-        if (site) filtro.site = site;
-        if (anoMin || anoMax) {
-            filtro.ano = {};
-            if (anoMin) filtro.ano.$gte = String(anoMin);
-            if (anoMax) filtro.ano.$lte = String(anoMax);
-        }
+        // Search text
         if (search) {
-            filtro.$or = [
+            query.$or = [
                 { veiculo: { $regex: search, $options: 'i' } },
                 { descricao: { $regex: search, $options: 'i' } }
             ];
