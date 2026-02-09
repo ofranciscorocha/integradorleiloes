@@ -2,28 +2,47 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 
 const debug = async () => {
-    console.log('🔍 Debug VIP Leilões\n');
+    console.log('🔍 Debug VIP Leilões - Busca Textual\n');
 
     try {
         const { data } = await axios.get(
             'https://www.vipleiloes.com.br/Veiculos/ListarVeiculos?Pagina=1&OrdenacaoVeiculo=InicioLeilao&Financiavel=False&Favoritos=False',
-            { timeout: 15000 }
+            {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            }
         );
 
         const $ = cheerio.load(data);
 
-        console.log(`HTML total: ${data.length} chars`);
-        console.log(`div count: ${$('div').length}`);
-        console.log(`a count: ${$('a').length}`);
+        // Procura por scripts que podem conter dados (JSON)
+        $('script').each((i, el) => {
+            const content = $(el).html();
+            if (content && (content.includes('Veiculos') || content.includes('Lote') || content.includes('json'))) {
+                console.log(`\n--- Script ${i} encontrado ---`);
+                console.log(content.substring(0, 500)); // Mostra início
+            }
+        });
 
-        // Check specific classes from original code
-        console.log(`div.itm-card: ${$('div.itm-card').length}`);
-        console.log(`div.card: ${$('div.card').length}`);
-        console.log(`div.leilao: ${$('div.leilao').length}`);
+        // Procura por textos visíveis de veículos
+        const bodyText = $('body').text();
+        const keywords = ['Hyundai', 'Toyota', 'Honda', 'Fiat', 'Ford', 'Chevrolet'];
 
-        // Dump first 2000 chars of body
-        console.log('\n--- BODY SAMPLE ---');
-        console.log($('body').html().substring(0, 2000));
+        console.log('\n--- Palavras-chave ---');
+        keywords.forEach(key => {
+            const count = (bodyText.match(new RegExp(key, 'gi')) || []).length;
+            console.log(`${key}: ${count}`);
+        });
+
+        // Procura o elemento pai principal
+        console.log('\n--- Estrutura ---');
+        console.log($('main').html() ? 'Tem <main>' : 'Não tem <main>');
+        console.log($('section').length + ' seções');
+
+        // Tenta encontrar qualquer lista
+        console.log($('ul').length + ' uls');
+        console.log($('div[id]').length + ' divs com ID');
 
     } catch (error) {
         console.error('Error:', error.message);

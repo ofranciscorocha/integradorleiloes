@@ -2,6 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDatabase from '../database/db.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
+import cleanExpired from '../tasks/cleanExpired.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -14,6 +21,26 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
 }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public'))); // Serve arquivos estáticos
+
+// Auth Middleware Simples
+const AUTH_TOKEN = 'admin-secret-token-bip-cars-2026';
+
+const requireAuth = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token === AUTH_TOKEN) {
+        next();
+    } else {
+        res.status(401).json({ success: false, error: 'Acesso não autorizado' });
+    }
+};
+
+// Rota raiz
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Database connection
 let db = null;
@@ -141,12 +168,16 @@ app.get('/stats', async (req, res) => {
             totalVeiculos,
             veiculosPalacio,
             veiculosVip,
-            veiculosGuariglia
+            veiculosGuariglia,
+            veiculosFreitas,
+            veiculosSodre
         ] = await Promise.all([
             db.count({ colecao: 'veiculos' }),
             db.count({ colecao: 'veiculos', filtro: { site: 'palaciodosleiloes.com.br' } }),
             db.count({ colecao: 'veiculos', filtro: { site: 'vipleiloes.com.br' } }),
-            db.count({ colecao: 'veiculos', filtro: { site: 'guariglialeiloes.com.br' } })
+            db.count({ colecao: 'veiculos', filtro: { site: 'guariglialeiloes.com.br' } }),
+            db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'freitas' } } }),
+            db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'sodre' } } })
         ]);
 
         res.json({
@@ -156,7 +187,9 @@ app.get('/stats', async (req, res) => {
                 porSite: {
                     'palaciodosleiloes.com.br': veiculosPalacio,
                     'vipleiloes.com.br': veiculosVip,
-                    'guariglialeiloes.com.br': veiculosGuariglia
+                    'guariglialeiloes.com.br': veiculosGuariglia,
+                    'freitasleiloeiro.com.br': veiculosFreitas,
+                    'sodresantoro.com.br': veiculosSodre
                 }
             }
         });
@@ -173,26 +206,75 @@ app.get('/sites', (req, res) => {
     res.json({
         success: true,
         sites: [
-            {
-                id: 'palaciodosleiloes',
-                name: 'Palácio dos Leilões',
-                domain: 'palaciodosleiloes.com.br',
-                url: 'https://www.palaciodosleiloes.com.br'
-            },
-            {
-                id: 'vipleiloes',
-                name: 'VIP Leilões',
-                domain: 'vipleiloes.com.br',
-                url: 'https://www.vipleiloes.com.br'
-            },
-            {
-                id: 'guariglialeiloes',
-                name: 'Guariglia Leilões',
-                domain: 'guariglialeiloes.com.br',
-                url: 'https://www.guariglialeiloes.com.br'
-            }
+            { id: 'palacio', name: 'Palácio dos Leilões', domain: 'palaciodosleiloes.com.br' },
+            { id: 'vip', name: 'VIP Leilões', domain: 'vipleiloes.com.br' },
+            { id: 'guariglia', name: 'Guariglia Leilões', domain: 'guariglialeiloes.com.br' },
+            { id: 'freitas', name: 'Freitas Leiloeiro', domain: 'freitasleiloeiro.com.br' },
+            { id: 'sodre', name: 'Sodré Santoro', domain: 'sodresantoro.com.br' }
         ]
     });
+});
+
+/**
+ * Admin: Login
+ */
+app.post('/admin/login', (req, res) => {
+    const { user, pass } = req.body;
+    // Hardcoded credentials as requested
+    if (user === 'admin' && pass === 'admin') {
+        res.json({ success: true, token: AUTH_TOKEN });
+    } else {
+        res.status(401).json({ success: false, error: 'Usuário ou senha incorretos' });
+    }
+});
+
+/**
+ * Admin: Verificação de Token (para frontend check)
+ */
+app.get('/admin/check-auth', requireAuth, (req, res) => {
+    res.json({ success: true });
+});
+
+/**
+ * Admin: Limpar Expirados
+ */
+app.post('/admin/clean', requireAuth, async (req, res) => {
+    try {
+        const removed = await cleanExpired();
+        res.json({ success: true, removed });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * Admin: Rodar Crawler Manualmente
+ */
+app.post('/admin/crawl', requireAuth, (req, res) => {
+    const { site } = req.body;
+    let scriptPath = '';
+
+    // Mapeamento simples
+    if (site === 'freitas') scriptPath = 'src/crawlers/freitas/run.js';
+    else if (site === 'palacio') scriptPath = 'src/crawlers/palacio/run.js';
+    else if (site === 'copart') scriptPath = 'src/crawlers/copart/run.js';
+    else if (site === 'sodre') scriptPath = 'src/crawlers/sodre/run.js';
+    else if (site === 'vip') scriptPath = 'src/crawlers/vip/run.js';
+
+    if (!scriptPath) return res.status(400).json({ success: false, error: 'Site desconhecido ou inativo' });
+
+    console.log(`🚀 Iniciando crawler manual: ${site}`);
+
+    // Roda em background detacched
+    const child = spawn('node', [scriptPath], {
+        cwd: process.cwd(),
+        detached: true,
+        stdio: 'ignore'
+    });
+
+    child.unref();
+
+    res.json({ success: true, message: `Crawler ${site} iniciado em background.` });
 });
 
 // ============ START SERVER ============
@@ -207,8 +289,8 @@ const startServer = async () => {
         console.log(`   GET  /stats          - Estatísticas gerais`);
         console.log(`   GET  /sites          - Sites disponíveis`);
         console.log(`   GET  /veiculos       - Listar veículos (com paginação)`);
-        console.log(`   GET  /veiculos/:id   - Buscar veículo por registro`);
-        console.log(`   POST /list           - Buscar com filtro (compatível crawlhinho)`);
+        console.log(`   POST /admin/clean    - Limpar expirados`);
+        console.log(`   POST /admin/crawl    - Rodar Crawler`);
         console.log('');
     });
 };

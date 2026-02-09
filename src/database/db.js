@@ -248,10 +248,25 @@ const getDbFunctions = () => {
         }
     };
 
+    /**
+     * Deleta itens
+     */
+    const deleteItems = async ({ colecao = 'veiculos', filtro = {} }) => {
+        try {
+            const collection = db.collection(colecao);
+            const res = await collection.deleteMany(filtro);
+            return res.deletedCount;
+        } catch (error) {
+            console.error('Erro ao deletar:', error);
+            return 0;
+        }
+    };
+
     return {
         buscarLista,
         close,
         count,
+        deleteItems,
         get,
         insert,
         list,

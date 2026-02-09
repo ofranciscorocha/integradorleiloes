@@ -4,6 +4,9 @@ import connectDatabase from '../database/db.js';
 import createPalacioCrawler from '../crawlers/palaciodosleiloes/index.js';
 import createVipCrawler from '../crawlers/vipleiloes/index.js';
 import createGuarigliaCrawler from '../crawlers/guariglialeiloes/index.js';
+import { execute as executeFreitas } from '../crawlers/freitas/index.js';
+import { execute as executeSodre } from '../crawlers/sodre/index.js';
+import cleanExpired from '../tasks/cleanExpired.js';
 
 dotenv.config();
 
@@ -87,6 +90,28 @@ const scheduleGuariglia = () => {
     console.log('📅 Guariglia Leilões: Agendado para 9h e 21h');
 };
 
+const scheduleFreitas = () => {
+    cron.schedule('0 10,22 * * *', async () => {
+        console.log(`\n⏰ Executando: Freitas Leiloeiro`);
+        try { await executeFreitas(db); } catch (e) { console.error('Erro Freitas:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+};
+
+const scheduleSodre = () => {
+    cron.schedule('30 10,22 * * *', async () => {
+        console.log(`\n⏰ Executando: Sodré Santoro`);
+        try { await executeSodre(db); } catch (e) { console.error('Erro Sodré:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+};
+
+const scheduleCleanup = () => {
+    // Roda todo dia à meia noite
+    cron.schedule('0 0 * * *', async () => {
+        console.log(`\n🧹 Executando Limpeza Diária`);
+        try { await cleanExpired(); } catch (e) { console.error('Erro Limpeza:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+};
+
 // ========== MANUAL EXECUTION ==========
 
 /**
@@ -107,7 +132,15 @@ const executarTodos = async () => {
     console.log('\n✅ Todos os crawlers executados!');
 };
 
-// ========== START ==========
+// Executa novos crawlers apenas no modo --run-all se necessário, ou adiciona aqui
+console.log('\n4️⃣ Freitas Leiloeiro');
+await executeFreitas(db);
+
+console.log('\n5️⃣ Sodré Santoro (Pode demorar)');
+// await executeSodre(db); // Sodré é pesado, talvez melhor não rodar no --run default
+
+console.log('\n✅ Todos os crawlers executados!');
+};
 
 const start = async () => {
     await init();
@@ -122,7 +155,11 @@ const start = async () => {
     // Caso contrário, inicia agendamentos
     schedulePalacio();
     scheduleVip();
+    scheduleVip();
     scheduleGuariglia();
+    scheduleFreitas();
+    scheduleSodre();
+    scheduleCleanup();
 
     console.log('\n✅ Agendador iniciado! Aguardando horários programados...');
     console.log('💡 Use Ctrl+C para parar\n');
