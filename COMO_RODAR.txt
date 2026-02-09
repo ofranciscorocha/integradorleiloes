@@ -1,0 +1,62 @@
+==================================================
+   CAR LEILÕES - GUIA PRÁTICO DE EXECUÇÃO
+==================================================
+
+Siga os passos abaixo para rodar o projeto em sua máquina:
+
+1. PRÉ-REQUISITOS
+----------------
+- Node.js instalado (versão 18 ou superior).
+- MongoDB rodando localmente (ou via Docker).
+
+2. INSTALAÇÃO
+-------------
+Abra o terminal na pasta do projeto e execute:
+> npm install
+
+3. CONFIGURAÇÃO (Variáveis de Ambiente)
+---------------------------------------
+Verifique o arquivo `.env` na raiz do projeto. Certifique-se de que a URL do MongoDB está correta:
+Exemplo: MONGODB_URI=mongodb://localhost:27017/integrador_leiloes
+
+4. RODANDO O SITE (API + FRONTEND)
+----------------------------------
+Para iniciar o servidor e o site:
+> npm run dev
+
+O site estará disponível em: http://localhost:8181
+
+5. RODANDO OS CRAWLERS (BUSCAR VEÍCULOS)
+----------------------------------------
+Os crawlers buscam os dados nos sites de leilão e salvam no banco:
+
+- Para rodar TODOS os crawlers agendados:
+  > npm run crawler:all
+
+- Para rodar um crawler Específico:
+  > npm run crawler:freitas
+  > npm run crawler:sodre
+  > npm run crawler:copart
+  > npm run crawler:palacio
+
+6. PAINEL ADMINISTRATIVO
+------------------------
+Acesse: http://localhost:8181/admin.html
+- Usuário: admin
+- Senha: admin
+
+No painel, você pode:
+- Ver estatísticas.
+- Disparar crawlers manualmente.
+- Limpar leilões expirados.
+- FAZER UPLOAD DA LOGO E DO FUNDO (Seção Identidade Visual).
+
+7. DICA DE IDENTIDADE VISUAL
+----------------------------
+Ao fazer upload pelo Painel Admin:
+- A Logo substitui o cabeçalho.
+- O Fundo Hero altera a imagem principal do site instantaneamente.
+
+==================================================
+Pronto! O sistema está configurado e funcional.
+==================================================
