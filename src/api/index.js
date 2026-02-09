@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'fs';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDatabase from '../database/db.js';
@@ -20,7 +21,7 @@ app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public'))); // Serve arquivos estáticos
 
 // Auth Middleware Simples
@@ -66,6 +67,43 @@ app.get('/health', (req, res) => {
         timestamp: new Date().toISOString(),
         database: db ? 'connected' : 'disconnected'
     });
+});
+
+/**
+ * Upload de Branding (Logo/Hero)
+ */
+app.post('/admin/upload-branding', requireAuth, async (req, res) => {
+    try {
+        const { type, base64Data } = req.body;
+
+        if (!['logo', 'hero'].includes(type) || !base64Data) {
+            return res.status(400).json({ success: false, error: 'Dados inválidos' });
+        }
+
+        // Extrair apenas o conteúdo base64 (removendo prefixo data:image/...)
+        const matches = base64Data.match(/^data:image\/([A-Za-z-+/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            return res.status(400).json({ success: false, error: 'Formato de imagem inválido' });
+        }
+
+        const buffer = Buffer.from(matches[2], 'base64');
+        const fileName = type === 'logo' ? 'logo.png' : 'hero-bg.jpg';
+        const filePath = path.join(__dirname, 'public', 'img', fileName);
+
+        // Garantir que a pasta img existe
+        const imgDir = path.join(__dirname, 'public', 'img');
+        if (!fs.existsSync(imgDir)) {
+            fs.mkdirSync(imgDir, { recursive: true });
+        }
+
+        fs.writeFileSync(filePath, buffer);
+        console.log(`[Admin] Branding atualizado: ${fileName}`);
+
+        res.json({ success: true, message: 'Branding atualizado com sucesso!' });
+    } catch (error) {
+        console.error('Erro no upload de branding:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 /**

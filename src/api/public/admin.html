@@ -130,6 +130,40 @@
             </div>
         </div>
 
+        <div class="row g-4 mt-2">
+            <!-- Branding -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-palette me-2"></i> Identidade Visual</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 border-end border-secondary">
+                                <h6>Logotipo (Navbar)</h6>
+                                <p class="small text-muted">Recomendado: PNG transparente, altura ~60px.</p>
+                                <div class="input-group mb-3">
+                                    <input type="file" id="logo-file"
+                                        class="form-control bg-dark text-white border-secondary" accept="image/*">
+                                    <button class="btn btn-primary" onclick="uploadBranding('logo')">Upload
+                                        Logo</button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Fundo Hero (Pátio)</h6>
+                                <p class="small text-muted">A imagem de pátio que você enviou. Recomendado: JPG/WebP,
+                                    1920x1080.</p>
+                                <div class="input-group mb-3">
+                                    <input type="file" id="hero-file"
+                                        class="form-control bg-dark text-white border-secondary" accept="image/*">
+                                    <button class="btn btn-primary" onclick="uploadBranding('hero')">Upload
+                                        Fundo</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="mt-5 text-center">
             <a href="/" class="btn btn-secondary">Voltar para Home</a>
         </div>
@@ -181,6 +215,49 @@
                 alert(`Limpeza concluída. Removidos: ${data.removed || 0}`);
                 loadStats();
             } catch (e) { alert('Erro ao limpar'); }
+        }
+
+        async function uploadBranding(type) {
+            const fileInput = document.getElementById(`${type}-file`);
+            const file = fileInput.files[0];
+            if (!file) return alert('Selecione um arquivo primeiro');
+
+            // Mostrar progresso básico
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64Data = e.target.result;
+                try {
+                    const res = await fetch(`${API_URL}/admin/upload-branding`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type, base64Data })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert(data.message);
+                        fileInput.value = ''; // Limpar input
+                    } else {
+                        alert('Erro: ' + data.error);
+                    }
+                } catch (err) {
+                    alert('Erro na conexão com o servidor');
+                    console.error(err);
+                } finally {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            window.location.href = '/login.html';
         }
 
         loadStats();
