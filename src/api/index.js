@@ -105,7 +105,8 @@ app.get('/veiculos', async (req, res) => {
             anoMax,
             kmMax,
             tipo,
-            estado
+            estado,
+            sort = 'recente'
         } = req.query;
 
         const query = {};
@@ -145,11 +146,18 @@ app.get('/veiculos', async (req, res) => {
             query.localLeilao = { $regex: estado, $options: 'i' };
         }
 
+        // Sort Mapping
+        let sortObj = { criadoEm: -1 };
+        if (sort === 'preco_asc') sortObj = { valor: 1 };
+        if (sort === 'preco_desc') sortObj = { valor: -1 };
+        if (sort === 'ano_desc') sortObj = { ano: -1 };
+
         const result = await db.paginate({
             colecao: 'veiculos',
             filtro: query,
             page: parseInt(page),
-            limit: parseInt(limit)
+            limit: parseInt(limit),
+            sort: sortObj
         });
 
         res.json({ success: true, ...result });
