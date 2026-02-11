@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
-const PORT = process.env.API_PORT || 8181;
+const PORT = process.env.PORT || process.env.API_PORT || 8181;
 
 // Middleware
 app.use(cors({
