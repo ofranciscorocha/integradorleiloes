@@ -24,6 +24,12 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public'))); // Serve arquivos estáticos
 
+// Debug middleware para logs no Railway
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
 // Auth Middleware Simples
 const AUTH_TOKEN = 'admin-secret-token-bip-cars-2026';
 
@@ -428,8 +434,8 @@ const startServer = async () => {
     await initDatabase();
 
 
-    app.listen(PORT, () => {
-        console.log(`\n🚀 API Integrador de Leilões rodando em http://localhost:${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`\n🚀 API Integrador de Leilões rodando em port ${PORT}`);
         console.log(`\n📋 Endpoints disponíveis:`);
         console.log(`   GET  /health         - Status da API`);
         console.log(`   GET  /stats          - Estatísticas gerais`);
