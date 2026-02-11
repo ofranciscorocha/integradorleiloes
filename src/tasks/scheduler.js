@@ -20,8 +20,16 @@ const runCrawler = (scriptPath, name) => {
     });
 };
 
-const initScheduler = () => {
+const initScheduler = (runImmediate = false) => {
     console.log('📅 Scheduler initialized (Twice Daily: 09:00 & 16:00)');
+
+    if (runImmediate) {
+        console.log('🚀 [Scheduler] Iniciando coleta imediata (Startup)...');
+        // Rodar alguns crawlers principais para popular o banco rápido
+        runCrawler(path.join(__dirname, '../crawlers/sodre/run.js'), 'Sodré Santoro');
+        runCrawler(path.join(__dirname, '../crawlers/vipleiloes/run.js'), 'Vip Leilões');
+        runCrawler(path.join(__dirname, '../crawlers/parque/run.js'), 'Parque dos Leilões');
+    }
 
     // Schedule 1: 09:00 AM
     cron.schedule('0 9 * * *', () => {
