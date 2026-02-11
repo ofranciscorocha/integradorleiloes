@@ -49,6 +49,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Admin Route (Obscured/Protected)
+app.get('/a-painel-secreto', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 // Database connection
 let db = null;
 
@@ -354,11 +359,13 @@ app.post('/admin/crawl', requireAuth, (req, res) => {
 
     // Mapeamento simples
     if (site === 'freitas') scriptPath = 'src/crawlers/freitas/run.js';
-    else if (site === 'palacio') scriptPath = 'src/crawlers/palacio/run.js';
+    else if (site === 'palacio') scriptPath = 'src/crawlers/palaciodosleiloes/run.js';
     else if (site === 'copart') scriptPath = 'src/crawlers/copart/run.js';
     else if (site === 'sodre') scriptPath = 'src/crawlers/sodre/run.js';
-    else if (site === 'vip') scriptPath = 'src/crawlers/vip/run.js';
+    else if (site === 'vip') scriptPath = 'src/crawlers/vipleiloes/run.js';
     else if (site === 'parque') scriptPath = 'src/crawlers/parque/run.js';
+    else if (site === 'rogeriomenezes') scriptPath = 'src/crawlers/rogeriomenezes/run.js';
+    else if (site === 'guariglia') scriptPath = 'src/crawlers/guariglialeiloes/run.js';
 
     if (!scriptPath) return res.status(400).json({ success: false, error: 'Site desconhecido ou inativo' });
 
