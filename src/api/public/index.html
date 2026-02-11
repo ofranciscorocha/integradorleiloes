@@ -58,8 +58,43 @@
                     <button class="btn-header-signup" onclick="openLoginModal('signup')">Cadastrar</button>
                 </div>
             </div>
+
+            <!-- Mobile Hamburger -->
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </header>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer-overlay" id="mobile-drawer-overlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-drawer" id="mobile-drawer">
+        <div class="drawer-header">
+            <span class="drawer-title">MENU</span>
+            <button class="drawer-close" onclick="toggleMobileMenu()">&times;</button>
+        </div>
+        <div class="drawer-content">
+            <nav class="drawer-nav">
+                <a href="/" class="drawer-link" onclick="toggleMobileMenu()"><i class="fas fa-home"></i> Início</a>
+                <a href="/como-funciona.html" class="drawer-link" onclick="toggleMobileMenu()"><i
+                        class="fas fa-info-circle"></i> Como funciona</a>
+                <a href="/admin.html" class="drawer-link" onclick="toggleMobileMenu()"><i
+                        class="fas fa-user-shield"></i> Painel Admin</a>
+            </nav>
+            <div class="drawer-divider"></div>
+            <div class="drawer-auth" id="mobile-auth-area">
+                <!-- Sincronizado via JS -->
+                <button class="btn-drawer-alert" onclick="openAlertModal(); toggleMobileMenu();">
+                    <i class="fab fa-whatsapp"></i> Criar Alerta de Veículo
+                </button>
+                <div class="drawer-auth-buttons">
+                    <button class="btn-drawer-login" onclick="openLoginModal(); toggleMobileMenu();">Entrar</button>
+                    <button class="btn-drawer-signup"
+                        onclick="openLoginModal('signup'); toggleMobileMenu();">Cadastrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <div class="hero-section">

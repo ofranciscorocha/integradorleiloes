@@ -25,22 +25,58 @@ const checkAuth = () => {
 
 const updateAuthUI = () => {
     const authArea = document.getElementById('auth-area');
+    const mobileAuthArea = document.getElementById('mobile-auth-area');
+
     if (currentState.user) {
-        authArea.innerHTML = `
+        const userHtml = `
             <div class="user-profile" onclick="handleLogout()">
                 <img src="${currentState.user.avatar || 'https://ui-avatars.com/api/?name=' + currentState.user.nome}" class="user-avatar">
                 <span class="user-name">${currentState.user.nome}</span>
                 <i class="fas fa-sign-out-alt" style="margin-left: 10px; color: var(--text-muted);"></i>
             </div>
         `;
+        authArea.innerHTML = userHtml;
+        mobileAuthArea.innerHTML = `
+            <div class="user-profile" onclick="handleLogout(); toggleMobileMenu();" style="justify-content: center; padding: 1rem; background: var(--bg-body); border-radius: 8px;">
+                <img src="${currentState.user.avatar || 'https://ui-avatars.com/api/?name=' + currentState.user.nome}" class="user-avatar">
+                <span class="user-name" style="color: var(--text-main);">${currentState.user.nome}</span>
+                <i class="fas fa-sign-out-alt" style="margin-left: 10px; color: var(--text-muted);"></i>
+            </div>
+            <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Clique para sair</p>
+        `;
     } else {
-        authArea.innerHTML = `
+        const buttonsHtml = `
             <button class="btn-header-login" onclick="openLoginModal('login')">Entrar</button>
             <button class="btn-header-signup" onclick="openLoginModal('signup')">Cadastrar</button>
+        `;
+        authArea.innerHTML = buttonsHtml;
+        mobileAuthArea.innerHTML = `
+            <button class="btn-drawer-alert" onclick="openAlertModal(); toggleMobileMenu();">
+                <i class="fab fa-whatsapp"></i> Criar Alerta de Veículo
+            </button>
+            <div class="drawer-auth-buttons">
+                <button class="btn-drawer-login" onclick="openLoginModal('login'); toggleMobileMenu();">Entrar</button>
+                <button class="btn-drawer-signup" onclick="openLoginModal('signup'); toggleMobileMenu();">Cadastrar</button>
+            </div>
         `;
     }
     // Update display of items
     renderVeiculos();
+};
+
+const toggleMobileMenu = () => {
+    const drawer = document.getElementById('mobile-drawer');
+    const overlay = document.getElementById('mobile-drawer-overlay');
+
+    if (drawer.classList.contains('active')) {
+        drawer.classList.remove('active');
+        overlay.style.display = 'none';
+        document.body.style.overflow = ''; // Release scroll
+    } else {
+        drawer.classList.add('active');
+        overlay.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent scroll when menu is open
+    }
 };
 
 const openLoginModal = (view = 'login') => {

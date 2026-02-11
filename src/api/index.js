@@ -63,7 +63,7 @@ const initDatabase = async () => {
         console.log('📦 Database pronta para uso');
 
         // Start Scheduler after DB is ready
-        initScheduler();
+        initScheduler(true);
 
     } catch (error) {
         // ...
