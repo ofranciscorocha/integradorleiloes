@@ -622,11 +622,22 @@ body {
     }
 
     .hero-stats-floating {
-        top: 1rem;
+        top: 0.5rem;
         left: 50%;
-        transform: translateX(-50%);
-        width: 90%;
+        transform: translateX(-50%) scale(0.85);
+        width: fit-content;
+        max-width: 95%;
         justify-content: center;
+        white-space: nowrap;
+    }
+
+    .hero-stats-floating span:last-child {
+        font-size: 0.7rem !important;
+    }
+
+    .stat-number {
+        font-size: 0.9rem !important;
+        padding: 1px 4px;
     }
 
     .search-widget-container {
