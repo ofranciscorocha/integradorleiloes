@@ -87,18 +87,36 @@ const createCrawler = (db) => {
         console.log(`\n🔍 [${SITE}] Buscando lotes...`);
 
         try {
-            const { data } = await axios.postForm(
+            const headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html, */*; q=0.01',
+                'Referer': 'https://www.palaciodosleiloes.com.br/site/leiloes.php',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Origin': 'https://www.palaciodosleiloes.com.br'
+            };
+
+            const { data, status } = await axios.postForm(
                 'https://www.palaciodosleiloes.com.br/site/camada_ajax/coluna_esquerda_m.php',
                 {
-                    quebra: '0.6543214025681199',
+                    quebra: '0.65432140' + Math.random().toString().slice(2, 10), // Randomize
                     opcao: 'listar_lote',
                     categoria_pesquisa: '1',
                     subcategoria_pesquisa: '',
                     paginacao: '-1',
                     total_paginas: '1'
                 },
-                { timeout: TIMEOUT }
+                {
+                    headers,
+                    timeout: TIMEOUT
+                }
             );
+
+            console.log(`📡 [${SITE}] HTTP Status: ${status} | Data Length: ${data?.length}`);
+
+            if (!data || data.length < 500) {
+                console.warn(`⚠️ [${SITE}] Resposta muito curta. Bloqueio suspeito?`);
+                if (data) console.log('Snippet:', data.substring(0, 200));
+            }
 
             const $ = cheerio.load(data);
             const lista = [];
