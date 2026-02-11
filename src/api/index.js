@@ -277,7 +277,8 @@ app.get('/stats', async (req, res) => {
                     'vipleiloes.com.br': veiculosVip,
                     'guariglialeiloes.com.br': veiculosGuariglia,
                     'freitasleiloeiro.com.br': veiculosFreitas,
-                    'sodresantoro.com.br': veiculosSodre
+                    'sodresantoro.com.br': veiculosSodre,
+                    'parquedosleiloes.com.br': await db.count('veiculos', { site: 'parquedosleiloes.com.br' })
                 }
             }
         });
@@ -298,7 +299,8 @@ app.get('/sites', (req, res) => {
             { id: 'vip', name: 'VIP Leilões', domain: 'vipleiloes.com.br' },
             { id: 'guariglia', name: 'Guariglia Leilões', domain: 'guariglialeiloes.com.br' },
             { id: 'freitas', name: 'Freitas Leiloeiro', domain: 'freitasleiloeiro.com.br' },
-            { id: 'sodre', name: 'Sodré Santoro', domain: 'sodresantoro.com.br' }
+            { id: 'sodre', name: 'Sodré Santoro', domain: 'sodresantoro.com.br' },
+            { id: 'parque', name: 'Parque dos Leilões', domain: 'parquedosleiloes.com.br' }
         ]
     });
 });
@@ -350,6 +352,7 @@ app.post('/admin/crawl', requireAuth, (req, res) => {
     else if (site === 'copart') scriptPath = 'src/crawlers/copart/run.js';
     else if (site === 'sodre') scriptPath = 'src/crawlers/sodre/run.js';
     else if (site === 'vip') scriptPath = 'src/crawlers/vip/run.js';
+    else if (site === 'parque') scriptPath = 'src/crawlers/parque/run.js';
 
     if (!scriptPath) return res.status(400).json({ success: false, error: 'Site desconhecido ou inativo' });
 

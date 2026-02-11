@@ -6,9 +6,10 @@ import connectDatabase from '../../database/db.js';
     // Simula a função de salvar do db.js
     const mockDb = {
         salvarLista: async (lista) => {
-            console.log(`💾 Simulando salvamento de ${lista.length} veículos...`);
-            // Se quiser salvar de verdade:
-            // for (const v of lista) await db.upsert('veiculos', v, { registro: v.registro, site: v.site });
+            console.log(`💾 Salvando ${lista.length} veículos no banco...`);
+            for (const v of lista) {
+                await db.upsert('veiculos', v, { registro: v.registro, site: v.site });
+            }
         }
     };
 

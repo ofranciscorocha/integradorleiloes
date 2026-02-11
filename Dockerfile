@@ -53,8 +53,8 @@ RUN npm install
 # Copie o restante do código
 COPY . .
 
-# Expõe a porta que o app vai rodar
-EXPOSE 8181
+# O Railway gerencia a porta automaticamente via variável de ambiente PORT.
+# O app já está configurado para ouvir em process.env.PORT.
 
 # Define o comando de inicialização
 CMD ["npm", "start"]

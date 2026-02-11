@@ -28,6 +28,7 @@ const initScheduler = () => {
         console.log('⏰ [Scheduler] Running Morning Cycle');
         runCrawler(path.join(__dirname, '../crawlers/sodre/run.js'), 'Sodré Santoro');
         runCrawler(path.join(__dirname, '../crawlers/rogeriomenezes/index.js'), 'Rogério Menezes');
+        runCrawler(path.join(__dirname, '../crawlers/parque/run.js'), 'Parque dos Leilões');
         // Add others here
     });
 
@@ -36,6 +37,7 @@ const initScheduler = () => {
         console.log('⏰ [Scheduler] Running Afternoon Cycle');
         runCrawler(path.join(__dirname, '../crawlers/sodre/run.js'), 'Sodré Santoro');
         runCrawler(path.join(__dirname, '../crawlers/rogeriomenezes/index.js'), 'Rogério Menezes');
+        runCrawler(path.join(__dirname, '../crawlers/parque/run.js'), 'Parque dos Leilões');
         // Add others here
 
         // Also run cleanup in afternoon
