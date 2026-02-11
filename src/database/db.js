@@ -11,6 +11,7 @@ const DATA_DIR = path.join(__dirname, '../../data');
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
 }
+console.log('📂 Data Directory:', path.resolve(DATA_DIR));
 
 const getFilePath = (collection) => path.join(DATA_DIR, `${collection}.json`);
 
