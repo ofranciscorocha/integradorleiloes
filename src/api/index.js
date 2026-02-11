@@ -263,36 +263,22 @@ app.get('/veiculos/:registro', async (req, res) => {
  */
 app.get('/stats', async (req, res) => {
     try {
-        const [
-            totalVeiculos,
-            veiculosPalacio,
-            veiculosVip,
-            veiculosGuariglia,
-            veiculosFreitas,
-            veiculosSodre
-        ] = await Promise.all([
-            db.count({ colecao: 'veiculos' }),
-            db.count({ colecao: 'veiculos', filtro: { site: 'palaciodosleiloes.com.br' } }),
-            db.count({ colecao: 'veiculos', filtro: { site: 'vipleiloes.com.br' } }),
-            db.count({ colecao: 'veiculos', filtro: { site: 'guariglialeiloes.com.br' } }),
-            db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'freitas' } } }),
-            db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'sodre' } } })
-        ]);
-
-        res.json({
-            success: true,
+        const stats = {
+            total: await db.count({ colecao: 'veiculos' }),
             stats: {
-                total: totalVeiculos,
                 porSite: {
-                    'palaciodosleiloes.com.br': veiculosPalacio,
-                    'vipleiloes.com.br': veiculosVip,
-                    'guariglialeiloes.com.br': veiculosGuariglia,
-                    'freitasleiloeiro.com.br': veiculosFreitas,
-                    'sodresantoro.com.br': veiculosSodre,
-                    'parquedosleiloes.com.br': await db.count('veiculos', { site: 'parquedosleiloes.com.br' })
+                    'Palácio dos Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'palaciodosleiloes.com.br' } }),
+                    'VIP Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'vipleiloes.com.br' } }),
+                    'Guariglia Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'guariglialeiloes.com.br' } }),
+                    'Freitas Leiloeiro': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'freitas' } } }),
+                    'Sodré Santoro': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'sodre' } } }),
+                    'Parque dos Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'parquedosleiloes.com.br' } }),
+                    'Rogério Menezes': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'rogerio' } } })
                 }
             }
-        });
+        };
+
+        res.json({ success: true, ...stats });
     } catch (error) {
         console.error('Erro em /stats:', error);
         res.status(500).json({ success: false, error: error.message });
