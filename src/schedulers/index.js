@@ -4,6 +4,8 @@ import connectDatabase from '../database/db.js';
 import createPalacioCrawler from '../crawlers/palaciodosleiloes/index.js';
 import createVipCrawler from '../crawlers/vipleiloes/index.js';
 import createGuarigliaCrawler from '../crawlers/guariglialeiloes/index.js';
+import createRogerioMenezesCrawler from '../crawlers/rogeriomenezes/index.js';
+import createLeiloCrawler from '../crawlers/leilo/index.js';
 import { execute as executeFreitas } from '../crawlers/freitas/index.js';
 import { execute as executeSodre } from '../crawlers/sodre/index.js';
 import cleanExpired from '../tasks/cleanExpired.js';
@@ -18,12 +20,16 @@ let db = null;
 let palacio = null;
 let vip = null;
 let guariglia = null;
+let rogerioMenezes = null;
+let leilo = null;
 
 const init = async () => {
     db = await connectDatabase();
     palacio = createPalacioCrawler(db);
     vip = createVipCrawler(db);
     guariglia = createGuarigliaCrawler(db);
+    rogerioMenezes = createRogerioMenezesCrawler(db);
+    leilo = createLeiloCrawler(db);
 
     console.log('✅ Todos os crawlers inicializados!\n');
 };
@@ -104,6 +110,22 @@ const scheduleSodre = () => {
     }, { scheduled: true, timezone: "America/Sao_Paulo" });
 };
 
+const scheduleRogerioMenezes = () => {
+    cron.schedule('0 11,23 * * *', async () => {
+        console.log(`\n⏰ Executando: Rogério Menezes`);
+        try { await rogerioMenezes.buscarTodos(); } catch (e) { console.error('Erro Rogério Menezes:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 Rogério Menezes: Agendado para 11h e 23h');
+};
+
+const scheduleLeilo = () => {
+    cron.schedule('30 11,23 * * *', async () => {
+        console.log(`\n⏰ Executando: Leilo`);
+        try { await leilo.buscarTodos(); } catch (e) { console.error('Erro Leilo:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 Leilo: Agendado para 11:30 e 23:30');
+};
+
 const scheduleCleanup = () => {
     // Roda todo dia à meia noite
     cron.schedule('0 0 * * *', async () => {
@@ -129,17 +151,19 @@ const executarTodos = async () => {
     console.log('\n3️⃣ Guariglia Leilões');
     await guariglia.buscarTodos();
 
+    console.log('\n4️⃣ Freitas Leiloeiro');
+    await executeFreitas(db);
+
+    console.log('\n5️⃣ Rogério Menezes');
+    await rogerioMenezes.buscarTodos();
+
+    console.log('\n6️⃣ Leilo');
+    await leilo.buscarTodos();
+
+    console.log('\n7️⃣ Sodré Santoro (Pode demorar)');
+    // await executeSodre(db); // Sodré é pesado
+
     console.log('\n✅ Todos os crawlers executados!');
-};
-
-// Executa novos crawlers apenas no modo --run-all se necessário, ou adiciona aqui
-console.log('\n4️⃣ Freitas Leiloeiro');
-await executeFreitas(db);
-
-console.log('\n5️⃣ Sodré Santoro (Pode demorar)');
-// await executeSodre(db); // Sodré é pesado, talvez melhor não rodar no --run default
-
-console.log('\n✅ Todos os crawlers executados!');
 };
 
 const start = async () => {
@@ -155,10 +179,11 @@ const start = async () => {
     // Caso contrário, inicia agendamentos
     schedulePalacio();
     scheduleVip();
-    scheduleVip();
     scheduleGuariglia();
     scheduleFreitas();
     scheduleSodre();
+    scheduleRogerioMenezes();
+    scheduleLeilo();
     scheduleCleanup();
 
     console.log('\n✅ Agendador iniciado! Aguardando horários programados...');

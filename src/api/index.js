@@ -46,13 +46,24 @@ app.get('/', (req, res) => {
 // Database connection
 let db = null;
 
+// ...existing code...
+import initScheduler from '../tasks/scheduler.js';
+
+// ...existing code...
+
 const initDatabase = async () => {
     try {
         db = await connectDatabase();
         console.log('📦 Database pronta para uso');
+
+        // Start Scheduler after DB is ready
+        initScheduler();
+
     } catch (error) {
+        // ...
         console.error('❌ Falha ao conectar database:', error.message);
-        process.exit(1);
+        // process.exit(1);
+        console.warn('⚠️ Server operando sem banco de dados. Endpoints falharão, mas frontend carrega.');
     }
 };
 
@@ -80,18 +91,15 @@ app.post('/admin/upload-branding', requireAuth, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Dados inválidos' });
         }
 
-        // Extrair apenas o conteúdo base64 (removendo prefixo data:image/...)
-        const matches = base64Data.match(/^data:image\/([A-Za-z-+/]+);base64,(.+)$/);
-        if (!matches || matches.length !== 3) {
-            return res.status(400).json({ success: false, error: 'Formato de imagem inválido' });
-        }
+        // Extrair apenas o conteúdo base64
+        const base64Content = base64Data.split(';base64,').pop();
+        const buffer = Buffer.from(base64Content, 'base64');
 
-        const buffer = Buffer.from(matches[2], 'base64');
         const fileName = type === 'logo' ? 'logo.png' : 'hero-bg.jpg';
-        const filePath = path.join(__dirname, 'public', 'img', fileName);
+        const imgDir = path.join(__dirname, 'public', 'img');
+        const filePath = path.join(imgDir, fileName);
 
         // Garantir que a pasta img existe
-        const imgDir = path.join(__dirname, 'public', 'img');
         if (!fs.existsSync(imgDir)) {
             fs.mkdirSync(imgDir, { recursive: true });
         }
@@ -143,7 +151,7 @@ app.get('/veiculos', async (req, res) => {
             anoMax,
             kmMax,
             tipo,
-            estado,
+            uf,
             sort = 'recente'
         } = req.query;
 
@@ -174,28 +182,37 @@ app.get('/veiculos', async (req, res) => {
             query.km = { $lte: parseInt(kmMax) };
         }
 
-        // Filter by Category
+        // Filter by Category (vehicle type tabs)
         if (tipo && tipo.trim() !== '') {
-            query.tipo = { $regex: tipo, $options: 'i' };
+            if (tipo === 'moto') {
+                query.veiculo = { $regex: 'moto|honda cg|honda cb|honda biz|honda pcx|yamaha|suzuki|kawasaki|harley|ducati|triumph|xre|bros|factor|ybr|fan|pop|xtz|tenere|nmax|crosser|trail|scooter', $options: 'i' };
+            } else if (tipo === 'pesado') {
+                query.veiculo = { $regex: 'caminhão|caminhao|ônibus|onibus|van|sprinter|furgão|furgao|truck|reboque|carreta|bitruck|toco|cavalo|scania|volvo fh|volvo fm|iveco|man tgx|daf|atego|axor|delivery|ford cargo', $options: 'i' };
+            } else {
+                query.tipo = { $regex: tipo, $options: 'i' };
+            }
         }
 
-        // Filter by State
-        if (estado && estado.trim() !== '') {
-            query.localLeilao = { $regex: estado, $options: 'i' };
+        // Filter by State (UF)
+        if (uf && uf.trim() !== '') {
+            query.localLeilao = { $regex: uf, $options: 'i' };
         }
 
-        // Sort Mapping
+        // Sort Mapping (handle accented chars from frontend)
         let sortObj = { criadoEm: -1 };
-        if (sort === 'preco_asc') sortObj = { valor: 1 };
-        if (sort === 'preco_desc') sortObj = { valor: -1 };
-        if (sort === 'ano_desc') sortObj = { ano: -1 };
+        const sortNorm = sort.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        if (sortNorm === 'preco_asc') sortObj = { valor: 1 };
+        if (sortNorm === 'preco_desc') sortObj = { valor: -1 };
+        if (sortNorm === 'ano_desc') sortObj = { ano: -1 };
 
         const result = await db.paginate({
             colecao: 'veiculos',
             filtro: query,
             page: parseInt(page),
             limit: parseInt(limit),
-            sort: sortObj
+            sort: sortObj,
+            interleave: (sort === 'recente' || !sort),
+            shuffle: (sort === 'recente' || !sort)
         });
 
         res.json({ success: true, ...result });
@@ -299,6 +316,8 @@ app.post('/admin/login', (req, res) => {
     }
 });
 
+
+
 /**
  * Admin: Verificação de Token (para frontend check)
  */
@@ -348,10 +367,63 @@ app.post('/admin/crawl', requireAuth, (req, res) => {
     res.json({ success: true, message: `Crawler ${site} iniciado em background.` });
 });
 
+// ============ MOCK AUTH ROUTES ============
+// Simple in-memory session for demonstration (replace with Passport/Session/JWT in production)
+// Note: This is a simplified auth for the frontend prototype.
+
+app.post('/auth/login', (req, res) => {
+    // Simulating Google Login success
+    // In real scenario, this would handle the Google OAuth callback
+    const user = {
+        name: 'Usuário Google',
+        email: 'user@gmail.com',
+        avatar: 'https://ui-avatars.com/api/?name=User+Google&background=random'
+    };
+
+    // Set a simple cookie (client-side capable for now) 
+    // real app should use httpOnly cookies
+    res.json({ success: true, user });
+});
+
+app.post('/auth/logout', (req, res) => {
+    res.json({ success: true });
+});
+
+app.get('/auth/me', (req, res) => {
+    // For now, client manages state via simple storage/cookie simulation
+    // Ideally check server session here
+    res.json({ success: true });
+});
+
 // ============ START SERVER ============
+
+/**
+ * Criar alerta de WhatsApp
+ */
+app.post('/alerts', async (req, res) => {
+    try {
+        const { veiculo, valor_max, whatsapp } = req.body;
+        if (!veiculo || !whatsapp) {
+            return res.status(400).json({ success: false, error: 'Dados obrigatórios ausentes' });
+        }
+
+        const alert = await db.saveAlert({
+            veiculo: veiculo.trim(),
+            valorMax: valor_max ? parseFloat(valor_max) : null,
+            whatsapp: whatsapp.trim().replace(/\D/g, '') // Save clean number
+        });
+
+        console.log(`[Alerts] Novo alerta criado para ${whatsapp}: ${veiculo}`);
+        res.json({ success: true, alert });
+    } catch (e) {
+        console.error('Erro ao salvar alerta:', e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
 
 const startServer = async () => {
     await initDatabase();
+
 
     app.listen(PORT, () => {
         console.log(`\n🚀 API Integrador de Leilões rodando em http://localhost:${PORT}`);

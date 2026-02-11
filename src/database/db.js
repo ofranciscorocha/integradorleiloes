@@ -1,265 +1,378 @@
-import { MongoClient, ObjectId } from 'mongodb';
-import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/leiloes';
-const MONGODB_DB = process.env.MONGODB_DB || 'leiloes';
+const DATA_DIR = path.join(__dirname, '../../data');
 
-let clientInstance = null;
-let dbInstance = null;
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+}
 
-/**
- * Conecta ao MongoDB e retorna funções de acesso ao banco
- */
-export const connectDatabase = async () => {
-    if (dbInstance) {
-        return getDbFunctions();
+const getFilePath = (collection) => path.join(DATA_DIR, `${collection}.json`);
+
+const readData = (collection) => {
+    const filePath = getFilePath(collection);
+    if (!fs.existsSync(filePath)) {
+        return [];
     }
-
     try {
-        clientInstance = new MongoClient(MONGODB_URI);
-        await clientInstance.connect();
-        dbInstance = clientInstance.db(MONGODB_DB);
-        console.log('✅ MongoDB conectado com sucesso');
-        return getDbFunctions();
-    } catch (error) {
-        console.error('❌ Erro ao conectar ao MongoDB:', error.message);
-        throw error;
+        const data = fs.readFileSync(filePath, 'utf-8');
+        return JSON.parse(data);
+    } catch (e) {
+        console.error(`Erro ao ler ${collection}:`, e);
+        return [];
+    }
+};
+
+const writeData = (collection, data) => {
+    const filePath = getFilePath(collection);
+    try {
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (e) {
+        console.error(`Erro ao salvar ${collection}:`, e);
     }
 };
 
 /**
- * Retorna as funções de acesso ao banco
+ * Conecta ao "Banco JSON" e retorna funções de acesso
  */
-const getDbFunctions = () => {
-    const db = dbInstance;
+export const connectDatabase = async () => {
+    console.log('✅ JSON Database conectado (Modo Arquivo)');
 
-    /**
-     * Busca lista de veículos com filtros
-     */
     const buscarLista = async ({ colecao = 'veiculos', filtraEncerrados, encerrando, filtroHoras }) => {
-        const collection = db.collection(colecao);
-        const filtro = {};
-        const data = new Date();
+        let items = readData(colecao);
+        const now = Date.now();
 
-        if (encerrando) {
-            filtro.encerrado = { $gte: 1 };
-        } else if (filtraEncerrados) {
-            filtro.encerrado = { $ne: true };
-        }
+        // 1. Filter Logic
+        items = items.filter(item => {
+            if (encerrando) {
+                // Mock logic for encerrado
+                return item.encerrado >= 1;
+            }
+            if (filtraEncerrados) {
+                return item.encerrado !== true;
+            }
+            return true;
+        });
 
-        if (filtroHoras === '30') {
-            data.setTime(data.getTime() + (30 * 60 * 1000));
-            filtro['previsao.time'] = { $lt: data.getTime() };
-        } else if (filtroHoras === '2') {
-            data.setTime(data.getTime() + (30 * 60 * 1000));
-            const inicial = data.getTime();
-            data.setTime(data.getTime() + (120 * 60 * 1000));
-            const final = data.getTime();
-            filtro['previsao.time'] = { $gte: inicial, $lt: final };
-        } else if (filtroHoras === '6') {
-            data.setTime(data.getTime() + (120 * 60 * 1000));
-            const inicial = data.getTime();
-            data.setTime(data.getTime() + (240 * 60 * 1000));
-            const final = data.getTime();
-            filtro['previsao.time'] = { $gte: inicial, $lt: final };
-        } else if (filtroHoras === '+6') {
-            data.setTime(data.getTime() + (240 * 60 * 1000));
-            filtro['$or'] = [{ 'previsao.time': { $gte: data.getTime() } }, { 'previsao.string': '' }];
-        }
+        // 2. Time Filter (Mocked somewhat)
+        if (filtroHoras) {
+            items = items.filter(item => {
+                const time = item.previsao?.time || 0;
+                if (!time) return false;
 
-        return await collection.find(filtro).toArray();
-    };
-
-    /**
-     * Busca lista genérica com filtro e projeção
-     */
-    const list = async ({ colecao = 'veiculos', filtro = {}, colunas = {} }) => {
-        try {
-            const collection = db.collection(colecao);
-            return await collection.find(filtro).project(colunas).toArray();
-        } catch (error) {
-            console.error(`Erro na busca em ${colecao}:`, error);
-            return [];
-        }
-    };
-
-    /**
-     * Busca item único
-     */
-    const get = async ({ colecao = 'veiculos', registro, site }) => {
-        try {
-            const collection = db.collection(colecao);
-            const filtro = { registro };
-            if (site) filtro.site = site;
-            return await collection.findOne(filtro);
-        } catch (error) {
-            console.error('Erro no GET:', error);
-            return null;
-        }
-    };
-
-    /**
-     * Insere novo documento
-     */
-    const insert = async ({ colecao = 'veiculos', dados }) => {
-        try {
-            const collection = db.collection(colecao);
-            const resposta = await collection.insertOne({
-                criadoEm: new Date(),
-                ...dados,
-                log: [{
-                    momento: new Date(),
-                    acao: 'insert',
-                    dadoSalvo: dados
-                }]
+                if (filtroHoras === '30') return time < now + (30 * 60 * 1000);
+                // ... simplify other time filters for now
+                return true;
             });
-            return resposta.insertedId.toString();
-        } catch (error) {
-            console.error(`Erro ao inserir em ${colecao}:`, error);
-            return null;
         }
+
+        return items;
     };
 
-    /**
-     * Atualiza documento existente
-     */
-    const update = async ({ colecao = 'veiculos', registro, set, debugUpdate = false }) => {
-        try {
-            const collection = db.collection(colecao);
-            const item = await collection.findOne({ registro });
+    const list = async ({ colecao = 'veiculos', filtro = {}, colunas = {} }) => {
+        let items = readData(colecao);
 
-            if (!item) return false;
+        // Simple exact match filter
+        if (Object.keys(filtro).length > 0) {
+            items = items.filter(item => {
+                for (const key in filtro) {
+                    if (item[key] !== filtro[key]) return false;
+                }
+                return true;
+            });
+        }
 
-            if (debugUpdate) console.log('UPDATE:', registro, set);
+        return items;
+    };
 
-            set.log = (item.log || []).concat([{
+    const get = async ({ colecao = 'veiculos', registro, site }) => {
+        const items = readData(colecao);
+        const regStr = typeof registro === 'object' ? JSON.stringify(registro) : registro;
+        return items.find(item => {
+            const itemRegStr = typeof item.registro === 'object' ? JSON.stringify(item.registro) : item.registro;
+            return itemRegStr === regStr && (!site || item.site === site);
+        }) || null;
+    };
+
+    const insert = async ({ colecao = 'veiculos', dados }) => {
+        const items = readData(colecao);
+        const newItem = {
+            _id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+            criadoEm: new Date(),
+            ...dados,
+            log: [{
                 momento: new Date(),
-                acao: 'update',
-                dadoSalvo: JSON.stringify(set)
-            }]);
-            set.atualizadoEm = new Date();
-
-            const resposta = await collection.updateOne(
-                { _id: new ObjectId(item._id.toString()) },
-                { $set: set }
-            );
-
-            return resposta.modifiedCount > 0;
-        } catch (error) {
-            console.error('Erro no UPDATE:', error);
-            return false;
-        }
+                acao: 'insert'
+            }]
+        };
+        items.push(newItem);
+        writeData(colecao, items);
+        return newItem._id;
     };
 
-    /**
-     * Salva lista de veículos (insere ou atualiza)
-     */
+    const update = async ({ colecao = 'veiculos', registro, set, debugUpdate = false }) => {
+        const items = readData(colecao);
+        const regStr = typeof registro === 'object' ? JSON.stringify(registro) : registro;
+        const index = items.findIndex(item => {
+            const itemRegStr = typeof item.registro === 'object' ? JSON.stringify(item.registro) : item.registro;
+            return itemRegStr === regStr;
+        });
+
+        if (index === -1) return false;
+
+        const item = items[index];
+        const updatedItem = { ...item, ...set, atualizadoEm: new Date() };
+
+        updatedItem.log = (item.log || []).concat([{
+            momento: new Date(),
+            acao: 'update'
+        }]);
+
+        items[index] = updatedItem;
+        writeData(colecao, items);
+
+        if (debugUpdate) console.log('UPDATE JSON:', registro);
+        return true;
+    };
+
+    const count = async ({ colecao = 'veiculos', filtro = {} }) => {
+        let items = readData(colecao);
+        if (Object.keys(filtro).length > 0) {
+            items = items.filter(item => {
+                for (const key in filtro) {
+                    if (filtro[key]?.$regex) {
+                        const regex = new RegExp(filtro[key].$regex, 'i');
+                        if (!regex.test(item[key])) return false;
+                    } else if (item[key] !== filtro[key]) return false;
+                }
+                return true;
+            });
+        }
+        return items.length;
+    };
+
+    const getAlerts = async () => {
+        return readData('alerts');
+    };
+
+    const saveAlert = async (alertData) => {
+        const alerts = readData('alerts');
+        const newAlert = {
+            id: Date.now().toString(),
+            ...alertData,
+            createdAt: new Date().toISOString()
+        };
+        alerts.push(newAlert);
+        writeData('alerts', alerts);
+        return newAlert;
+    };
+
+    const deleteItems = async ({ colecao, filtro }) => {
+        let items = readData(colecao);
+        const initialCount = items.length;
+
+        if (filtro['previsao.time']?.$lt) {
+            const limit = filtro['previsao.time'].$lt;
+            items = items.filter(item => (item.previsao?.time || 0) >= limit);
+        }
+
+        writeData(colecao, items);
+        return initialCount - items.length;
+    };
+
+
     const salvarLista = async (lista, debugUpdate = false) => {
         const colecao = 'veiculos';
+        const items = readData(colecao);
         let inseridos = 0;
         let atualizados = 0;
         let semAlteracao = 0;
 
-        for (let idx = 0; idx < lista.length; idx++) {
-            const item = lista[idx];
-            const { registro, site } = item;
-            const itemBanco = await get({ colecao, registro, site });
+        for (const novoItem of lista) {
+            const regStr = typeof novoItem.registro === 'object' ? JSON.stringify(novoItem.registro) : novoItem.registro;
+            const index = items.findIndex(i => {
+                const itemRegStr = typeof i.registro === 'object' ? JSON.stringify(i.registro) : i.registro;
+                return itemRegStr === regStr && i.site === novoItem.site;
+            });
 
-            if (itemBanco) {
-                const setDados = {};
+            if (index !== -1) {
+                const itemBanco = items[index];
+                // Simple update if any data changed
+                const { _id, criadoEm, log, atualizadoEm, ...oldData } = itemBanco;
+                const { ...newData } = novoItem;
 
-                Object.entries(item)
-                    .filter(([key]) => !['original'].includes(key))
-                    .forEach(([key, value]) => {
-                        if (key && JSON.stringify(itemBanco[key]) !== JSON.stringify(value)) {
-                            setDados[key] = value;
-                        }
-                    });
-
-                if (item.original) {
-                    Object.entries(item.original).forEach(([key, value]) => {
-                        if (key && JSON.stringify(itemBanco.original?.[key]) !== JSON.stringify(value)) {
-                            setDados[`original.${key}`] = value;
-                        }
-                    });
-                }
-
-                if (Object.keys(setDados).length > 0) {
-                    const atualizado = await update({ colecao, registro, set: setDados, debugUpdate });
-                    if (atualizado) atualizados++;
-                    console.log(`[${idx + 1}/${lista.length}] ${typeof registro === 'object' ? JSON.stringify(registro) : registro} - Atualizado`);
+                if (JSON.stringify(oldData) !== JSON.stringify(newData)) {
+                    items[index] = { ...itemBanco, ...novoItem, atualizadoEm: new Date() };
+                    atualizados++;
                 } else {
                     semAlteracao++;
-                    console.log(`[${idx + 1}/${lista.length}] ${typeof registro === 'object' ? JSON.stringify(registro) : registro} - Sem alterações`);
                 }
             } else {
-                const id = await insert({ colecao, dados: item });
-                if (id) inseridos++;
-                console.log(`[${idx + 1}/${lista.length}] ${typeof registro === 'object' ? JSON.stringify(registro) : registro} - Inserido (${id})`);
+                items.push({
+                    _id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                    criadoEm: new Date(),
+                    ...novoItem,
+                    log: []
+                });
+                inseridos++;
             }
         }
 
-        console.log(`\n📊 Resumo: ${inseridos} inseridos, ${atualizados} atualizados, ${semAlteracao} sem alteração`);
+        writeData(colecao, items);
+        console.log(`\n📊 Resumo JSON: ${inseridos} inseridos, ${atualizados} atualizados, ${semAlteracao} sem alteração`);
         return { inseridos, atualizados, semAlteracao };
     };
 
-    /**
-     * Conta documentos
-     */
-    const count = async ({ colecao = 'veiculos', filtro = {} }) => {
-        const collection = db.collection(colecao);
-        return await collection.countDocuments(filtro);
+    const overwrite = async ({ colecao = 'veiculos', data }) => {
+        writeData(colecao, data);
+        console.log(`♻️ Coleção ${colecao} sobrescrita com ${data.length} itens.`);
     };
 
-    /**
-     * Busca com paginação
-     */
-    const paginate = async ({ colecao = 'veiculos', filtro = {}, page = 1, limit = 20, sort = { criadoEm: -1 } }) => {
-        const collection = db.collection(colecao);
-        const skip = (page - 1) * limit;
 
-        const [items, total] = await Promise.all([
-            collection.find(filtro).sort(sort).skip(skip).limit(limit).toArray(),
-            collection.countDocuments(filtro)
-        ]);
+    const paginate = async ({ colecao = 'veiculos', filtro = {}, page = 1, limit = 20, sort = { criadoEm: -1 }, interleave = false, shuffle = false }) => {
+        let items = readData(colecao);
+
+        // 1. Filter
+        if (filtro) {
+            items = items.filter(item => {
+                for (const key in filtro) {
+                    const val = filtro[key];
+
+                    if (val instanceof RegExp) {
+                        if (!val.test(item[key])) return false;
+                        continue;
+                    }
+
+                    // Handle $or array (search text across multiple fields)
+                    if (key === '$or') {
+                        const matchOne = val.some(cond => {
+                            const k = Object.keys(cond)[0];
+                            const v = cond[k];
+                            const itemVal = String(item[k] || '');
+                            if (v instanceof RegExp) return v.test(itemVal);
+                            // Handle {$regex, $options} objects
+                            if (typeof v === 'object' && v !== null && v.$regex) {
+                                try {
+                                    const re = new RegExp(v.$regex, v.$options || '');
+                                    return re.test(itemVal);
+                                } catch { return false; }
+                            }
+                            return itemVal === v;
+                        });
+                        if (!matchOne) return false;
+                        continue;
+                    }
+
+                    if (typeof val === 'object' && val !== null) {
+                        // Handle {$regex, $options} pattern (site, localLeilao filters)
+                        if (val.$regex !== undefined) {
+                            try {
+                                const re = new RegExp(val.$regex, val.$options || '');
+                                if (!re.test(String(item[key] || ''))) return false;
+                            } catch { return false; }
+                            continue;
+                        }
+                        // Handle range comparisons ($gte, $lte)
+                        if (val.$gte !== undefined && (item[key] === undefined || item[key] < val.$gte)) return false;
+                        if (val.$lte !== undefined && (item[key] === undefined || item[key] > val.$lte)) return false;
+                    } else if (val !== undefined && val !== '' && item[key] != val) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        // 2. Interleave Logic (Special handling for variant auctioneers)
+        if (interleave) {
+            // Group by site
+            const groups = {};
+            items.forEach(item => {
+                const s = item.site || 'unknown';
+                if (!groups[s]) groups[s] = [];
+                groups[s].push(item);
+            });
+
+            // Shuffle each group if requested
+            if (shuffle) {
+                Object.values(groups).forEach(group => {
+                    for (let i = group.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [group[i], group[j]] = [group[j], group[i]];
+                    }
+                });
+            } else {
+                // Sort each group by default (criadoEm)
+                const key = Object.keys(sort)[0];
+                const dir = sort[key];
+                Object.values(groups).forEach(group => {
+                    group.sort((a, b) => {
+                        if (a[key] < b[key]) return -1 * dir;
+                        if (a[key] > b[key]) return 1 * dir;
+                        return 0;
+                    });
+                });
+            }
+
+            // Interleave (Round-Robin)
+            const interleaved = [];
+            const siteKeys = Object.keys(groups);
+            let hasItems = true;
+            let index = 0;
+
+            while (hasItems) {
+                hasItems = false;
+                for (const site of siteKeys) {
+                    if (groups[site].length > index) {
+                        interleaved.push(groups[site][index]);
+                        hasItems = true;
+                    }
+                }
+                index++;
+            }
+            items = interleaved;
+        } else {
+            // Standard Sort
+            if (shuffle) {
+                for (let i = items.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [items[i], items[j]] = [items[j], items[i]];
+                }
+            } else {
+                items.sort((a, b) => {
+                    const key = Object.keys(sort)[0] || 'criadoEm';
+                    const dir = sort[key] || -1;
+                    if (a[key] < b[key]) return -1 * dir;
+                    if (a[key] > b[key]) return 1 * dir;
+                    return 0;
+                });
+            }
+        }
+
+        // 3. Paginate
+        const total = items.length;
+        const totalPages = Math.ceil(total / limit);
+        const start = (page - 1) * limit;
+        const pagedItems = items.slice(start, start + limit);
 
         return {
-            items,
+            items: pagedItems,
             pagination: {
                 page,
                 limit,
                 total,
-                totalPages: Math.ceil(total / limit)
+                totalPages
             }
         };
     };
 
-    /**
-     * Fecha conexão
-     */
     const close = async () => {
-        if (clientInstance) {
-            await clientInstance.close();
-            clientInstance = null;
-            dbInstance = null;
-            console.log('MongoDB desconectado');
-        }
-    };
-
-    /**
-     * Deleta itens
-     */
-    const deleteItems = async ({ colecao = 'veiculos', filtro = {} }) => {
-        try {
-            const collection = db.collection(colecao);
-            const res = await collection.deleteMany(filtro);
-            return res.deletedCount;
-        } catch (error) {
-            console.error('Erro ao deletar:', error);
-            return 0;
-        }
+        console.log('JSON DB fechado');
     };
 
     return {
@@ -272,7 +385,10 @@ const getDbFunctions = () => {
         list,
         paginate,
         salvarLista,
-        update
+        update,
+        overwrite,
+        getAlerts,
+        saveAlert
     };
 };
 

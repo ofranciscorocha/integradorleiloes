@@ -1,0 +1,53 @@
+import cron from 'node-cron';
+import { spawn } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import cleanExpired from './cleanExpired.js';
+import checkAlerts from './checkAlerts.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const runCrawler = (scriptPath, name) => {
+    console.log(`⏰ [Scheduler] Starting ${name}...`);
+    const child = spawn('node', [scriptPath], {
+        stdio: 'inherit',
+        shell: true
+    });
+
+    child.on('close', (code) => {
+        console.log(`⏰ [Scheduler] ${name} finished with code ${code}`);
+    });
+};
+
+const initScheduler = () => {
+    console.log('📅 Scheduler initialized (Twice Daily: 09:00 & 16:00)');
+
+    // Schedule 1: 09:00 AM
+    cron.schedule('0 9 * * *', () => {
+        console.log('⏰ [Scheduler] Running Morning Cycle');
+        runCrawler(path.join(__dirname, '../crawlers/sodre/run.js'), 'Sodré Santoro');
+        runCrawler(path.join(__dirname, '../crawlers/rogeriomenezes/index.js'), 'Rogério Menezes');
+        // Add others here
+    });
+
+    // Schedule 2: 16:00 PM
+    cron.schedule('0 16 * * *', () => {
+        console.log('⏰ [Scheduler] Running Afternoon Cycle');
+        runCrawler(path.join(__dirname, '../crawlers/sodre/run.js'), 'Sodré Santoro');
+        runCrawler(path.join(__dirname, '../crawlers/rogeriomenezes/index.js'), 'Rogério Menezes');
+        // Add others here
+
+        // Also run cleanup in afternoon
+        cleanExpired();
+    });
+
+    // Run cleanup and alerts every hour
+    cron.schedule('0 * * * *', async () => {
+        await cleanExpired();
+        await checkAlerts();
+    });
+};
+
+
+export default initScheduler;

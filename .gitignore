@@ -1,26 +1,19 @@
-# Dependências
 node_modules/
-
-# Variáveis de ambiente
 .env
-.env.local
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-
-# Sistema
-.DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-
-# Build
-dist/
-build/
-
-# Dados locais
+*.html
+*.png
+*.jpg
+*.json
+!package.json
+!package-lock.json
+!src/**/*.json
+inspect-*.js
+dump-*.js
+*_dump.html
+*_inspect.png
+.gemini/
+.agent/
 data/
+src/database/data/
+public/img/logo.png
+public/img/hero-bg.jpg

@@ -98,11 +98,16 @@ const createCrawler = (db) => {
                 lotes = [];
 
                 $('div.lote.rounded').each((index, div) => {
+                    const divImg = $(div).find('div.col-lg-2');
                     const divInfo = $(div).find('div.col-lg-7 div.body-lote');
                     const divLance = $(div).find('div.col-lg-3 div.lance-lote');
                     const urlLote = $(divInfo).find('a').attr('href');
 
                     if (!urlLote) return;
+
+                    // Extract photo from col-lg-2
+                    const fotoSrc = divImg.find('img.img-fluid').attr('src') || '';
+                    const fotos = fotoSrc ? [fotoSrc] : [];
 
                     const splitUrl = urlLote.split('/');
                     const lote = splitUrl.length === 6 ? splitUrl[4] : null;
@@ -112,11 +117,23 @@ const createCrawler = (db) => {
                     const maiorLance = maiorLanceTexto.replace('.', '').replace(',', '.').replace('R$', '').trim();
                     const status = $(divLance).find('div.label_lote').text().trim();
 
+                    // Extract location from "destaque_azul" spans
+                    let localLeilao = '';
+                    $(divInfo).find('strong.destaque_azul').each((i, el) => {
+                        const txt = $(el).text().trim();
+                        if (txt.includes(' - ') && txt.length < 50) {
+                            localLeilao = txt;
+                        }
+                    });
+
                     const infos = {
                         site: SITE,
                         link: urlLote,
                         registro: { lote },
+                        fotos,
+                        localLeilao: localLeilao || titulo,
                         ultimoLanceValor: isNaN(maiorLance) ? maiorLance : Number(maiorLance),
+                        valor: isNaN(maiorLance) ? 0 : Number(maiorLance),
                         dataInicio: dataHora.date,
                         previsao: dataHora
                     };

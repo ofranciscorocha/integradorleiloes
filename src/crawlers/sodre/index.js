@@ -1,23 +1,21 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import dotenv from 'dotenv';
 import connectDatabase from '../../database/db.js';
 
+dotenv.config();
 puppeteer.use(StealthPlugin());
 
 let db;
 
 export const execute = async (database) => {
     db = database;
-    console.log('--- Iniciando Crawler Sodré Santoro (Interceptor) ---');
+    const SITE = 'sodresantoro.com.br';
+    console.log(`--- Iniciando Crawler ${SITE} (API Capture) ---`);
 
     const browser = await puppeteer.launch({
         headless: "new",
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--window-size=1920,1080'
-        ]
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080']
     });
 
     let capturados = 0;
@@ -25,74 +23,70 @@ export const execute = async (database) => {
     try {
         const page = await browser.newPage();
 
-        // Intercepta requests de API
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            if (req.resourceType() === 'image' || req.resourceType() === 'font') req.abort();
+            else req.continue();
+        });
+
         page.on('response', async response => {
             const url = response.url();
-            const type = response.headers()['content-type'] || '';
 
-            // Tenta pegar JSONs que pareçam conter dados de veículos
-            if (type.includes('application/json') && (url.includes('api') || url.includes('lote') || url.includes('veiculo'))) {
+            // Target the clean API endpoint found in analysis
+            if (url.includes('api/search-lots')) {
                 try {
                     const data = await response.json();
 
-                    // Identifica se é uma lista de veículos
-                    // A estrutura varia, então tenta achar array
-                    let lista = [];
-                    if (Array.isArray(data)) lista = data;
-                    else if (data.data && Array.isArray(data.data)) lista = data.data;
-                    else if (data.items && Array.isArray(data.items)) lista = data.items;
-                    else if (data.lotes && Array.isArray(data.lotes)) lista = data.lotes;
+                    if (data && data.results && Array.isArray(data.results)) {
+                        console.log(`Intercepted API: ${data.results.length} items`);
 
-                    if (lista.length > 0 && (lista[0].lote || lista[0].marca || lista[0].modelo || lista[0].id)) {
-                        console.log(`Interceptado JSON com ${lista.length} itens: ${url}`);
-                        await processarLista(lista);
-                        capturados += lista.length;
+                        const veiculos = data.results.map(item => {
+                            // Extract fields based on sorde-payload-1770764617710.json analysis
+
+                            // Link construction: https://www.sodresantoro.com.br/leilao/ID_LEILAO/lote/ID_LOTE
+                            const link = `https://www.sodresantoro.com.br/leilao/${item.auction_id}/lote/${item.lot_id}`;
+
+                            return {
+                                registro: String(item.lot_id || item.id),
+                                site: 'sodresantoro.com.br',
+                                link: link,
+                                veiculo: item.lot_title || item.lot_description || 'Veículo Sodré',
+                                fotos: item.lot_pictures || [],
+                                valor: parseFloat(item.bid_actual || item.bid_initial || 0),
+                                modalidade: 'leilao',
+                                localLeilao: item.lot_location || item.lot_location_address || 'Ver Site',
+                                ano: item.lot_year_manufacture ? `${item.lot_year_manufacture}/${item.lot_year_model}` : item.lot_year_model,
+                                previsao: {
+                                    string: item.lot_date_end // e.g. "2026-02-12 09:48:00"
+                                },
+                                dataInicio: item.lot_date_end ? new Date(item.lot_date_end).getTime() : null
+                            };
+                        }).filter(v => v.fotos.length > 0 && !v.veiculo.includes('Veículo Sodré'));
+
+                        if (veiculos.length > 0) {
+                            await db.salvarLista(veiculos);
+                            capturados += veiculos.length;
+                            console.log(`Saved ${veiculos.length} vehicles from API chunk.`);
+                        }
                     }
                 } catch (e) {
-                    // Ignora erros de parse json em responses irrelevantes
+                    // Silent fail for non-json or parse errors on other calls
                 }
             }
         });
 
-        const url = 'https://www.sodresantoro.com.br/veiculos/lotes?sort=auction_date_init_asc'; // Busca geral
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 90000 });
+        const url = 'https://www.sodresantoro.com.br/veiculos/lotes?sort=lot_visits_desc';
+        console.log(`Navigating to ${url}...`);
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
-        // Scroll para carregar mais (infinite scroll do Sodré)
+        // Scroll to trigger search-lots API calls
         await autoScroll(page);
 
-    } catch (error) {
-        console.error('Erro Sodré:', error.message);
+    } catch (e) {
+        console.error('Erro Sodré:', e.message);
     } finally {
         await browser.close();
-        console.log(`--- Finalizado Sodré: ${capturados} itens processados ---`);
-    }
-};
-
-const processarLista = async (lista) => {
-    const veiculos = lista.map(item => {
-        // Mapeamento genérico (precisa ajustar conforme payload real)
-        const titulo = item.titulo || item.modelo || item.descricao || 'Veículo Sodré';
-        const lote = item.lote || item.code || item.id || 'N/D';
-        const link = item.slug ? `https://www.sodresantoro.com.br/veiculos/lotes/${item.slug}` : `https://www.sodresantoro.com.br/veiculos/lote/${lote}`;
-        const img = item.cover || (item.imagens && item.imagens[0]) || '';
-        const valor = item.lance_atual || item.valor_inicial || 0;
-
-        return {
-            registro: String(lote),
-            site: 'sodresantoro.com.br',
-            link,
-            veiculo: titulo,
-            fotos: img ? [img] : [],
-            valorInicial: typeof valor === 'string' ? parseFloat(valor.replace(/[^0-9,.]/g, '').replace(',', '.')) : valor,
-            modalidade: 'leilao',
-            localLeilao: item.local || 'São Paulo',
-            ano: item.ano_fabricacao ? `${item.ano_fabricacao}/${item.ano_modelo}` : null,
-            previsao: { string: item.data_leilao || 'Em breve' }
-        };
-    });
-
-    if (veiculos.length > 0) {
-        await db.salvarLista(veiculos);
+        console.log(`--- Finalizado Sodré: ${capturados} itens ---`);
     }
 };
 
@@ -100,17 +94,26 @@ async function autoScroll(page) {
     await page.evaluate(async () => {
         await new Promise((resolve) => {
             var totalHeight = 0;
-            var distance = 300; // Scrolla de pouco em pouco
+            var distance = 100;
+            var retries = 0;
+            var maxRetries = 20; // Wait longer for load
+
             var timer = setInterval(() => {
                 var scrollHeight = document.body.scrollHeight;
                 window.scrollBy(0, distance);
                 totalHeight += distance;
 
-                if (totalHeight >= scrollHeight - window.innerHeight || totalHeight > 15000) { // Limite
-                    clearInterval(timer);
-                    resolve();
+                // Check if we reached bottom
+                if ((window.innerHeight + window.scrollY) >= scrollHeight - 100) {
+                    retries++;
+                    if (retries >= maxRetries) {
+                        clearInterval(timer);
+                        resolve();
+                    }
+                } else {
+                    retries = 0; // Reset if we are still moving
                 }
-            }, 200);
+            }, 100);
         });
     });
 }

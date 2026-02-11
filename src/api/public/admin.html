@@ -4,255 +4,606 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - CAR Leilões</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Admin Premium - CARS LEILÕES</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            background-color: #0a0a0b;
-            color: #fff;
-            font-family: 'Inter', sans-serif;
+        :root {
+            --primary: #FF9F1C;
+            --primary-dark: #0f172a;
+            --sidebar-width: 260px;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
         }
 
-        .card {
-            background-color: #151516;
-            border-color: #2a2a2d;
-            color: #fff;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary-dark);
+            color: white;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            transition: all 0.3s;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            color: var(--primary);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            flex: 1;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: black;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .top-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .top-title p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Dashboards Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .bg-orange {
+            background: #fff7ed;
+            color: #f97316;
+        }
+
+        .bg-blue {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .bg-green {
+            background: #f0fdf4;
+            color: #22c55e;
+        }
+
+        .stat-info h3 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .stat-info span {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* Charts & Tables Section */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .admin-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .box-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Actions Bar */
+        .action-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .btn-admin {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: white;
+            font-family: inherit;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-admin:hover {
+            border-color: var(--primary);
+            background: #fffcf0;
         }
 
         .btn-primary {
-            background-color: #FF9F1C;
-            border-color: #FF9F1C;
+            background: var(--primary);
+            border-color: var(--primary);
+            color: black;
         }
 
         .btn-primary:hover {
-            background-color: #e68e19;
-            border-color: #e68e19;
+            opacity: 0.9;
+            background: var(--primary);
         }
 
-        .table {
-            color: #ccc;
+        /* Branding Section */
+        .branding-item {
+            margin-bottom: 1.5rem;
         }
 
-        .table-dark {
-            background-color: #151516;
+        .branding-item h6 {
+            margin-bottom: 0.5rem;
+        }
+
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            background: #fdfdfd;
+            font-size: 0.85rem;
+        }
+
+        /* Modal Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            color: white;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                width: 80px;
+                padding: 2rem 0.5rem;
+            }
+
+            .sidebar-logo span,
+            .nav-item span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 80px;
+            }
         }
     </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/img/logo.png" alt="CARS LEILÕES"
+                style="height: 40px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="#" class="nav-item active" onclick="showSection('dashboard')"><i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span></a></li>
+            <li><a href="#" class="nav-item" onclick="showSection('crawlers')"><i class="fas fa-robot"></i>
+                    <span>Crawlers</span></a></li>
+            <li><a href="#" class="nav-item" onclick="showSection('branding')"><i class="fas fa-palette"></i>
+                    <span>Identidade</span></a></li>
+            <li><a href="#" class="nav-item" onclick="showSection('settings')"><i class="fas fa-cog"></i>
+                    <span>Configurações</span></a></li>
+        </ul>
+        <a href="#" class="nav-item" onclick="logout()" style="margin-top: auto; color: #ef4444;">
+            <i class="fas fa-sign-out-alt"></i> <span>Sair do Sistema</span>
+        </a>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header-top">
+            <div class="top-title">
+                <h1 id="section-title">Dashboard Principal</h1>
+                <p>Bem-vindo, Administrador. Aqui está o resumo atual.</p>
+            </div>
+            <div class="user-meta">
+                <a href="/" class="btn-admin"><i class="fas fa-external-link-alt"></i> Ver Site</a>
+            </div>
+        </header>
+
+        <!-- DASHBOARD SECTION -->
+        <section id="section-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon bg-blue"><i class="fas fa-car"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Veículos</h3>
+                        <span id="stat-total">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-orange"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h3>Novos 24h</h3>
+                        <span id="stat-today">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-green"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>Arrematantes</h3>
+                        <span id="stat-users">1.2k</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="admin-box">
+                    <div class="box-header">
+                        <h2>Veículos por Site</h2>
+                    </div>
+                    <div style="height: 300px;">
+                        <canvas id="chart-sites"></canvas>
+                    </div>
+                </div>
+                <div class="admin-box">
+                    <div class="box-header">
+                        <h2>Sites Ativos</h2>
+                    </div>
+                    <div id="sites-list" style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- JS Render -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CRAWLERS SECTION -->
+        <section id="section-crawlers" style="display: none;">
+            <div class="admin-box">
+                <div class="box-header">
+                    <h2>Controle de Crawlers</h2>
+                    <p class="small text-muted">Inicie a coleta de dados manualmente.</p>
+                </div>
+                <div class="action-btns">
+                    <button class="btn-admin" onclick="runCrawler('palacio')"><i class="fas fa-play"></i> Palácio dos
+                        Leilões</button>
+                    <button class="btn-admin" onclick="runCrawler('guariglia')"><i class="fas fa-play"></i> Guariglia
+                        Leilões</button>
+                    <button class="btn-admin" onclick="runCrawler('vip')"><i class="fas fa-play"></i> VIP
+                        Leilões</button>
+                    <button class="btn-admin" onclick="runCrawler('freitas')"><i class="fas fa-play"></i> Freitas
+                        Leiloeiro</button>
+                    <button class="btn-admin" onclick="runCrawler('sodre')"><i class="fas fa-play"></i> Sodré
+                        Santoro</button>
+                </div>
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+                <div class="box-header">
+                    <h2>Ações em Massa</h2>
+                </div>
+                <button class="btn-admin btn-primary" onclick="cleanExpired()"
+                    style="color: white; background: #ef4444; border: none;">
+                    <i class="fas fa-trash-alt"></i> Limpar Leilões Expirados
+                </button>
+            </div>
+        </section>
+
+        <!-- BRANDING SECTION -->
+        <section id="section-branding" style="display: none;">
+            <div class="admin-box">
+                <div class="box-header">
+                    <h2>Identidade Visual</h2>
+                </div>
+                <div class="content-grid">
+                    <div>
+                        <div class="branding-item">
+                            <h6>Logotipo Principal</h6>
+                            <p class="small text-muted">Substitui o ícone da Gavel no header.</p>
+                            <input type="file" id="upload-logo" class="file-upload-input" accept="image/png, image/jpeg"
+                                onchange="previewImage(this, 'preview-logo')">
+                            <button class="btn-admin btn-primary" onclick="uploadBranding('logo')"
+                                style="margin-top: 10px;">Salvar Logo</button>
+                        </div>
+                        <div class="branding-item">
+                            <h6>Banner do Hero (Pátio)</h6>
+                            <p class="small text-muted">Imagem de fundo da área de busca principal.</p>
+                            <input type="file" id="upload-hero" class="file-upload-input" accept="image/jpeg"
+                                onchange="previewImage(this, 'preview-hero')">
+                            <button class="btn-admin btn-primary" onclick="uploadBranding('hero')"
+                                style="margin-top: 10px;">Salvar Fundo</button>
+                        </div>
+                    </div>
+                    <div
+                        style="background: #f1f5f9; border-radius: 8px; padding: 1rem; display: flex; align-items: center; justify-content: center; flex-direction: column; min-height: 200px;">
+                        <div id="preview-logo-container"
+                            style="margin-bottom: 1rem; text-align: center; display: none;">
+                            <span style="font-size: 0.7rem; color: #64748b;">Preview Logo:</span><br>
+                            <img id="preview-logo"
+                                style="max-height: 50px; width: auto; background: #e2e8f0; padding: 5px; border-radius: 4px;">
+                        </div>
+                        <div id="preview-hero-container" style="text-align: center; display: none;">
+                            <span style="font-size: 0.7rem; color: #64748b;">Preview Fundo:</span><br>
+                            <img id="preview-hero"
+                                style="max-height: 100px; width: 200px; object-fit: cover; border-radius: 4px;">
+                        </div>
+                        <div id="preview-placeholder">
+                            <i class="fas fa-image fa-3x" style="color: #cbd5e1; margin-bottom: 1rem;"></i>
+                            <span style="font-size: 0.8rem; color: #64748b;">Visualize antes de salvar</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="loading-overlay">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <span id="loading-msg">Processando...</span>
+    </div>
+
     <script>
-        // Auth Protection
+        const API_URL = ''; // Mesma porta da API
+        let chart = null;
+
+        // AUTH CHECK
         const token = localStorage.getItem('admin_token');
         if (!token) {
             window.location.href = '/login.html';
         }
 
-        // Verify valid token
-        fetch('/admin/check-auth', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        }).then(res => {
-            if (!res.ok) {
-                localStorage.removeItem('admin_token');
-                window.location.href = '/login.html';
-            }
-        }).catch(() => {
-            // If API is down, maybe let them stay or redirect? 
-            // Redirecting is safer.
-            // window.location.href = '/login.html';
-        });
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+            document.getElementById('section-' + id).style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            document.getElementById('section-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+        }
 
-        // Add token to future fetching
-        const originalFetch = window.fetch;
-        window.fetch = function () {
-            let [resource, config] = arguments;
-            if (config == null) config = {};
-            if (config.headers == null) config.headers = {};
-
-            // Add Authorization header if not present
-            if (!config.headers['Authorization']) {
-                config.headers['Authorization'] = `Bearer ${localStorage.getItem('admin_token')}`;
-            }
-
-            return originalFetch(resource, config);
-        };
-    </script>
-</head>
-
-<body>
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>🔧 Painel Administrativo</h1>
-            <button class="btn btn-outline-danger btn-sm" onclick="logout()">Sair</button>
-        </div>
-        <hr>
-
-        <div class="row g-4">
-            <!-- Stats -->
-            <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-header">Estatísticas</div>
-                    <div class="card-body">
-                        <ul id="stats-list" class="list-group list-group-flush bg-transparent">
-                            <li class="list-group-item bg-transparent text-white">Carregando...</li>
-                        </ul>
-                    </div>
-                    <div class="card-footer">
-                        <small class="text-muted">Atualizado em tempo real</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-header">Ações Manuais</div>
-                    <div class="card-body">
-                        <h5>Crawlers</h5>
-                        <div class="d-grid gap-2 mb-4">
-                            <button class="btn btn-outline-light text-start" onclick="runCrawler('freitas')">
-                                <i class="fas fa-play me-2"></i> Freitas Leiloeiro
-                            </button>
-                            <button class="btn btn-outline-light text-start" onclick="runCrawler('sodre')">
-                                <i class="fas fa-play me-2"></i> Sodré Santoro
-                            </button>
-                            <button class="btn btn-outline-light text-start" onclick="runCrawler('copart')">
-                                <i class="fas fa-play me-2"></i> Copart
-                            </button>
-                            <button class="btn btn-outline-light text-start" onclick="runCrawler('palacio')">
-                                <i class="fas fa-play me-2"></i> Palácio dos Leilões
-                            </button>
-                        </div>
-
-                        <h5>Manutenção</h5>
-                        <button class="btn btn-danger w-100" onclick="cleanExpired()">
-                            <i class="fas fa-trash-alt me-2"></i> Limpar Leilões Expirados
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4 mt-2">
-            <!-- Branding -->
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header"><i class="fas fa-palette me-2"></i> Identidade Visual</div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 border-end border-secondary">
-                                <h6>Logotipo (Navbar)</h6>
-                                <p class="small text-muted">Recomendado: PNG transparente, altura ~60px.</p>
-                                <div class="input-group mb-3">
-                                    <input type="file" id="logo-file"
-                                        class="form-control bg-dark text-white border-secondary" accept="image/*">
-                                    <button class="btn btn-primary" onclick="uploadBranding('logo')">Upload
-                                        Logo</button>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>Fundo Hero (Pátio)</h6>
-                                <p class="small text-muted">A imagem de pátio que você enviou. Recomendado: JPG/WebP,
-                                    1920x1080.</p>
-                                <div class="input-group mb-3">
-                                    <input type="file" id="hero-file"
-                                        class="form-control bg-dark text-white border-secondary" accept="image/*">
-                                    <button class="btn btn-primary" onclick="uploadBranding('hero')">Upload
-                                        Fundo</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-5 text-center">
-            <a href="/" class="btn btn-secondary">Voltar para Home</a>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = 'http://localhost:8181';
-
-        async function loadStats() {
+        async function loadDashboard() {
             try {
-                const res = await fetch(`${API_URL}/stats`);
+                const res = await fetch('/stats');
                 const data = await res.json();
                 if (data.success) {
-                    const list = document.getElementById('stats-list');
-                    list.innerHTML = `
-                        <li class="list-group-item bg-transparent text-white d-flex justify-content-between">
-                            <strong>Total Veículos</strong> <span>${data.stats.total}</span>
-                        </li>
-                    `;
-                    Object.entries(data.stats.porSite).forEach(([site, count]) => {
-                        list.innerHTML += `
-                            <li class="list-group-item bg-transparent text-white d-flex justify-content-between">
-                                <span>${site}</span> <span>${count}</span>
-                            </li>
-                        `;
-                    });
+                    document.getElementById('stat-total').innerText = data.total;
+                    renderChart(data.stats.porSite);
+                    renderSitesList(data.stats.porSite);
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error('Erro ao carregar dashboard', e);
+            }
+        }
+
+        function renderChart(stats) {
+            const ctx = document.getElementById('chart-sites').getContext('2d');
+            const labels = Object.keys(stats);
+            const values = Object.values(stats);
+
+            if (chart) chart.destroy();
+
+            chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#FF9F1C', '#3b82f6', '#22c55e', '#a855f7', '#ec4899', '#6366f1'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function renderSitesList(stats) {
+            const container = document.getElementById('sites-list');
+            container.innerHTML = Object.entries(stats).map(([site, count]) => `
+                <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #f1f5f9;">
+                    <span style="font-size: 0.85rem; font-weight: 500;">${site}</span>
+                    <span style="font-weight: 700;">${count}</span>
+                </div>
+            `).join('');
         }
 
         async function runCrawler(site) {
-            if (!confirm(`Iniciar crawler para ${site}?`)) return;
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = 'flex';
+            document.getElementById('loading-msg').innerText = `Rodando coletor: ${site}`;
+
             try {
-                const res = await fetch(`${API_URL}/admin/crawl`, {
+                // Endpoint customizado para o novo admin
+                const res = await fetch('/admin/crawl', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ site })
                 });
                 const data = await res.json();
-                alert(data.message || data.error);
-            } catch (e) { alert('Erro ao iniciar crawler'); }
-        }
-
-        async function cleanExpired() {
-            if (!confirm(`Tem certeza que deseja limpar os leilões expirados?`)) return;
-            try {
-                const res = await fetch(`${API_URL}/admin/clean`, { method: 'POST' });
-                const data = await res.json();
-                alert(`Limpeza concluída. Removidos: ${data.removed || 0}`);
-                loadStats();
-            } catch (e) { alert('Erro ao limpar'); }
+                alert(data.message || 'Crawler finalizado!');
+                loadDashboard();
+            } catch (e) {
+                alert('Erro ao iniciar crawler');
+            } finally {
+                overlay.style.display = 'none';
+            }
         }
 
         async function uploadBranding(type) {
-            const fileInput = document.getElementById(`${type}-file`);
-            const file = fileInput.files[0];
-            if (!file) return alert('Selecione um arquivo primeiro');
-
-            // Mostrar progresso básico
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-            btn.disabled = true;
+            const input = document.getElementById(`upload-${type}`);
+            const file = input.files[0];
+            if (!file) return alert('Selecione uma imagem!');
 
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const base64Data = e.target.result;
+                const overlay = document.getElementById('loading-overlay');
+                overlay.style.display = 'flex';
+
                 try {
-                    const res = await fetch(`${API_URL}/admin/upload-branding`, {
+                    const res = await fetch('/admin/upload-branding', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
                         body: JSON.stringify({ type, base64Data })
                     });
                     const data = await res.json();
                     if (data.success) {
-                        alert(data.message);
-                        fileInput.value = ''; // Limpar input
+                        alert(`${type.toUpperCase()} atualizado com sucesso! Reinicie a página para ver as mudanças.`);
+                        input.value = '';
+                        // Opcional: Recarregar a página ou atualizar o CSS via JS
+                        if (type === 'hero') {
+                            document.body.style.setProperty('--hero-bg', `url('/img/hero-bg.jpg?t=${Date.now()}')`);
+                        }
                     } else {
                         alert('Erro: ' + data.error);
                     }
                 } catch (err) {
-                    alert('Erro na conexão com o servidor');
-                    console.error(err);
+                    alert('Erro ao enviar imagem');
                 } finally {
-                    btn.innerText = originalText;
-                    btn.disabled = false;
+                    overlay.style.display = 'none';
                 }
             };
             reader.readAsDataURL(file);
+        }
+
+        function previewImage(input, previewId) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = document.getElementById(previewId);
+                    preview.src = e.target.result;
+                    document.getElementById(`${previewId}-container`).style.display = 'block';
+                    document.getElementById('preview-placeholder').style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
         }
 
         function logout() {
@@ -260,9 +611,8 @@
             window.location.href = '/login.html';
         }
 
-        loadStats();
-        // Auto refresh
-        setInterval(loadStats, 30000);
+        loadDashboard();
+        setInterval(loadDashboard, 60000);
     </script>
 </body>
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAR Leilões - O Maior Integrador de Leilões</title>
+    <title>CARS LEILÕES - O Maior Integrador do Brasil</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,131 +21,395 @@
 
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div
-            style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; width: 100%; display: flex; justify-content: space-between; align-items: center;">
-            <a class="navbar-brand" href="/">
-                <img src="img/logo.png" alt="CAR LEILÕES" style="height: 55px; width: auto;">
-            </a>
-
-            <div style="display: flex; gap: 20px; align-items: center;">
-                <a href="#" class="nav-link">Busca Direta</a>
-                <a href="#" class="nav-link">Calendário</a>
-                <a href="/admin.html" class="nav-link">Painel</a>
-                <button class="btn-cta">Acessar</button>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="top-bar-left">
+                <span><i class="fas fa-clock"></i> 24 horas 7 dias por semana o maior portal integrador de leilões do
+                    brasil</span>
+            </div>
+            <div class="top-bar-right">
+                <div class="top-bar-item">
+                    <i class="fas fa-globe"></i> Portuguese
+                </div>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Hero Section -->
-    <header class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">ENCONTRE SEU VEÍCULO</h1>
-            <p class="hero-subtitle">Busque em tempo real nos maiores leiloeiros do Brasil</p>
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <a href="/" class="logo-area">
+                <img src="/img/logo.png" alt="CARS LEILÕES" style="height: 50px; width: auto; object-fit: contain;">
+            </a>
 
-            <!-- Search Widget (Expanded) -->
-            <div class="search-widget" id="filter-form">
-                <div class="search-row">
-                    <div class="search-field large">
-                        <label class="search-label">Palavra-chave</label>
-                        <input type="text" id="search-input" class="search-input"
-                            placeholder="Marca, Modelo ou Lote...">
-                    </div>
-                    <div class="search-field">
-                        <label class="search-label">Leiloeiro</label>
-                        <select id="site-filter" class="search-input">
-                            <option value="">Todos os Sites</option>
-                            <option value="freitas">Freitas Leiloeiro</option>
-                            <option value="sodre">Sodré Santoro</option>
-                            <option value="palacio">Palácio dos Leilões</option>
-                            <option value="copart">Copart</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="search-row">
-                    <div class="search-field">
-                        <label class="search-label">Ano Mín</label>
-                        <input type="number" id="ano-min" class="search-input" placeholder="2010">
-                    </div>
-                    <div class="search-field">
-                        <label class="search-label">Ano Máx</label>
-                        <input type="number" id="ano-max" class="search-input" placeholder="2025">
-                    </div>
-                    <div class="search-field">
-                        <label class="search-label">KM Máx</label>
-                        <input type="number" id="km-max" class="search-input" placeholder="100000">
-                    </div>
-                    <div class="search-field">
-                        <label class="search-label">Categoria</label>
-                        <select id="tipo-filter" class="search-input">
-                            <option value="">Todas</option>
-                            <option value="passeio">Passeio</option>
-                            <option value="utilitario">Utilitário</option>
-                            <option value="moto">Motos</option>
-                            <option value="pesado">Pesados</option>
-                        </select>
-                    </div>
-                    <div class="search-field">
-                        <label class="search-label">Estado</label>
-                        <select id="estado-filter" class="search-input">
-                            <option value="">Brasil (Todos)</option>
-                            <option value="SP">São Paulo</option>
-                            <option value="RJ">Rio de Janeiro</option>
-                            <option value="MG">Minas Gerais</option>
-                            <option value="PR">Paraná</option>
-                        </select>
-                    </div>
-                    <button class="btn-search-hero" onclick="buscarVeiculos(1)">
-                        <i class="fas fa-search"></i> BUSCAR
-                    </button>
+            <nav class="nav-menu">
+                <a href="/como-funciona.html" class="nav-link">Como funciona</a>
+                <a href="/admin.html" class="nav-link">Painel</a>
+            </nav>
+
+            <div class="nav-menu" id="auth-area">
+                <!-- Injected via JS -->
+                <button class="btn-create-alert" onclick="openAlertModal()">
+                    <i class="fab fa-whatsapp"></i> Criar Alerta
+                </button>
+                <div id="auth-buttons-container" style="display: flex; gap: 1rem; align-items: center;">
+                    <button class="btn-header-login" onclick="openLoginModal()">Entrar</button>
+                    <button class="btn-header-signup" onclick="openLoginModal('signup')">Cadastrar</button>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <div class="main-wrapper">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <!-- Floating Stat -->
+        <div class="hero-stats-floating">
+            <span class="stat-number" id="hero-total-vehicles">0000</span>
+            <span
+                style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">VEÍCULOS
+                EM LEILÃO NO BRASIL</span>
+        </div>
 
-        <!-- Content Area (Full Width) -->
-        <main class="content-area" style="width: 100%;">
+        <div class="hero-content">
+            <h1 class="hero-title">CARS LEILÕES<br>O Maior Integrador do Brasil</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">Encontre veículos de todos os leiloeiros em
+                um só lugar. Cadastre-se para ver detalhes exclusivos.</p>
 
-            <!-- Header Filter Results -->
-            <div class="content-header">
-                <div>
-                    <h2 style="font-size: 1.5rem; font-weight: 700; margin: 0; color: var(--text-main);">Veículos em
-                        Leilão</h2>
-                    <span class="results-count" id="results-count">
-                        <span id="total-veiculos">--</span> veículos encontrados
-                    </span>
+            <!-- Search Widget -->
+            <div class="search-widget-container">
+                <div class="search-tabs">
+                    <div class="search-tab active" data-tipo="" onclick="setTipoTab(this)">
+                        <i class="fas fa-car"></i> Automóveis
+                    </div>
+                    <div class="search-tab" data-tipo="moto" onclick="setTipoTab(this)">
+                        <i class="fas fa-motorcycle"></i> Motos
+                    </div>
+                    <div class="search-tab" data-tipo="pesado" onclick="setTipoTab(this)">
+                        <i class="fas fa-truck"></i> Pesados
+                    </div>
                 </div>
 
-                <div>
-                    <select id="sort-order" class="search-input" style="width: auto; margin: 0; font-size: 0.9rem;"
-                        onchange="buscarVeiculos(1)">
-                        <option value="recente">Mais Recentes</option>
-                        <option value="preco_asc">Menor Preço</option>
-                        <option value="preco_desc">Maior Preço</option>
-                        <option value="ano_desc">Mais Novos</option>
-                    </select>
+                <div class="search-form" id="filter-form">
+                    <div class="form-group" style="flex: 2;">
+                        <input type="text" id="search-input" class="form-input"
+                            placeholder="Buscar por Marca, Modelo, Lote ou VIN...">
+                    </div>
+                    <div class="form-group">
+                        <select id="site-filter" class="form-select" onchange="buscarVeiculos(1)">
+                            <option value="">Todos os Sites</option>
+                            <option value="freitas">Freitas Leiloeiro</option>
+                            <option value="sodre">Sodré Santoro</option>
+                            <option value="palacio">Palácio dos Leilões</option>
+                            <option value="guariglia">Guariglia Leilões</option>
+                            <option value="copart">Copart</option>
+                            <option value="vipleiloes">VIP Leilões</option>
+                            <option value="rogeriomenezes">Rogério Menezes</option>
+                            <option value="leilo">Leilo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="condicao-filter" class="form-select" onchange="buscarVeiculos(1)">
+                            <option value="">Qualquer Condição</option>
+                            <option value="sinistro">Sinistro</option>
+                            <option value="financiamento">Financiamento</option>
+                            <option value="sucata">Sucata</option>
+                            <option value="transito">Trânsito</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- More Filters Row -->
+                <div class="search-form" style="padding-top: 0;">
+                    <div class="form-group">
+                        <input type="number" id="ano-min" class="form-input" placeholder="Ano De">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="ano-max" class="form-input" placeholder="Ano Até">
+                    </div>
+                    <div class="form-group">
+                        <select id="estado-filter" class="form-select" onchange="buscarVeiculos(1)">
+                            <option value="">Estado (UF)</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Action Button Row -->
+                <div class="search-actions">
+                    <button class="btn-search" onclick="buscarVeiculos(1)">
+                        VER VEÍCULOS
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Wrapper -->
+    <main class="main-wrapper">
+        <!-- Results Control -->
+        <div class="results-header">
+            <div class="results-count">
+                <i class="fas fa-car-side"></i> <span id="count-value">...</span> veículos encontrados
+            </div>
+            <div class="results-sort">
+                <select class="form-select" id="sort-order" onchange="buscarVeiculos(1)"
+                    style="padding: 0.5rem; font-size: 0.9rem;">
+                    <option value="recente">Mais recentes primeiro</option>
+                    <option value="preço_asc">Menor preço</option>
+                    <option value="preço_desc">Maior preço</option>
+                    <option value="ano_desc">Mais novos (Ano)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Cards Grid -->
+        <div id="loading" style="text-align: center; padding: 2rem; display: none;">
+            <i class="fas fa-circle-notch fa-spin fa-2x" style="color: var(--primary-blue);"></i>
+        </div>
+        <div class="vehicles-grid" id="veiculos-container">
+            <!-- Items injected via JS -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container" id="pagination">
+            <!-- Injected via JS -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-col" style="flex: 1.5;">
+                <div class="logo-area" style="margin-bottom: 1.5rem;">
+                    <img src="/img/logo.png" alt="CARS LEILÕES"
+                        style="height: 60px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+                </div>
+                <p style="line-height: 1.6; margin-bottom: 1.5rem;">O maior portal integrador de leilões do Brasil.
+                    Encontre veículos de mais de 10 sites de leilão em uma única plataforma robusta e rápida.</p>
+                <div class="social-links">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
                 </div>
             </div>
 
-            <!-- Loading Spinner -->
-            <div id="loading" style="text-align: center; padding: 3rem; display: none;">
-                <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i>
-                <p style="margin-top: 1rem; color: var(--text-muted); font-weight: 500;">Buscando nos leilões...</p>
+            <div class="footer-col">
+                <h3>Empresa</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Sobre nós</a></li>
+                    <li><a href="#">Contatos</a></li>
+                    <li><a href="#">Carreiras</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
             </div>
 
-            <!-- Grid -->
-            <div class="cards-grid" id="veiculos-container">
-                <!-- Cards Inseridos via JS -->
+            <div class="footer-col">
+                <h3>Suporte</h3>
+                <ul class="footer-links">
+                    <li><a href="/suporte.html#sites-falsos">Sites Falsos</a></li>
+                    <li><a href="/suporte.html#como-participar">Como participar de Leilões</a></li>
+                    <li><a href="/suporte.html#frete">Frete para Veiculos de Leilão</a></li>
+                    <li><a href="/suporte.html#faq">FAQ</a></li>
+                </ul>
             </div>
 
-            <!-- Pagination -->
-            <div id="pagination" class="pagination"></div>
+            <div class="footer-col">
+                <h3>Leilões</h3>
+                <ul class="footer-links">
+                    <li><a href="#">São Paulo</a></li>
+                    <li><a href="#">Minas Gerais</a></li>
+                    <li><a href="#">Rio de Janeiro</a></li>
+                    <li><a href="#">Paraná</a></li>
+                </ul>
+            </div>
 
-        </main>
+            <div class="footer-col">
+                <h3>Conta</h3>
+                <ul class="footer-links">
+                    <li><a href="#" onclick="openLoginModal()">Login</a></li>
+                    <li><a href="#" onclick="openLoginModal('signup')">Criar Conta</a></li>
+                    <li><a href="#">Favoritos</a></li>
+                    <li><a href="#">Alertas</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>&copy; 2025-2026 CARS LEILÕES. Todos os direitos reservados.</div>
+            <div style="display: flex; gap: 1.5rem;">
+                <a href="#" style="color: inherit; text-decoration: none;">Privacidade</a>
+                <a href="#" style="color: inherit; text-decoration: none;">Termos de Uso</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Modal Overlay -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="auth-modal" id="modal-container">
+            <!-- Login View -->
+            <div id="login-view">
+                <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+                <h2 style="margin-bottom: 0.5rem; color: var(--primary-dark);">Entrar no CARS LEILÕES</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Acesse leilões exclusivos e
+                    monitore seus veículos favoritos.</p>
+
+                <button class="google-btn" onclick="loginWithGoogle()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
+                        style="width: 24px; height: 24px;">
+                    Continuar com Google
+                </button>
+
+                <div
+                    style="margin: 1.5rem 0; display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 0.8rem;">
+                    <div style="flex: 1; height: 1px; background: #e5e7eb;"></div>
+                    OU
+                    <div style="flex: 1; height: 1px; background: #e5e7eb;"></div>
+                </div>
+
+                <div class="form-group">
+                    <input type="email" class="form-input" placeholder="E-mail">
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <input type="password" class="form-input" placeholder="Senha">
+                </div>
+
+                <button class="btn-search" style="width: 100%; margin-top: 1.5rem;"
+                    onclick="loginMock()">ENTRAR</button>
+
+                <p style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                    Não tem conta? <a href="#" onclick="toggleAuthView('signup')"
+                        style="color: var(--primary-blue); font-weight: 600;">Cadastre-se</a>
+                </p>
+            </div>
+
+            <!-- Signup View -->
+            <div id="signup-view" style="display: none; max-width: 600px;">
+                <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+                <h2 style="margin-bottom: 0.5rem; color: var(--primary-dark);">Crie sua conta grátis</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Preencha os dados abaixo
+                    para desbloquear todos os veículos.</p>
+
+                <button class="google-btn" onclick="loginWithGoogle()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
+                        style="width: 24px; height: 24px;">
+                    Cadastrar com Google
+                </button>
+
+                <div
+                    style="margin: 1.5rem 0; display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 0.8rem;">
+                    <div style="flex: 1; height: 1px; background: #e5e7eb;"></div>
+                    OU
+                    <div style="flex: 1; height: 1px; background: #e5e7eb;"></div>
+                </div>
+
+                <form id="signup-form" onsubmit="handleSignup(event)">
+                    <div class="signup-grid">
+                        <div class="form-group">
+                            <input type="text" name="nome" class="form-input" placeholder="Nome" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="sobrenome" class="form-input" placeholder="Sobrenome" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" class="form-input" placeholder="E-mail" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" name="senha" class="form-input" placeholder="Senha" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="cpf" class="form-input" placeholder="CPF" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="cep" class="form-input" placeholder="CEP" required>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <input type="text" name="endereco" class="form-input" placeholder="Endereço Completo"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="cidade" class="form-input" placeholder="Cidade" required>
+                        </div>
+                        <div class="form-group">
+                            <select name="uf" class="form-select" required>
+                                <option value="">UF</option>
+                                <option value="AC">AC</option>
+                                <option value="AL">AL</option>
+                                <option value="AP">AP</option>
+                                <option value="AM">AM</option>
+                                <option value="BA">BA</option>
+                                <option value="CE">CE</option>
+                                <option value="DF">DF</option>
+                                <option value="ES">ES</option>
+                                <option value="GO">GO</option>
+                                <option value="MA">MA</option>
+                                <option value="MT">MT</option>
+                                <option value="MS">MS</option>
+                                <option value="MG">MG</option>
+                                <option value="PA">PA</option>
+                                <option value="PB">PB</option>
+                                <option value="PR">PR</option>
+                                <option value="PE">PE</option>
+                                <option value="PI">PI</option>
+                                <option value="RJ">RJ</option>
+                                <option value="RN">RN</option>
+                                <option value="RS">RS</option>
+                                <option value="RO">RO</option>
+                                <option value="RR">RR</option>
+                                <option value="SC">SC</option>
+                                <option value="SP">SP</option>
+                                <option value="SE">SE</option>
+                                <option value="TO">TO</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <select name="origem" class="form-select" required>
+                                <option value="">Como achou a gente?</option>
+                                <option value="google">Google</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="amigo">Indicação de Amigo</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-search" style="width: 100%; margin-top: 2rem;">FINALIZAR
+                        CADASTRO</button>
+
+                    <p style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                        Já tem conta? <a href="#" onclick="toggleAuthView('login')"
+                            style="color: var(--primary-blue); font-weight: 600;">Entrar</a>
+                    </p>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Script -->
