@@ -1,18 +1,22 @@
 node_modules/
 .npm
 .env
-*.html
-*.png
-*.jpg
-*.json
-!package.json
-!package-lock.json
-!src/**/*.json
+.git
+.gemini/
+.agent/
+
+# Ignorar apenas arquivos de dump e testes temporários
 inspect-*.js
 dump-*.js
 *_dump.html
 *_inspect.png
-.gemini/
-.agent/
+sato_*.html
+sato_*.json
+
+# Manter arquivos de data locais fora do Docker para evitar conflitos
+# (O app criará novas pastas de data em runtime no Railway)
 data/
 src/database/data/
+
+# Logar histórico local
+logs/

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Como Funciona - CARS LEILÕES</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .page-header {
+            background: var(--primary-dark);
+            color: white;
+            padding: 4rem 1rem;
+            text-align: center;
+        }
+
+        .step-section {
+            padding: 4rem 1rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 4rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            opacity: 0.2;
+        }
+
+        .step-icon {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .step-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-dark);
+        }
+
+        .step-content p {
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .step-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="top-bar-left">
+                <span><i class="fas fa-clock"></i> 24 horas 7 dias por semana o maior portal integrador de leilões do
+                    brasil</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <a href="/" class="logo-area">
+                <img src="/img/logo.png" alt="CARS LEILÕES" style="height: 40px; width: auto; object-fit: contain;">
+            </a>
+            <nav class="nav-menu">
+                <a href="/" class="nav-link">Página Inicial</a>
+                <a href="/admin.html" class="nav-link">Painel Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-header">
+        <h1>Como o CARS LEILÕES Funciona?</h1>
+        <p style="opacity: 0.8; margin-top: 10px;">A plataforma definitiva para encontrar seu próximo veículo em leilão.
+        </p>
+    </div>
+
+    <main class="step-section">
+        <div class="step-card">
+            <div class="step-number">01</div>
+            <div class="step-icon"><i class="fas fa-search"></i></div>
+            <div class="step-content">
+                <h3>Busca Centralizada</h3>
+                <p>Nossos robôs (crawlers) varrem diariamente os maiores sites de leilões do Brasil (Copart, Sodré
+                    Santoro, Freitas, etc) e trazem tudo para cá. Você não precisa mais abrir 10 abas diferentes para
+                    comparar preços e modelos.</p>
+            </div>
+        </div>
+
+        <div class="step-card" style="flex-direction: row-reverse;">
+            <div class="step-number">02</div>
+            <div class="step-icon"><i class="fas fa-user-plus"></i></div>
+            <div class="step-content">
+                <h3>Cadastro Obrigatório</h3>
+                <p>Para garantir a segurança dos dados e evitar fraudes, as informações detalhadas do leiloeiro e o link
+                    direto para o lote só são liberados para usuários cadastrados. O cadastro é grátis e leva menos de 1
+                    minuto.</p>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">03</div>
+            <div class="step-icon"><i class="fas fa-external-link-alt"></i></div>
+            <div class="step-content">
+                <h3>Redirecionamento Direto</h3>
+                <p>Ao encontrar o veículo desejado, nós te levamos diretamente para a página oficial do leiloeiro onde
+                    você poderá dar seus lances com total segurança. Nós somos o integrador, a compra é feita no site
+                    oficial.</p>
+            </div>
+        </div>
+
+        <div class="step-card" style="flex-direction: row-reverse;">
+            <div class="step-number">04</div>
+            <div class="step-icon"><i class="fas fa-bell"></i></div>
+            <div class="step-content">
+                <h3>Alertas e Favoritos</h3>
+                <p>Salve seus veículos favoritos e receba alertas sempre que novos lotes similares entrarem no sistema.
+                    Economize tempo e nunca perca uma oportunidade de negócio.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom" style="text-align: center;">
+            &copy; 2026 CARS LEILÕES - O Maior Portal do Brasil.
+        </div>
+    </footer>
+</body>
+
+</html>

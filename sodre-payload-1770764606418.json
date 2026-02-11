@@ -1,0 +1,42 @@
+{
+  "results": [],
+  "aggs": {
+    "segments_quantity": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": "veiculos",
+          "doc_count": 982
+        },
+        {
+          "key": "materiais",
+          "doc_count": 509
+        },
+        {
+          "key": "sucatas",
+          "doc_count": 121
+        },
+        {
+          "key": "judiciais-materiais",
+          "doc_count": 33
+        },
+        {
+          "key": "judiciais-imoveis",
+          "doc_count": 30
+        },
+        {
+          "key": "judiciais-veiculos",
+          "doc_count": 11
+        },
+        {
+          "key": "imoveis",
+          "doc_count": 3
+        }
+      ]
+    }
+  },
+  "total": 1689,
+  "page": 1,
+  "perPage": 0
+}

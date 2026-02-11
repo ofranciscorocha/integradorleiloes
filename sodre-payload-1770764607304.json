@@ -1,0 +1,4121 @@
+{
+  "results": [],
+  "aggs": {
+    "lot_sinister": {
+      "doc_count": 993,
+      "lot_sinister": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "média monta",
+            "doc_count": 688
+          },
+          {
+            "key": "pequena monta",
+            "doc_count": 133
+          },
+          {
+            "key": "sem sinistro",
+            "doc_count": 172
+          }
+        ]
+      }
+    },
+    "lot_category": {
+      "doc_count": 993,
+      "lot_category": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "caminhões",
+            "doc_count": 107
+          },
+          {
+            "key": "carros",
+            "doc_count": 592
+          },
+          {
+            "key": "embarcações",
+            "doc_count": 1
+          },
+          {
+            "key": "implementos rod.",
+            "doc_count": 30
+          },
+          {
+            "key": "motos",
+            "doc_count": 106
+          },
+          {
+            "key": "onibus",
+            "doc_count": 4
+          },
+          {
+            "key": "peruas",
+            "doc_count": 1
+          },
+          {
+            "key": "utilit. pesados",
+            "doc_count": 3
+          },
+          {
+            "key": "utilitarios leves",
+            "doc_count": 142
+          },
+          {
+            "key": "van leve",
+            "doc_count": 5
+          }
+        ]
+      }
+    },
+    "lot_praca_label": {
+      "doc_count": 993,
+      "lot_praca_label": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "1ª Praça",
+            "doc_count": 7
+          },
+          {
+            "key": "2ª Praça",
+            "doc_count": 3
+          },
+          {
+            "key": "Praça Única",
+            "doc_count": 1
+          }
+        ]
+      }
+    },
+    "lot_year_model": {
+      "doc_count": 993,
+      "lot_year_model": {
+        "count": 993,
+        "min": 0,
+        "max": 2026,
+        "avg": 2003.1722054380664,
+        "sum": 1989150
+      }
+    },
+    "lot_optionals": {
+      "doc_count": 993,
+      "lot_optionals": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "ar-condicionado",
+            "doc_count": 207
+          },
+          {
+            "key": "blindagem",
+            "doc_count": 12
+          },
+          {
+            "key": "chave-ignicao",
+            "doc_count": 713
+          },
+          {
+            "key": "direcao-hidraulica",
+            "doc_count": 209
+          },
+          {
+            "key": "kit-gas",
+            "doc_count": 5
+          }
+        ]
+      }
+    },
+    "lot_fuel": {
+      "doc_count": 993,
+      "lot_fuel": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "diesel",
+            "doc_count": 175
+          },
+          {
+            "key": "elétrico",
+            "doc_count": 4
+          },
+          {
+            "key": "flex",
+            "doc_count": 496
+          },
+          {
+            "key": "gasolina",
+            "doc_count": 268
+          },
+          {
+            "key": "híbrido",
+            "doc_count": 2
+          },
+          {
+            "key": "indefinido",
+            "doc_count": 42
+          },
+          {
+            "key": "álcool",
+            "doc_count": 6
+          }
+        ]
+      }
+    },
+    "lot_km": {
+      "doc_count": 993,
+      "lot_km": {
+        "count": 993,
+        "min": 0,
+        "max": 1417010,
+        "avg": 59752.41389728097,
+        "sum": 59334147
+      }
+    },
+    "lot_transmission": {
+      "doc_count": 993,
+      "lot_transmission": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "ausente",
+            "doc_count": 7
+          },
+          {
+            "key": "automatico",
+            "doc_count": 246
+          },
+          {
+            "key": "automático",
+            "doc_count": 52
+          },
+          {
+            "key": "manual",
+            "doc_count": 585
+          },
+          {
+            "key": "sem acesso",
+            "doc_count": 0
+          },
+          {
+            "key": "semi-automático",
+            "doc_count": 13
+          }
+        ]
+      }
+    },
+    "lot_brand": {
+      "doc_count": 993,
+      "lot_brand": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "aima",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "voltz ev01 sport",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "audi",
+            "doc_count": 4,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "a3 lm 122cv i",
+                  "doc_count": 1
+                },
+                {
+                  "key": "a3 spb 1.8 tfsi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "q3 180cv",
+                  "doc_count": 1
+                },
+                {
+                  "key": "q7 3.0 tfsi",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "bajaj",
+            "doc_count": 9,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "dominar d160",
+                  "doc_count": 3
+                },
+                {
+                  "key": "dominar d200",
+                  "doc_count": 2
+                },
+                {
+                  "key": "dominar d400",
+                  "doc_count": 3
+                },
+                {
+                  "key": "dominar/d400 t",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "bmw",
+            "doc_count": 11,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "118i 1a31",
+                  "doc_count": 1
+                },
+                {
+                  "key": "320i sport gp flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "535i",
+                  "doc_count": 1
+                },
+                {
+                  "key": "f800 r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "r 12 cruiser 719",
+                  "doc_count": 1
+                },
+                {
+                  "key": "r1300 gs plus",
+                  "doc_count": 1
+                },
+                {
+                  "key": "x1 sdrive 1.8i vl31",
+                  "doc_count": 1
+                },
+                {
+                  "key": "x1 sdrive1.8i vl31",
+                  "doc_count": 1
+                },
+                {
+                  "key": "x4 xdrive 28i",
+                  "doc_count": 1
+                },
+                {
+                  "key": "x5 fb31",
+                  "doc_count": 1
+                },
+                {
+                  "key": "x5 xdrive 35i",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "chery",
+            "doc_count": 13,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "celer 1.5 flex fl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "celer 1.5 hb act",
+                  "doc_count": 1
+                },
+                {
+                  "key": "face 1.3",
+                  "doc_count": 4
+                },
+                {
+                  "key": "qq 1.1",
+                  "doc_count": 1
+                },
+                {
+                  "key": "qq3 1.1",
+                  "doc_count": 3
+                },
+                {
+                  "key": "s18 1.3 flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tiggo 2.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tiggo7 txs",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "chevrolet",
+            "doc_count": 115,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "agile lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "astra sedan confort",
+                  "doc_count": 1
+                },
+                {
+                  "key": "astra sedan elegance",
+                  "doc_count": 2
+                },
+                {
+                  "key": "captiva sport fwd",
+                  "doc_count": 2
+                },
+                {
+                  "key": "celta",
+                  "doc_count": 1
+                },
+                {
+                  "key": "celta  life",
+                  "doc_count": 3
+                },
+                {
+                  "key": "celta  spirit",
+                  "doc_count": 1
+                },
+                {
+                  "key": "celta 1.0  lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "celta 1.0l ls",
+                  "doc_count": 2
+                },
+                {
+                  "key": "celta 1.0l lt advan",
+                  "doc_count": 1
+                },
+                {
+                  "key": "celta 4p spirit",
+                  "doc_count": 1
+                },
+                {
+                  "key": "celta life",
+                  "doc_count": 1
+                },
+                {
+                  "key": "celta spirit",
+                  "doc_count": 2
+                },
+                {
+                  "key": "chevy 500",
+                  "doc_count": 1
+                },
+                {
+                  "key": "classic life",
+                  "doc_count": 5
+                },
+                {
+                  "key": "classic ls",
+                  "doc_count": 11
+                },
+                {
+                  "key": "cobalt 1.4 ltz",
+                  "doc_count": 2
+                },
+                {
+                  "key": "cobalt 1.8 lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cobalt 1.8 ltz",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corsa classic",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corsa hat. maxx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corsa hatch joy",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corsa hatch maxx",
+                  "doc_count": 6
+                },
+                {
+                  "key": "corsa hatch premium",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corsa milenium",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corsa sedan joy",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corsa sedan premium",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corsa super",
+                  "doc_count": 2
+                },
+                {
+                  "key": "corsa wind",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cruze lt nb",
+                  "doc_count": 1
+                },
+                {
+                  "key": "equinox premier",
+                  "doc_count": 1
+                },
+                {
+                  "key": "kadett gl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "malibu ltz",
+                  "doc_count": 1
+                },
+                {
+                  "key": "meriva joy",
+                  "doc_count": 1
+                },
+                {
+                  "key": "meriva maxx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "meriva premium",
+                  "doc_count": 2
+                },
+                {
+                  "key": "meriva ss",
+                  "doc_count": 1
+                },
+                {
+                  "key": "montana ls2",
+                  "doc_count": 2
+                },
+                {
+                  "key": "montana t a ltz",
+                  "doc_count": 1
+                },
+                {
+                  "key": "monza class efi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "monza sl e 2.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "monza sl efi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "monza sl/e efi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "monza sle",
+                  "doc_count": 1
+                },
+                {
+                  "key": "omega gls",
+                  "doc_count": 1
+                },
+                {
+                  "key": "onix 1.0mt lt",
+                  "doc_count": 5
+                },
+                {
+                  "key": "onix 1.4  lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "onix 1.4at act",
+                  "doc_count": 1
+                },
+                {
+                  "key": "onix 1.4mt ltz",
+                  "doc_count": 1
+                },
+                {
+                  "key": "onix plus",
+                  "doc_count": 2
+                },
+                {
+                  "key": "onix plus 10tmt lt1",
+                  "doc_count": 1
+                },
+                {
+                  "key": "prisma 1.0mt lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "prisma 1.4at lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "prisma 1.4mt lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "prisma joy",
+                  "doc_count": 1
+                },
+                {
+                  "key": "prisma maxx",
+                  "doc_count": 3
+                },
+                {
+                  "key": "s10",
+                  "doc_count": 1
+                },
+                {
+                  "key": "s10 adv fd2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "s10 deluxe",
+                  "doc_count": 1
+                },
+                {
+                  "key": "s10 lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "s10 ltz dd4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "s10 ltz fd2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sonic ltz nb at",
+                  "doc_count": 1
+                },
+                {
+                  "key": "spin  premier",
+                  "doc_count": 1
+                },
+                {
+                  "key": "spin 1.8  advantage",
+                  "doc_count": 1
+                },
+                {
+                  "key": "spin 1.8l at ltz",
+                  "doc_count": 1
+                },
+                {
+                  "key": "spin 1.8l mt lt",
+                  "doc_count": 2
+                },
+                {
+                  "key": "suburban lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tracker 12t a ltz",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tracker 12t a pr",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tracker lt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "trailblazer pre d4a",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vectra gls",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vectra sd expression",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vectra sedan elegance",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vectra sedan elite",
+                  "doc_count": 3
+                }
+              ]
+            }
+          },
+          {
+            "key": "citroen",
+            "doc_count": 46,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "aircross",
+                  "doc_count": 1
+                },
+                {
+                  "key": "aircross shine",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 120a exclusiv",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 90m origine",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 90m tendance",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 aircross glxm",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 excl 14 flex",
+                  "doc_count": 2
+                },
+                {
+                  "key": "c3 glx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 glx 14 flex",
+                  "doc_count": 8
+                },
+                {
+                  "key": "c3 glx 16 flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 picasso exc",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 picasso glx a",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 picasso glx m",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 ptech m tend",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c3 xtr 14 flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c4",
+                  "doc_count": 2
+                },
+                {
+                  "key": "c4 20exca5p f",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c4 pallas",
+                  "doc_count": 6
+                },
+                {
+                  "key": "c4 pic glxa",
+                  "doc_count": 3
+                },
+                {
+                  "key": "c4 pic glxa 5l",
+                  "doc_count": 2
+                },
+                {
+                  "key": "c4l live bsns",
+                  "doc_count": 1
+                },
+                {
+                  "key": "picasso",
+                  "doc_count": 5
+                },
+                {
+                  "key": "picasso ii16excf",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xsara picasso",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xsara picasso ex",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "citroën",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "c4 20glxa5p f",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "conjunto",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "carretinha + bote",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "daf",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "xf fts 480",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "dafra",
+            "doc_count": 6,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "apache 200",
+                  "doc_count": 1
+                },
+                {
+                  "key": "nh 190",
+                  "doc_count": 5
+                }
+              ]
+            }
+          },
+          {
+            "key": "dodge",
+            "doc_count": 2,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "journey r/t",
+                  "doc_count": 2
+                }
+              ]
+            }
+          },
+          {
+            "key": "facchini",
+            "doc_count": 5,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "ir rer cs",
+                  "doc_count": 2
+                },
+                {
+                  "key": "srf 2ca",
+                  "doc_count": 1
+                },
+                {
+                  "key": "srf ca",
+                  "doc_count": 1
+                },
+                {
+                  "key": "srf cb",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "fiat",
+            "doc_count": 98,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "argo drive 1.3",
+                  "doc_count": 1
+                },
+                {
+                  "key": "argo trekking 1.3at",
+                  "doc_count": 1
+                },
+                {
+                  "key": "bravo essence 1.8",
+                  "doc_count": 1
+                },
+                {
+                  "key": "doblo essence 1.8",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ducato maxicargo",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ducato minibus",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fiorino",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fiorino flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fiorino hd wk e",
+                  "doc_count": 2
+                },
+                {
+                  "key": "fiorino ie",
+                  "doc_count": 1
+                },
+                {
+                  "key": "freemont prec",
+                  "doc_count": 1
+                },
+                {
+                  "key": "freemont precisio",
+                  "doc_count": 1
+                },
+                {
+                  "key": "idea adventure 1.8",
+                  "doc_count": 1
+                },
+                {
+                  "key": "idea elx flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "idea hlx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "linea absolute dualogic",
+                  "doc_count": 1
+                },
+                {
+                  "key": "marea sx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "mobi easy",
+                  "doc_count": 1
+                },
+                {
+                  "key": "mobi like",
+                  "doc_count": 1
+                },
+                {
+                  "key": "mobi way",
+                  "doc_count": 1
+                },
+                {
+                  "key": "palio attractiv 1.0",
+                  "doc_count": 4
+                },
+                {
+                  "key": "palio ed",
+                  "doc_count": 1
+                },
+                {
+                  "key": "palio edx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "palio el",
+                  "doc_count": 1
+                },
+                {
+                  "key": "palio elx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "palio elx flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "palio ex",
+                  "doc_count": 2
+                },
+                {
+                  "key": "palio fire",
+                  "doc_count": 1
+                },
+                {
+                  "key": "palio fire economy",
+                  "doc_count": 5
+                },
+                {
+                  "key": "palio fire flex",
+                  "doc_count": 3
+                },
+                {
+                  "key": "palio week 6marchas",
+                  "doc_count": 1
+                },
+                {
+                  "key": "palio week trekking",
+                  "doc_count": 1
+                },
+                {
+                  "key": "palio wk adven dual",
+                  "doc_count": 2
+                },
+                {
+                  "key": "punto attractive",
+                  "doc_count": 2
+                },
+                {
+                  "key": "punto elx 1.4",
+                  "doc_count": 2
+                },
+                {
+                  "key": "punto essence 1.6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "scudo cargo td",
+                  "doc_count": 1
+                },
+                {
+                  "key": "siena 1.4 tetrafuel",
+                  "doc_count": 1
+                },
+                {
+                  "key": "siena el",
+                  "doc_count": 1
+                },
+                {
+                  "key": "siena el 1.4 flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "siena el flex",
+                  "doc_count": 2
+                },
+                {
+                  "key": "siena elx flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "siena essenc 1.6 dl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "siena essence 1.6",
+                  "doc_count": 2
+                },
+                {
+                  "key": "siena fire",
+                  "doc_count": 1
+                },
+                {
+                  "key": "siena fire flex",
+                  "doc_count": 6
+                },
+                {
+                  "key": "strada adv cd dual",
+                  "doc_count": 1
+                },
+                {
+                  "key": "strada adventure cd",
+                  "doc_count": 1
+                },
+                {
+                  "key": "strada enduran cs13",
+                  "doc_count": 1
+                },
+                {
+                  "key": "strada endurance cs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "strada freedom cd",
+                  "doc_count": 1
+                },
+                {
+                  "key": "strada freedom cs13",
+                  "doc_count": 1
+                },
+                {
+                  "key": "strada ultra t200at",
+                  "doc_count": 1
+                },
+                {
+                  "key": "strada working",
+                  "doc_count": 1
+                },
+                {
+                  "key": "strada working ce",
+                  "doc_count": 1
+                },
+                {
+                  "key": "toro freedom",
+                  "doc_count": 1
+                },
+                {
+                  "key": "toro volcano at d4",
+                  "doc_count": 2
+                },
+                {
+                  "key": "uno attractive 1.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "uno attractive 1.4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "uno electronic",
+                  "doc_count": 1
+                },
+                {
+                  "key": "uno mille",
+                  "doc_count": 2
+                },
+                {
+                  "key": "uno mille economy",
+                  "doc_count": 3
+                },
+                {
+                  "key": "uno mille fire flex",
+                  "doc_count": 2
+                },
+                {
+                  "key": "uno mille way econ",
+                  "doc_count": 2
+                },
+                {
+                  "key": "uno vivace",
+                  "doc_count": 1
+                },
+                {
+                  "key": "uno vivace 1.0",
+                  "doc_count": 4
+                },
+                {
+                  "key": "uno way 1.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "weekend adventure",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "ford",
+            "doc_count": 76,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "cargo 816 s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "courier l 1.6 flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ecosport fsl2.0flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ecosport s 1.6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ecosport se at 1.5",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ecosport se at 1.6b",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ecosport xls 1.6 flex",
+                  "doc_count": 2
+                },
+                {
+                  "key": "ecosport xlt",
+                  "doc_count": 2
+                },
+                {
+                  "key": "ecosport xlt2.0flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "edge v6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "edge v6 fwd",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fiesta",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fiesta 1.6",
+                  "doc_count": 2
+                },
+                {
+                  "key": "fiesta flex",
+                  "doc_count": 5
+                },
+                {
+                  "key": "fiesta ha 1.6l se",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fiesta ha 1.6l ti a",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fiesta se ha",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fiesta sedan",
+                  "doc_count": 2
+                },
+                {
+                  "key": "fiesta sedan 1.6 flex",
+                  "doc_count": 4
+                },
+                {
+                  "key": "fiesta sedan1.6flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "focus 1.6 flex fc",
+                  "doc_count": 2
+                },
+                {
+                  "key": "focus 1.6 flex ha",
+                  "doc_count": 4
+                },
+                {
+                  "key": "focus 2.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "focus 2l fc flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "focus ghia 2.0 lfc",
+                  "doc_count": 1
+                },
+                {
+                  "key": "focus hc flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "focus ti at 2.0 sc",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fusion",
+                  "doc_count": 4
+                },
+                {
+                  "key": "fusion flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ka",
+                  "doc_count": 3
+                },
+                {
+                  "key": "ka flex",
+                  "doc_count": 5
+                },
+                {
+                  "key": "ka se 1.0 ha",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ka se 1.0 ha b",
+                  "doc_count": 4
+                },
+                {
+                  "key": "ka se 1.0 ha c",
+                  "doc_count": 3
+                },
+                {
+                  "key": "ka se 1.5 ha",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ka se 1.5 sd c",
+                  "doc_count": 2
+                },
+                {
+                  "key": "ka sel 1.5 sd b",
+                  "doc_count": 1
+                },
+                {
+                  "key": "mondeo 2.0 ghia 4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ranger",
+                  "doc_count": 3
+                },
+                {
+                  "key": "ranger xl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ranger xlscd4 22c",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ranger xlt 13p",
+                  "doc_count": 1
+                },
+                {
+                  "key": "transit 350 fl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "transit 350l cc",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "guerra",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "semi reboque ag gr",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "haojue",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "nk150",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "honda",
+            "doc_count": 53,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "accord exr",
+                  "doc_count": 1
+                },
+                {
+                  "key": "biz 110i",
+                  "doc_count": 1
+                },
+                {
+                  "key": "biz 125",
+                  "doc_count": 2
+                },
+                {
+                  "key": "biz 125 es",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cb 250f twister abs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cb 250f twister c s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cb 300f twister abs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cb 300f twister cbs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cb 300r",
+                  "doc_count": 2
+                },
+                {
+                  "key": "cb 500f",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cb 650r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cg 125 fan es",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cg 125 fan ks",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cg 160 cargo",
+                  "doc_count": 2
+                },
+                {
+                  "key": "cg 160 fan",
+                  "doc_count": 4
+                },
+                {
+                  "key": "cg 160 titan",
+                  "doc_count": 2
+                },
+                {
+                  "key": "city dx cvt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "city dx flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "city dx mt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "city ex cvt",
+                  "doc_count": 2
+                },
+                {
+                  "key": "city lx flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "city personal",
+                  "doc_count": 1
+                },
+                {
+                  "key": "civic exl cvt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "civic lx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "civic lxl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "civic lxl flex",
+                  "doc_count": 2
+                },
+                {
+                  "key": "civic lxr",
+                  "doc_count": 1
+                },
+                {
+                  "key": "civic sport cvt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "elite 125",
+                  "doc_count": 2
+                },
+                {
+                  "key": "fit lx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fit lxl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fit personal",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hr-v",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hr-v exl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hr-v lx cvt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hr-v touring",
+                  "doc_count": 1
+                },
+                {
+                  "key": "nx-4 falcon",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pcx 150",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pcx 150 dlx abs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pcx 160 dlx abs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pop 110i",
+                  "doc_count": 1
+                },
+                {
+                  "key": "wr-v exl cvt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xre 300",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "hyundai",
+            "doc_count": 20,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "azera 3.3 v6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "creta1ta comfort",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hb20 1.0  unique",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hb20 1.0m comfor",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hb20 1.6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hb20 1.6m comf",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hb20 10m limited",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hb20 10m vision",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hb20s 1.6a premium",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hd 80",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hr hdb",
+                  "doc_count": 1
+                },
+                {
+                  "key": "i30 2.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "santa fé 3.5",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sonata gls",
+                  "doc_count": 2
+                },
+                {
+                  "key": "tucson gl 20l",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tucson glsb",
+                  "doc_count": 3
+                },
+                {
+                  "key": "veracruz 3.8 v6",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "i/mo",
+            "doc_count": 2,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "compact truck ct 3",
+                  "doc_count": 1
+                },
+                {
+                  "key": "demag ac75",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "iveco",
+            "doc_count": 8,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "daily 35s14 hdcs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "daily 70c17 hdcs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "e 160e21 3",
+                  "doc_count": 1
+                },
+                {
+                  "key": "s-way 480-6x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "stralihd 450s38tn1",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tector 11-190",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tector 9-190",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vertis 130v19",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "jac",
+            "doc_count": 4,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "e-j7",
+                  "doc_count": 1
+                },
+                {
+                  "key": "iev1200t",
+                  "doc_count": 1
+                },
+                {
+                  "key": "iev750v",
+                  "doc_count": 1
+                },
+                {
+                  "key": "t40 1.6 dvvt cvt",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "jaguar",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "xf 3.0 v6 scport",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "jeep",
+            "doc_count": 12,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "compass limited s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "compass long tf",
+                  "doc_count": 1
+                },
+                {
+                  "key": "compass sport f",
+                  "doc_count": 2
+                },
+                {
+                  "key": "renegade 1.8 at",
+                  "doc_count": 1
+                },
+                {
+                  "key": "renegade 1.8 autom.",
+                  "doc_count": 1
+                },
+                {
+                  "key": "renegade lgtd t270",
+                  "doc_count": 3
+                },
+                {
+                  "key": "renegade lngtd at",
+                  "doc_count": 2
+                },
+                {
+                  "key": "renegade t270",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "jta",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "zontes 350e",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "jtz",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "lindy 125",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "kawasaki",
+            "doc_count": 9,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "ninja 300 abs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ninja zx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ninja zx 10r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ninja zx 6r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ninja zx-10r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ninja zx-6r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ninja zx10r abs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "z1000 abs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "z400",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "kia motors",
+            "doc_count": 9,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "cerato ex3 1.6 atnb",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cerato sx2 1.6l",
+                  "doc_count": 1
+                },
+                {
+                  "key": "rio ex1.6 ff at hb",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sorento ex 2.5",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sportage ex 2.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sportage ex2 2.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sportage ex2 offg4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sportage lx 2.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "uk 2500 hd sc",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "land rover",
+            "doc_count": 13,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "disc spt d180 s 7l",
+                  "doc_count": 1
+                },
+                {
+                  "key": "disc spt d200 se rd",
+                  "doc_count": 1
+                },
+                {
+                  "key": "disc spt sd4 hse 7l",
+                  "doc_count": 1
+                },
+                {
+                  "key": "disc spt sd4 se",
+                  "doc_count": 1
+                },
+                {
+                  "key": "disc spt si4 hse 7l",
+                  "doc_count": 1
+                },
+                {
+                  "key": "discovery 4 2.7 s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "discovery3 tdv6 se.",
+                  "doc_count": 1
+                },
+                {
+                  "key": "evoque pure p5d",
+                  "doc_count": 1
+                },
+                {
+                  "key": "freelander 2 hse i6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "freelander 2 s i6",
+                  "doc_count": 2
+                },
+                {
+                  "key": "freelander2 sd4 hse",
+                  "doc_count": 1
+                },
+                {
+                  "key": "r.rover sport 3.0 hse",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "lifan",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "530 1.5",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "m.a.",
+            "doc_count": 2,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "caterpillar",
+                  "doc_count": 2
+                }
+              ]
+            }
+          },
+          {
+            "key": "mercedes benz",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "416 cdi sprinter c",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "mercedes-benz",
+            "doc_count": 58,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "1714 k",
+                  "doc_count": 1
+                },
+                {
+                  "key": "313 cdi sprinter m",
+                  "doc_count": 1
+                },
+                {
+                  "key": "313 cdi street c",
+                  "doc_count": 1
+                },
+                {
+                  "key": "313 cdi street f",
+                  "doc_count": 2
+                },
+                {
+                  "key": "314 cdi street c",
+                  "doc_count": 1
+                },
+                {
+                  "key": "315 cdi street c",
+                  "doc_count": 1
+                },
+                {
+                  "key": "315 cdi street f",
+                  "doc_count": 1
+                },
+                {
+                  "key": "415 alter amb",
+                  "doc_count": 1
+                },
+                {
+                  "key": "417 sprinter m",
+                  "doc_count": 1
+                },
+                {
+                  "key": "710",
+                  "doc_count": 1
+                },
+                {
+                  "key": "915c",
+                  "doc_count": 1
+                },
+                {
+                  "key": "a 190",
+                  "doc_count": 1
+                },
+                {
+                  "key": "accelo 1016",
+                  "doc_count": 1
+                },
+                {
+                  "key": "actros 2045 4x2 c.leito t.alto",
+                  "doc_count": 1
+                },
+                {
+                  "key": "actros 2045 c.leito t.alto 4x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "actros 2546 ls",
+                  "doc_count": 1
+                },
+                {
+                  "key": "actros 2546ls",
+                  "doc_count": 5
+                },
+                {
+                  "key": "actros 2646 ls 6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "actros 2651 s 6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "actros 2651s 6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "actros2646ls6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "atego 2426",
+                  "doc_count": 2
+                },
+                {
+                  "key": "atego 2429 ce",
+                  "doc_count": 1
+                },
+                {
+                  "key": "atego 2430",
+                  "doc_count": 1
+                },
+                {
+                  "key": "atego 2433 cab.leito teto alto e6 6x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ax0r 1933 s",
+                  "doc_count": 2
+                },
+                {
+                  "key": "axor 1933 s",
+                  "doc_count": 2
+                },
+                {
+                  "key": "axor 2041 ls 4x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "axor 2544",
+                  "doc_count": 1
+                },
+                {
+                  "key": "axor 2544 s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "axor 3344 s 6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "b 200 t",
+                  "doc_count": 1
+                },
+                {
+                  "key": "b200 cgi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c 180 k",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c 200 cgi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c180",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c180 turbo",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c200",
+                  "doc_count": 1
+                },
+                {
+                  "key": "c320",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cls 450 4matic",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cls 500",
+                  "doc_count": 1
+                },
+                {
+                  "key": "e 250 cgi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gla 200",
+                  "doc_count": 1
+                },
+                {
+                  "key": "irizar century s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "mercedes benz",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ml 350 btc",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ml350 bluetec",
+                  "doc_count": 1
+                },
+                {
+                  "key": "neobus road r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "of 1620",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sprinter martm8",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "mini",
+            "doc_count": 4,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "cooper s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cooper scyman all4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "cyman cooper s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "one",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "mitsubishi",
+            "doc_count": 12,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "asx 2.0",
+                  "doc_count": 1
+                },
+                {
+                  "key": "l200 triton 3.2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "l200 triton spo gl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "outlander 2.0",
+                  "doc_count": 2
+                },
+                {
+                  "key": "outlander 3.0 v6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "outlander comfort",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pajero dakar",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pajero hpe 3.2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pajero sport hpe s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pajero tr4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pajero tr4 fl 2wd hp",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "mo",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "grove gmk 4100l",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "mr",
+            "doc_count": 2,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "cat 416f2",
+                  "doc_count": 2
+                }
+              ]
+            }
+          },
+          {
+            "key": "nissan",
+            "doc_count": 20,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "altima 25 sl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "frontier atk x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "frontier s mtx4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "frontier xe 25 x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "frontier xe x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "grand livina",
+                  "doc_count": 1
+                },
+                {
+                  "key": "livina 16s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "livina 18",
+                  "doc_count": 1
+                },
+                {
+                  "key": "livina 18s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "march",
+                  "doc_count": 1
+                },
+                {
+                  "key": "march  flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "march 10s flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sentra",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sentra 20sl cvt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tiida",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tiida 18s flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tiida sedan 18f",
+                  "doc_count": 3
+                },
+                {
+                  "key": "versa 16 sv",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "noma",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "semi reboque sr2e18rt1 cg",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "outros",
+            "doc_count": 3,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "rebocar reb d01",
+                  "doc_count": 1
+                },
+                {
+                  "key": "semi reboque",
+                  "doc_count": 1
+                },
+                {
+                  "key": "semi reboque bitrem tanque dianteiro",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "peugeot",
+            "doc_count": 47,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "2008 allure",
+                  "doc_count": 1
+                },
+                {
+                  "key": "2008 allure eat6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "2008 allure mt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "2008 griffe a",
+                  "doc_count": 1
+                },
+                {
+                  "key": "206 14 presen fx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "206 14 sensat fx",
+                  "doc_count": 3
+                },
+                {
+                  "key": "206 16 feline fx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "206 presence",
+                  "doc_count": 1
+                },
+                {
+                  "key": "206 rallye 16",
+                  "doc_count": 1
+                },
+                {
+                  "key": "206 sw feline",
+                  "doc_count": 1
+                },
+                {
+                  "key": "206 sw14 pres fx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "206 sw16 pres fx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "207  xr",
+                  "doc_count": 1
+                },
+                {
+                  "key": "207 escapade",
+                  "doc_count": 1
+                },
+                {
+                  "key": "207 hb xr",
+                  "doc_count": 3
+                },
+                {
+                  "key": "207 hb xr s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "207 hb xs a",
+                  "doc_count": 1
+                },
+                {
+                  "key": "207 passion xr",
+                  "doc_count": 2
+                },
+                {
+                  "key": "207 passion xr s",
+                  "doc_count": 3
+                },
+                {
+                  "key": "207 passion xs a",
+                  "doc_count": 1
+                },
+                {
+                  "key": "207passion xs a",
+                  "doc_count": 1
+                },
+                {
+                  "key": "208 active",
+                  "doc_count": 3
+                },
+                {
+                  "key": "208 active pk at",
+                  "doc_count": 1
+                },
+                {
+                  "key": "307 16 fx pr",
+                  "doc_count": 2
+                },
+                {
+                  "key": "307 16 pr pk",
+                  "doc_count": 2
+                },
+                {
+                  "key": "307 sd 20s a gr",
+                  "doc_count": 1
+                },
+                {
+                  "key": "307 sd pres pk",
+                  "doc_count": 1
+                },
+                {
+                  "key": "307 sd16 fxpr",
+                  "doc_count": 1
+                },
+                {
+                  "key": "308 active",
+                  "doc_count": 1
+                },
+                {
+                  "key": "308 allure",
+                  "doc_count": 2
+                },
+                {
+                  "key": "308 feline",
+                  "doc_count": 2
+                },
+                {
+                  "key": "406 st b 20",
+                  "doc_count": 1
+                },
+                {
+                  "key": "408 allure",
+                  "doc_count": 1
+                },
+                {
+                  "key": "408 griffe thp",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "r",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "manos ttoras 4e",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "randon",
+            "doc_count": 5,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "semi reboque",
+                  "doc_count": 2
+                },
+                {
+                  "key": "semi reboque basculante 3e c/pneus",
+                  "doc_count": 1
+                },
+                {
+                  "key": "semi reboque frigorifico",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sr tq",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "recrosul",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "semi reboque",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "renault",
+            "doc_count": 60,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "clio",
+                  "doc_count": 4
+                },
+                {
+                  "key": "clio aut",
+                  "doc_count": 1
+                },
+                {
+                  "key": "clio aut 1.0 h",
+                  "doc_count": 1
+                },
+                {
+                  "key": "clio cam",
+                  "doc_count": 1
+                },
+                {
+                  "key": "clio cam 10h3p",
+                  "doc_count": 2
+                },
+                {
+                  "key": "clio cam1016vh",
+                  "doc_count": 1
+                },
+                {
+                  "key": "clio pri 16 16vs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "clio rl 1.0 16v",
+                  "doc_count": 1
+                },
+                {
+                  "key": "duster  4x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "duster  4x2a",
+                  "doc_count": 2
+                },
+                {
+                  "key": "duster 16 4x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "duster 16 d 4x2",
+                  "doc_count": 2
+                },
+                {
+                  "key": "duster 20 d 4x2a",
+                  "doc_count": 1
+                },
+                {
+                  "key": "duster 4x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fluence dyn",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fluence dyn pl",
+                  "doc_count": 2
+                },
+                {
+                  "key": "grand scenic",
+                  "doc_count": 1
+                },
+                {
+                  "key": "kwid",
+                  "doc_count": 1
+                },
+                {
+                  "key": "kwid intens 10mt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "kwid outsid 10mt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "kwid zen",
+                  "doc_count": 1
+                },
+                {
+                  "key": "kwid zen 10mt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "logan aut 1016v",
+                  "doc_count": 1
+                },
+                {
+                  "key": "logan auth 10",
+                  "doc_count": 1
+                },
+                {
+                  "key": "logan exp 16",
+                  "doc_count": 3
+                },
+                {
+                  "key": "master ch cabine",
+                  "doc_count": 1
+                },
+                {
+                  "key": "master chassi cab",
+                  "doc_count": 1
+                },
+                {
+                  "key": "master fur l1h1",
+                  "doc_count": 2
+                },
+                {
+                  "key": "megane gt dyn 16",
+                  "doc_count": 1
+                },
+                {
+                  "key": "megane gt dyn 20",
+                  "doc_count": 1
+                },
+                {
+                  "key": "megane sd dyn 16",
+                  "doc_count": 1
+                },
+                {
+                  "key": "megane sd expr 16",
+                  "doc_count": 1
+                },
+                {
+                  "key": "meganesd dyn 16",
+                  "doc_count": 1
+                },
+                {
+                  "key": "oroch intense 16m",
+                  "doc_count": 1
+                },
+                {
+                  "key": "oroch intense16m",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sandero",
+                  "doc_count": 3
+                },
+                {
+                  "key": "sandero auth 10",
+                  "doc_count": 2
+                },
+                {
+                  "key": "sandero exp 16hp",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sandero pri 16",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sandero pri 16hp",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sandero step",
+                  "doc_count": 1
+                },
+                {
+                  "key": "sandero stw 16hp",
+                  "doc_count": 1
+                },
+                {
+                  "key": "scenic aut 1616v",
+                  "doc_count": 1
+                },
+                {
+                  "key": "scenic privilege",
+                  "doc_count": 1
+                },
+                {
+                  "key": "symbol",
+                  "doc_count": 2
+                },
+                {
+                  "key": "symbol expr",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "royal",
+            "doc_count": 4,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "enfield himalaya",
+                  "doc_count": 1
+                },
+                {
+                  "key": "enfield interceptor 650",
+                  "doc_count": 1
+                },
+                {
+                  "key": "enfield scram 411",
+                  "doc_count": 1
+                },
+                {
+                  "key": "enfiled himalaya",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "royal enfield",
+            "doc_count": 6,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "himalaya",
+                  "doc_count": 3
+                },
+                {
+                  "key": "himalayan",
+                  "doc_count": 1
+                },
+                {
+                  "key": "meteor f",
+                  "doc_count": 1
+                },
+                {
+                  "key": "meteor s",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "scania",
+            "doc_count": 12,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "g 420 a 6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "g 420 a6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "g 480 a6x4 cs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "g370 a6x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "p 360 a 4x2",
+                  "doc_count": 3
+                },
+                {
+                  "key": "p 420 a6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "p124 ga 4x2 nz 360",
+                  "doc_count": 1
+                },
+                {
+                  "key": "r 440 a6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "r450 a6x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "r500 a6x4",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "sr",
+            "doc_count": 7,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "facchini srf cb",
+                  "doc_count": 3
+                },
+                {
+                  "key": "ibipora sr3e frig",
+                  "doc_count": 1
+                },
+                {
+                  "key": "randon sr ba",
+                  "doc_count": 1
+                },
+                {
+                  "key": "schiffer ssc2eca dian",
+                  "doc_count": 1
+                },
+                {
+                  "key": "schiffer ssc2eca tras",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "sr/noma",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "sr2e18rt2 cg",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "ssangyong",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "actyon a23 4",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "subaru",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "tribeca",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "suzuki",
+            "doc_count": 6,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "g.vitara 2wd",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gsxr 750",
+                  "doc_count": 2
+                },
+                {
+                  "key": "scross 4spo 4wd",
+                  "doc_count": 1
+                },
+                {
+                  "key": "scross 4stys4wd",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vitara 4you 2wd",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "toyota",
+            "doc_count": 22,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "corolla altis20fx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corolla cross grs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corolla cross xrx hybrid",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corolla xei",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corolla xei18vvt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corolla xei20 flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "corolla xli18 flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "etios hb x",
+                  "doc_count": 2
+                },
+                {
+                  "key": "etios hb xs 1.5",
+                  "doc_count": 1
+                },
+                {
+                  "key": "etios hb xs 15 at",
+                  "doc_count": 1
+                },
+                {
+                  "key": "etios sedan platinum",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fielder",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fielder xei18flex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "hilux",
+                  "doc_count": 2
+                },
+                {
+                  "key": "hilux cd 4x4 srv",
+                  "doc_count": 1
+                },
+                {
+                  "key": "rav4 4x2 20l",
+                  "doc_count": 1
+                },
+                {
+                  "key": "yaris",
+                  "doc_count": 1
+                },
+                {
+                  "key": "yaris ha xls15",
+                  "doc_count": 1
+                },
+                {
+                  "key": "yaris ha xs 15cnt",
+                  "doc_count": 1
+                },
+                {
+                  "key": "yaris xs",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "triumph",
+            "doc_count": 2,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "speed 400",
+                  "doc_count": 1
+                },
+                {
+                  "key": "street triple ab",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "troller",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "t4 xlt 3.2",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "usimeca",
+            "doc_count": 3,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "brutus 25",
+                  "doc_count": 3
+                }
+              ]
+            }
+          },
+          {
+            "key": "volkswagen",
+            "doc_count": 132,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "17.260 crm  4x2 4p",
+                  "doc_count": 1
+                },
+                {
+                  "key": "17.260 crm 4x2 4p",
+                  "doc_count": 7
+                },
+                {
+                  "key": "17.280 crm 4x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "17.280 crm 4x2 4p",
+                  "doc_count": 7
+                },
+                {
+                  "key": "17230eod neobus spec",
+                  "doc_count": 1
+                },
+                {
+                  "key": "18-260 crm 4x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "24.260 crm 6x2 4p",
+                  "doc_count": 12
+                },
+                {
+                  "key": "24.280 crm 6x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "26.280 crm 6x4",
+                  "doc_count": 3
+                },
+                {
+                  "key": "29.530  6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "8.150 e delivery",
+                  "doc_count": 1
+                },
+                {
+                  "key": "amarok cd 4x4 high",
+                  "doc_count": 2
+                },
+                {
+                  "key": "amarok cd 4x4 se",
+                  "doc_count": 1
+                },
+                {
+                  "key": "bora",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fox",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fox 1.0",
+                  "doc_count": 10
+                },
+                {
+                  "key": "fox 1.0 plus",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fox 1.6 plus",
+                  "doc_count": 2
+                },
+                {
+                  "key": "fox pepper mfv",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fusca",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fusca 1300",
+                  "doc_count": 3
+                },
+                {
+                  "key": "gol 1.0",
+                  "doc_count": 21
+                },
+                {
+                  "key": "gol 1.0 ecomotion",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gol 1.6 power",
+                  "doc_count": 3
+                },
+                {
+                  "key": "gol 1.6l mb5",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gol 1000",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gol 16v power",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gol cl 1.8",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gol gti 2000",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gol mi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gol special",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gol special mb",
+                  "doc_count": 1
+                },
+                {
+                  "key": "gol trend",
+                  "doc_count": 1
+                },
+                {
+                  "key": "golf gl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "jetta 2.0t",
+                  "doc_count": 1
+                },
+                {
+                  "key": "kombi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "kombi furgao",
+                  "doc_count": 1
+                },
+                {
+                  "key": "nivus hl tsi",
+                  "doc_count": 2
+                },
+                {
+                  "key": "parati 1.8",
+                  "doc_count": 1
+                },
+                {
+                  "key": "parati s",
+                  "doc_count": 1
+                },
+                {
+                  "key": "pointer gli 1.8",
+                  "doc_count": 1
+                },
+                {
+                  "key": "polo 1.6",
+                  "doc_count": 3
+                },
+                {
+                  "key": "polo hl ab",
+                  "doc_count": 1
+                },
+                {
+                  "key": "polo sedan 1.6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "polo sense",
+                  "doc_count": 1
+                },
+                {
+                  "key": "saveiro cd rb mf",
+                  "doc_count": 1
+                },
+                {
+                  "key": "saveiro cs rb mf",
+                  "doc_count": 3
+                },
+                {
+                  "key": "spacefox",
+                  "doc_count": 1
+                },
+                {
+                  "key": "spacefox trend",
+                  "doc_count": 1
+                },
+                {
+                  "key": "t cross sense tsi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "t cross tsi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tera mpi",
+                  "doc_count": 1
+                },
+                {
+                  "key": "tiguan 2.0 tsi",
+                  "doc_count": 2
+                },
+                {
+                  "key": "tl",
+                  "doc_count": 1
+                },
+                {
+                  "key": "up move sa",
+                  "doc_count": 1
+                },
+                {
+                  "key": "up take",
+                  "doc_count": 1
+                },
+                {
+                  "key": "up take ma",
+                  "doc_count": 2
+                },
+                {
+                  "key": "up take mcv",
+                  "doc_count": 1
+                },
+                {
+                  "key": "variant",
+                  "doc_count": 1
+                },
+                {
+                  "key": "virtus cl ac",
+                  "doc_count": 1
+                },
+                {
+                  "key": "virtus hl ad",
+                  "doc_count": 1
+                },
+                {
+                  "key": "voyage 1.0",
+                  "doc_count": 2
+                },
+                {
+                  "key": "voyage 1.6",
+                  "doc_count": 1
+                },
+                {
+                  "key": "voyage tl mbv",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "volvo",
+            "doc_count": 21,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "fh 440 6x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fh 460 4x2t",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fh 480 6x4",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fh 500 6x2t",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fh 540 6x4t susp",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fm 380 4x2t",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fm 480 6x4t",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fm-380 4x2",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vm 220 4x2r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vm 270 4x2r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vm 270 6x2r",
+                  "doc_count": 4
+                },
+                {
+                  "key": "vm 290 6x2 r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vm 310 4x2t",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vm 330 4x2t",
+                  "doc_count": 1
+                },
+                {
+                  "key": "vm 330 8x2r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xc60 2.0 t5 comf",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xc60 2.0t5 r-des",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xc60 3.0t awd",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "wangye",
+            "doc_count": 1,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "motorino 150t67",
+                  "doc_count": 1
+                }
+              ]
+            }
+          },
+          {
+            "key": "yamaha",
+            "doc_count": 30,
+            "lot_model": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "fazer 250 blueflex",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fluo 125",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fz15 fazer abs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "fz25 fazer",
+                  "doc_count": 3
+                },
+                {
+                  "key": "mt03 abs",
+                  "doc_count": 2
+                },
+                {
+                  "key": "neo 125",
+                  "doc_count": 2
+                },
+                {
+                  "key": "nmax",
+                  "doc_count": 3
+                },
+                {
+                  "key": "nmax 160",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xmax 300",
+                  "doc_count": 2
+                },
+                {
+                  "key": "xt 660r",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xtz 150 crosser z",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xtz 250 lander",
+                  "doc_count": 1
+                },
+                {
+                  "key": "xtz 250 tenere",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ybr 150 factor",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ybr 150 factor dx",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ybr 150 factor ed",
+                  "doc_count": 3
+                },
+                {
+                  "key": "ybr125 factor ed",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ybr150 factor ed",
+                  "doc_count": 1
+                },
+                {
+                  "key": "ys 150 fazer ed",
+                  "doc_count": 1
+                },
+                {
+                  "key": "yzf r15 abs",
+                  "doc_count": 1
+                },
+                {
+                  "key": "yzf r3 abs",
+                  "doc_count": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "lot_location": {
+      "doc_count": 993,
+      "lot_location": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "aricanduva/sp",
+            "doc_count": 3
+          },
+          {
+            "key": "bauru/sp",
+            "doc_count": 42
+          },
+          {
+            "key": "caçapava/sp",
+            "doc_count": 36
+          },
+          {
+            "key": "cesário lange/sp",
+            "doc_count": 31
+          },
+          {
+            "key": "curitiba i/pr",
+            "doc_count": 29
+          },
+          {
+            "key": "curitiba ii/pr",
+            "doc_count": 30
+          },
+          {
+            "key": "guarulhos i/sp",
+            "doc_count": 509
+          },
+          {
+            "key": "guarulhos iii/sp",
+            "doc_count": 43
+          },
+          {
+            "key": "limeira/sp",
+            "doc_count": 18
+          },
+          {
+            "key": "monte mor/sp",
+            "doc_count": 82
+          },
+          {
+            "key": "outros locais",
+            "doc_count": 113
+          },
+          {
+            "key": "ribeirão preto/sp",
+            "doc_count": 28
+          },
+          {
+            "key": "sertãozinho/sp",
+            "doc_count": 29
+          }
+        ]
+      }
+    },
+    "lot_origin": {
+      "doc_count": 993,
+      "lot_origin": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "financiamento",
+            "doc_count": 52
+          },
+          {
+            "key": "frota",
+            "doc_count": 109
+          },
+          {
+            "key": "judicial",
+            "doc_count": 11
+          },
+          {
+            "key": "lojista",
+            "doc_count": 4
+          },
+          {
+            "key": "particular",
+            "doc_count": 1
+          },
+          {
+            "key": "seguro",
+            "doc_count": 809
+          },
+          {
+            "key": "seguro 0 km",
+            "doc_count": 7
+          }
+        ]
+      }
+    },
+    "client_name": {
+      "doc_count": 993,
+      "client_name": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "007 comercio de automoveis ltda",
+            "doc_count": 0
+          },
+          {
+            "key": "1ª vara criminal da comarca de jaguariuna",
+            "doc_count": 0
+          },
+          {
+            "key": "1ª vara criminal do foro de ribeirão preto/sp",
+            "doc_count": 1
+          },
+          {
+            "key": "1ª vara das exec. crim. do f. c. da capital/sp",
+            "doc_count": 0
+          },
+          {
+            "key": "1ª vara e of. do jec do foro reg. de santo amaro",
+            "doc_count": 1
+          },
+          {
+            "key": "2ª vara criminal da comarca de indaiatuba",
+            "doc_count": 0
+          },
+          {
+            "key": "2ª vara criminal de ribeirão preto/sp",
+            "doc_count": 0
+          },
+          {
+            "key": "2ª vara criminal do foro de ribeirão preto/sp",
+            "doc_count": 0
+          },
+          {
+            "key": "3ª vara e of. da fazenda públ. do foro central/sp",
+            "doc_count": 0
+          },
+          {
+            "key": "6ª vara e ofício cível da comarca de guarulhos/sp",
+            "doc_count": 1
+          },
+          {
+            "key": "alfa seguradora",
+            "doc_count": 11
+          },
+          {
+            "key": "allianz seguros s.a",
+            "doc_count": 10
+          },
+          {
+            "key": "azul cia.de seguros",
+            "doc_count": 39
+          },
+          {
+            "key": "banco bradesco financiamentos s/a",
+            "doc_count": 0
+          },
+          {
+            "key": "banco bradesco s.a.",
+            "doc_count": 2
+          },
+          {
+            "key": "banco mercedes-benz s.a",
+            "doc_count": 5
+          },
+          {
+            "key": "banco pan s.a",
+            "doc_count": 8
+          },
+          {
+            "key": "banco votorantim s.a.",
+            "doc_count": 1
+          },
+          {
+            "key": "bauko máquinas",
+            "doc_count": 0
+          },
+          {
+            "key": "berkley international do brasil seguros s.a.,",
+            "doc_count": 2
+          },
+          {
+            "key": "bradesco seguros s/a",
+            "doc_count": 73
+          },
+          {
+            "key": "consigaz distribuidora de gás ltda",
+            "doc_count": 8
+          },
+          {
+            "key": "consorcio salvador ambiental",
+            "doc_count": 3
+          },
+          {
+            "key": "consorcio são bernardo soluções",
+            "doc_count": 2
+          },
+          {
+            "key": "correa e correa com e serv eletro eletronica ltda",
+            "doc_count": 1
+          },
+          {
+            "key": "darwin seguros s.a",
+            "doc_count": 3
+          },
+          {
+            "key": "enel brasil s.a",
+            "doc_count": 1
+          },
+          {
+            "key": "essor seguros",
+            "doc_count": 0
+          },
+          {
+            "key": "face veiculos ltda",
+            "doc_count": 1
+          },
+          {
+            "key": "fbc links brindes ltda",
+            "doc_count": 8
+          },
+          {
+            "key": "fidi administracao e participacoes societarias ltd",
+            "doc_count": 1
+          },
+          {
+            "key": "gran nobre pisos industrias ltda",
+            "doc_count": 1
+          },
+          {
+            "key": "gri koleta - rj",
+            "doc_count": 0
+          },
+          {
+            "key": "gri koleta - sp",
+            "doc_count": 0
+          },
+          {
+            "key": "guindastec guindastes e serviços técnicos ltda",
+            "doc_count": 3
+          },
+          {
+            "key": "hdi seguros do brasil sa",
+            "doc_count": 46
+          },
+          {
+            "key": "heleno & fonseca construtecnica s/a",
+            "doc_count": 11
+          },
+          {
+            "key": "hospital med imagem s.a",
+            "doc_count": 1
+          },
+          {
+            "key": "humana assistencia médica ltda",
+            "doc_count": 2
+          },
+          {
+            "key": "jsc guinchos ltda",
+            "doc_count": 6
+          },
+          {
+            "key": "kcr prestacao de servicos terceirizados",
+            "doc_count": 1
+          },
+          {
+            "key": "let`s rent a car",
+            "doc_count": 1
+          },
+          {
+            "key": "logistica ambiental de sao paulo s.a. - loga",
+            "doc_count": 0
+          },
+          {
+            "key": "medicar emergências médicas s/c ltda",
+            "doc_count": 1
+          },
+          {
+            "key": "mitsui sumitomo seguros",
+            "doc_count": 0
+          },
+          {
+            "key": "mottu locação de veiculos ltda",
+            "doc_count": 0
+          },
+          {
+            "key": "mr3 serviços de remoções de veiculos ltda",
+            "doc_count": 1
+          },
+          {
+            "key": "omni s.a.",
+            "doc_count": 31
+          },
+          {
+            "key": "outros",
+            "doc_count": 8
+          },
+          {
+            "key": "persipisos decorações ltda",
+            "doc_count": 4
+          },
+          {
+            "key": "plantão transportes ltda",
+            "doc_count": 3
+          },
+          {
+            "key": "porto seguro-seguros",
+            "doc_count": 101
+          },
+          {
+            "key": "prime m&g frotas e locações de veículos",
+            "doc_count": 0
+          },
+          {
+            "key": "primer loc de veic e caminhões matheus & nicollas",
+            "doc_count": 2
+          },
+          {
+            "key": "quimilog transportes e logistica ltda,",
+            "doc_count": 3
+          },
+          {
+            "key": "rede lebaca administração e comercial ltda",
+            "doc_count": 2
+          },
+          {
+            "key": "revita engenharia s.a",
+            "doc_count": 16
+          },
+          {
+            "key": "rn metropolitan ltda",
+            "doc_count": 1
+          },
+          {
+            "key": "s a porto transporte rodoviarios ltda",
+            "doc_count": 1
+          },
+          {
+            "key": "salfena construções ltda",
+            "doc_count": 2
+          },
+          {
+            "key": "sbc valorização de residuos",
+            "doc_count": 4
+          },
+          {
+            "key": "sef setor de exec. fisc. comarca guaratinguetá/sp",
+            "doc_count": 5
+          },
+          {
+            "key": "seguros sura s/a",
+            "doc_count": 22
+          },
+          {
+            "key": "seico serviço internacional de comércio ltda",
+            "doc_count": 1
+          },
+          {
+            "key": "solvi essencis ambiental s.a",
+            "doc_count": 1
+          },
+          {
+            "key": "sompo seguros (corporate)",
+            "doc_count": 18
+          },
+          {
+            "key": "stillo servicos turisticos e viagens ltda.",
+            "doc_count": 1
+          },
+          {
+            "key": "suhai seguradora s.a",
+            "doc_count": 171
+          },
+          {
+            "key": "tokio marine seguradora (tms)",
+            "doc_count": 208
+          },
+          {
+            "key": "transluc transportadora são lucas ltda",
+            "doc_count": 7
+          },
+          {
+            "key": "transportadora elos de ouro ltda",
+            "doc_count": 3
+          },
+          {
+            "key": "travessia securitizadora de creditos financeiros s",
+            "doc_count": 5
+          },
+          {
+            "key": "truk express transporte de cargas ltda",
+            "doc_count": 2
+          },
+          {
+            "key": "unidas s.a -  7",
+            "doc_count": 0
+          },
+          {
+            "key": "unidas s.a - 10",
+            "doc_count": 0
+          },
+          {
+            "key": "vara e of. do juiz. esp. cível da com. de assis/sp",
+            "doc_count": 2
+          },
+          {
+            "key": "vara e ofício cível da comarca de ipuã/sp",
+            "doc_count": 0
+          },
+          {
+            "key": "vara e ofício do jec da comarca de indaiatuba/sp",
+            "doc_count": 0
+          },
+          {
+            "key": "vara e ofício do jec do foro reg. de itaquera/sp",
+            "doc_count": 1
+          },
+          {
+            "key": "via leste",
+            "doc_count": 0
+          },
+          {
+            "key": "w four veiculos e transportadora ltda",
+            "doc_count": 1
+          },
+          {
+            "key": "yelum seguradora",
+            "doc_count": 62
+          },
+          {
+            "key": "youse seguros",
+            "doc_count": 36
+          },
+          {
+            "key": "zurich minas brasil seguros s/a",
+            "doc_count": 2
+          },
+          {
+            "key": "zurich minas brasil seguros s/a 2",
+            "doc_count": 11
+          }
+        ]
+      }
+    },
+    "lot_financeable": {
+      "doc_count": 993,
+      "lot_financeable": {
+        "doc_count_error_upper_bound": 0,
+        "sum_other_doc_count": 0,
+        "buckets": [
+          {
+            "key": "Financiável",
+            "doc_count": 251
+          },
+          {
+            "key": "Não Financiável",
+            "doc_count": 731
+          }
+        ]
+      }
+    }
+  },
+  "total": 993,
+  "page": 1,
+  "perPage": 0
+}

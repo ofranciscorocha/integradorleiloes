@@ -1,0 +1,41 @@
+{
+  "id": "a3814bdb-bf01-473b-8c24-337b26bf2296",
+  "timestamp": 1770145391162,
+  "matcher": {
+    "static": {
+      "/login": {
+        "redirect": "https://leilao.sodresantoro.com.br/minha-conta"
+      }
+    },
+    "wildcard": {},
+    "dynamic": {}
+  },
+  "prerendered": [
+    "/",
+    "/atendimento",
+    "/atendimento/como-comprar",
+    "/atendimento/patios",
+    "/atendimento/faq",
+    "/veiculos",
+    "/materiais",
+    "/imoveis",
+    "/sucatas",
+    "/judiciais",
+    "/atendimento/quero-vender",
+    "/materiais/lotes",
+    "/veiculos/lotes",
+    "/judiciais/lotes",
+    "/lotes/favoritos",
+    "/lotes/em-destaque",
+    "/lotes/em-disputa",
+    "/atendimento/nota-de-venda",
+    "/atendimento/prestacao-de-contas",
+    "/termos-de-uso",
+    "/politica-de-privacidade",
+    "/leilao",
+    "/lotes",
+    "/cadastro/concluido",
+    "/cadastro/passo-1",
+    "/quem-somos"
+  ]
+}

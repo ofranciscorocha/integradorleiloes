@@ -1,19 +1,31 @@
 node_modules/
 .env
-*.html
-*.png
-*.jpg
-*.json
-!package.json
-!package-lock.json
-!src/**/*.json
+
+# Ignorar apenas arquivos temporários e automação
 inspect-*.js
 dump-*.js
 *_dump.html
 *_inspect.png
+sato_*.html
+sato_*.json
+
+# Logs e Dados locais
 .gemini/
 .agent/
 data/
 src/database/data/
-public/img/logo.png
-public/img/hero-bg.jpg
+logs/
+
+# Branding images (se quiser que sejam mantidas apenas via upload no painel)
+# public/img/logo.png
+# public/img/hero-bg.jpg
+
+# NÃO ignorar arquivos essenciais de código e frontend
+!public/
+!src/api/public/
+!*.html
+!*.css
+!*.js
+!*.json
+!package.json
+!package-lock.json

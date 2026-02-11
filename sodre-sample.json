@@ -1,0 +1,38 @@
+{
+  "id": 1,
+  "name": "Veículos",
+  "slug": "veiculos",
+  "icon": "vehicles",
+  "fixed": 1,
+  "quantity": null,
+  "categories": [
+    {
+      "id": 1,
+      "name": "Carros",
+      "slug": "carros",
+      "link": "carros",
+      "quantity": 246
+    },
+    {
+      "id": 4,
+      "name": "Utilitarios leves",
+      "slug": "utilitarios-leves",
+      "link": "utilitarios+leves",
+      "quantity": 77
+    },
+    {
+      "id": 2,
+      "name": "Motos",
+      "slug": "motos",
+      "link": "motos",
+      "quantity": 52
+    },
+    {
+      "id": 5,
+      "name": "Caminhões",
+      "slug": "caminhoes",
+      "link": "caminhões",
+      "quantity": 46
+    }
+  ]
+}

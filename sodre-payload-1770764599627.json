@@ -1,0 +1,761 @@
+[
+  {
+    "data": 1,
+    "prerenderedAt": 237
+  },
+  [
+    "ShallowReactive",
+    2
+  ],
+  {
+    "content-query-p70yTZrDV2": 3
+  },
+  {
+    "_path": 4,
+    "_dir": 5,
+    "_draft": 6,
+    "_partial": 6,
+    "_locale": 7,
+    "title": 8,
+    "description": 9,
+    "h1": 10,
+    "ref": 11,
+    "sitemap": 12,
+    "body": 16,
+    "_type": 231,
+    "_id": 232,
+    "_source": 233,
+    "_file": 234,
+    "_stem": 235,
+    "_extension": 236
+  },
+  "/segment/lotes/leilao-de-carros-seminovos",
+  "lotes",
+  false,
+  "",
+  "Leilão de Carros Recuperados de Financeira SP - Sodré Santoro | Site Oficial",
+  "Leilão de carros recuperados de financeira SP com preço mais baixo é aqui no Sodré Santoro. Diferentes carros de leilões. Confira o lote e arremate o seu!",
+  "Leilão de carros recuperados de financeira SP",
+  "/veiculos/lotes",
+  {
+    "loc": 11,
+    "lastmod": 13,
+    "changefreq": 14,
+    "priority": 15
+  },
+  "2024-07-25T00:00:00.000Z",
+  "monthly",
+  0.8,
+  {
+    "type": 17,
+    "children": 18,
+    "toc": 222
+  },
+  "root",
+  [
+    19,
+    35,
+    40,
+    47,
+    57,
+    62,
+    67,
+    77,
+    83,
+    88,
+    98,
+    103,
+    108,
+    114,
+    125,
+    130,
+    135,
+    141,
+    152,
+    157,
+    163,
+    174,
+    179,
+    184,
+    190,
+    201,
+    206
+  ],
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 22,
+    "children": 23
+  },
+  "element",
+  "p",
+  {},
+  [
+    24,
+    27,
+    33
+  ],
+  {
+    "type": 25,
+    "value": 26
+  },
+  "text",
+  "O ",
+  {
+    "type": 20,
+    "tag": 28,
+    "props": 29,
+    "children": 30
+  },
+  "strong",
+  {},
+  [
+    31
+  ],
+  {
+    "type": 25,
+    "value": 32
+  },
+  "leilão de carros recuperados de financeira SP",
+  {
+    "type": 25,
+    "value": 34
+  },
+  " é mais uma oportunidade de conseguir adquirir o seu veículo. Por meio de um leilão, que atende às necessidades dos participantes e garante segurança, é possível adquirir um carro de maneira simples, rápida, segura e, o mais importante, com valor abaixo do mercado.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 36,
+    "children": 37
+  },
+  {},
+  [
+    38
+  ],
+  {
+    "type": 25,
+    "value": 39
+  },
+  "Muitas pessoas ainda têm dúvidas sobre carros recuperados de financiamento e, por isso, é necessário falar sobre eles. Confira, abaixo, todas as informações possíveis acerca desse tipo de leilão, como fazer para participar de um e quais são as diferenças entre um veículo recuperado de financiamento e um sinistrado.",
+  {
+    "type": 20,
+    "tag": 41,
+    "props": 42,
+    "children": 44
+  },
+  "h2",
+  {
+    "id": 43
+  },
+  "afinal-o-que-são-os-carros-recuperados",
+  [
+    45
+  ],
+  {
+    "type": 25,
+    "value": 46
+  },
+  "Afinal, o que são os carros recuperados?",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 48,
+    "children": 49
+  },
+  {},
+  [
+    50,
+    51,
+    55
+  ],
+  {
+    "type": 25,
+    "value": 26
+  },
+  {
+    "type": 20,
+    "tag": 28,
+    "props": 52,
+    "children": 53
+  },
+  {},
+  [
+    54
+  ],
+  {
+    "type": 25,
+    "value": 32
+  },
+  {
+    "type": 25,
+    "value": 56
+  },
+  " ainda é um assunto que precisa ser mais divulgado, principalmente por causa da grande quantidade de dúvidas acerca do assunto. Esses veículos disponibilizados no leilão foram tomados por instituições financeiras após seus antigos donos não pagarem as parcelas do financiamento.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 58,
+    "children": 59
+  },
+  {},
+  [
+    60
+  ],
+  {
+    "type": 25,
+    "value": 61
+  },
+  "Sendo assim, sempre que alguém faz um contrato de alienação fiduciária com uma determinada instituição para comprar um veículo, mesmo que o comprador tenha posse direta, a propriedade só poderá ser transferida integralmente por meio da quitação de todas as parcelas contratadas no financiamento.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 63,
+    "children": 64
+  },
+  {},
+  [
+    65
+  ],
+  {
+    "type": 25,
+    "value": 66
+  },
+  "Quando um veículo for financiado, caso o solicitante não tenha pago todas as parcelas, o bem não será de sua propriedade. Por isso, quando essas parcelas entram em atraso, a instituição financeira solicita o bem, fazendo com que ele vá a leilão para que as despesas possam ser cobertas.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 68,
+    "children": 69
+  },
+  {},
+  [
+    70,
+    71,
+    75
+  ],
+  {
+    "type": 25,
+    "value": 26
+  },
+  {
+    "type": 20,
+    "tag": 28,
+    "props": 72,
+    "children": 73
+  },
+  {},
+  [
+    74
+  ],
+  {
+    "type": 25,
+    "value": 32
+  },
+  {
+    "type": 25,
+    "value": 76
+  },
+  " é seguro, assim como qualquer outro, principalmente se for acompanhado pela Sodré Santoro. Essa é uma chance única de levar um veículo nas condições que deseja, seja para reforma ou para uso cotidiano, por um valor abaixo do mercado.",
+  {
+    "type": 20,
+    "tag": 41,
+    "props": 78,
+    "children": 80
+  },
+  {
+    "id": 79
+  },
+  "vale-a-pena-participar-de-um-leilão-de-carros-recuperados-de-financeira-sp",
+  [
+    81
+  ],
+  {
+    "type": 25,
+    "value": 82
+  },
+  "Vale a pena participar de um leilão de carros recuperados de financeira SP?",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 84,
+    "children": 85
+  },
+  {},
+  [
+    86
+  ],
+  {
+    "type": 25,
+    "value": 87
+  },
+  "Sabendo o que significa um carro recuperado, fica mais simples saber se vale, ou não, a pena participar de um leilão dessa categoria. Nos sites de leilão, é possível ver quais são as condições do veículo e como ele será colocado no evento. Sendo assim, cabe ao interessado fazer a análise dessas características.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 89,
+    "children": 90
+  },
+  {},
+  [
+    91,
+    92,
+    96
+  ],
+  {
+    "type": 25,
+    "value": 26
+  },
+  {
+    "type": 20,
+    "tag": 28,
+    "props": 93,
+    "children": 94
+  },
+  {},
+  [
+    95
+  ],
+  {
+    "type": 25,
+    "value": 32
+  },
+  {
+    "type": 25,
+    "value": 97
+  },
+  " é vantajoso para qualquer pessoa que deseja economizar, principalmente porque é possível ter um abatimento de até 30% do preço do valor comum ao mercado. Além disso, esse valor toma como base a Tabela Fipe.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 99,
+    "children": 100
+  },
+  {},
+  [
+    101
+  ],
+  {
+    "type": 25,
+    "value": 102
+  },
+  "Dessa maneira, o interessado pode escolher comprar um carro que pode estar em ótimas condições, principalmente porque vinha de um financiamento. Assim, um veículo funcional e com poucas avarias poderá ser facilmente encontrado em um leilão voltado para a venda de veículos.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 104,
+    "children": 105
+  },
+  {},
+  [
+    106
+  ],
+  {
+    "type": 25,
+    "value": 107
+  },
+  "É válido ressaltar, no entanto, que um carro recuperado pode ter sofrido sinistro. Se esse for o caso, todas as condições do veículo serão adicionadas na descrição do leilão. Assim, cabe ao interessado decidir se deseja, ou não, participar da disputa pelo carro.",
+  {
+    "type": 20,
+    "tag": 41,
+    "props": 109,
+    "children": 111
+  },
+  {
+    "id": 110
+  },
+  "carro-sinistrado-x-carro-recuperado",
+  [
+    112
+  ],
+  {
+    "type": 25,
+    "value": 113
+  },
+  "Carro sinistrado X carro recuperado",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 115,
+    "children": 116
+  },
+  {},
+  [
+    117,
+    119,
+    123
+  ],
+  {
+    "type": 25,
+    "value": 118
+  },
+  "Em um ",
+  {
+    "type": 20,
+    "tag": 28,
+    "props": 120,
+    "children": 121
+  },
+  {},
+  [
+    122
+  ],
+  {
+    "type": 25,
+    "value": 32
+  },
+  {
+    "type": 25,
+    "value": 124
+  },
+  ", é muito importante saber qual a diferença entre um veículo sinistrado e um carro recuperado de financiamento. Essa é uma dúvida bastante clássica, principalmente porque algumas pessoas costumam associar os dois casos a uma única coisa.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 126,
+    "children": 127
+  },
+  {},
+  [
+    128
+  ],
+  {
+    "type": 25,
+    "value": 129
+  },
+  "No entanto, o carro sinistrado é aquele que acabou passando por um incidente, como um roubo ou uma batida. Já o carro recuperado de financiamento é aquele que foi recuperado por uma instituição financeira, a fim de pagar uma dívida que estava em aberto com aquele banco.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 131,
+    "children": 132
+  },
+  {},
+  [
+    133
+  ],
+  {
+    "type": 25,
+    "value": 134
+  },
+  "Ainda assim, é possível que um carro sinistrado e recuperado vá a leilão. Assim como já foi mencionado anteriormente, caso isso venha a acontecer, todas as informações acerca do veículo estarão disponíveis na descrição. A decisão de participar do evento fica por parte do interessado.",
+  {
+    "type": 20,
+    "tag": 41,
+    "props": 136,
+    "children": 138
+  },
+  {
+    "id": 137
+  },
+  "como-funciona-o-pagamento-em-leilões",
+  [
+    139
+  ],
+  {
+    "type": 25,
+    "value": 140
+  },
+  "Como funciona o pagamento em leilões?",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 142,
+    "children": 143
+  },
+  {},
+  [
+    144,
+    146,
+    150
+  ],
+  {
+    "type": 25,
+    "value": 145
+  },
+  "Na maior parte das situações, ao participar de um ",
+  {
+    "type": 20,
+    "tag": 28,
+    "props": 147,
+    "children": 148
+  },
+  {},
+  [
+    149
+  ],
+  {
+    "type": 25,
+    "value": 32
+  },
+  {
+    "type": 25,
+    "value": 151
+  },
+  ", é importante consultar o edital disponível no site da Sodré Santoro. Ler com calma e compreender todos os critérios colocados é de extrema relevância para garantir um processo de compra simples e sem dores de cabeça.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 153,
+    "children": 154
+  },
+  {},
+  [
+    155
+  ],
+  {
+    "type": 25,
+    "value": 156
+  },
+  "Ainda assim, é muito comum que, em todos os leilões de carro ou qualquer outro veículo, caso o pagamento não seja realizado dentro de um prazo determinado, o lote acabe voltando para o leilão. Dessa maneira, o comprador acabará tendo o acesso bloqueado no site em que escolheu participar do evento e o nome protestado.",
+  {
+    "type": 20,
+    "tag": 41,
+    "props": 158,
+    "children": 160
+  },
+  {
+    "id": 159
+  },
+  "dicas-ao-comprar-veículo-de-um-leilão",
+  [
+    161
+  ],
+  {
+    "type": 25,
+    "value": 162
+  },
+  "Dicas ao comprar veículo de um leilão",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 164,
+    "children": 165
+  },
+  {},
+  [
+    166,
+    168,
+    172
+  ],
+  {
+    "type": 25,
+    "value": 167
+  },
+  "Caso esteja interessado em participar de um ",
+  {
+    "type": 20,
+    "tag": 28,
+    "props": 169,
+    "children": 170
+  },
+  {},
+  [
+    171
+  ],
+  {
+    "type": 25,
+    "value": 32
+  },
+  {
+    "type": 25,
+    "value": 173
+  },
+  ", é necessário ter algumas dicas em mente. A primeira é fazer o seguro para o veículo. No entanto, é necessário aguardar que a seguradora aprove o processo, e isso pode levar um tempo. ",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 175,
+    "children": 176
+  },
+  {},
+  [
+    177
+  ],
+  {
+    "type": 25,
+    "value": 178
+  },
+  "Também é importante que o interessado estude e analise o carro que será comprado no evento a fim de evitar gastos desnecessários no futuro. ",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 180,
+    "children": 181
+  },
+  {},
+  [
+    182
+  ],
+  {
+    "type": 25,
+    "value": 183
+  },
+  "Por fim, verifique as condições em que o carro se encontra. Pode ser que o carro não se encontre no mais perfeito estado, porém, é válido ler a descrição do bem antes mesmo de dar o seu lance, garantindo uma compra sem maiores problemas.",
+  {
+    "type": 20,
+    "tag": 41,
+    "props": 185,
+    "children": 187
+  },
+  {
+    "id": 186
+  },
+  "seguro-para-carro-recuperado",
+  [
+    188
+  ],
+  {
+    "type": 25,
+    "value": 189
+  },
+  "Seguro para carro recuperado",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 191,
+    "children": 192
+  },
+  {},
+  [
+    193,
+    195,
+    199
+  ],
+  {
+    "type": 25,
+    "value": 194
+  },
+  "Para quem está interessado em participar de um ",
+  {
+    "type": 20,
+    "tag": 28,
+    "props": 196,
+    "children": 197
+  },
+  {},
+  [
+    198
+  ],
+  {
+    "type": 25,
+    "value": 32
+  },
+  {
+    "type": 25,
+    "value": 200
+  },
+  ", também é necessário saber se é possível contratar um seguro para o veículo em questão. O carro recuperado pode, sim, ser segurado, desde que passe pelos trâmites definidos pela empresa.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 202,
+    "children": 203
+  },
+  {},
+  [
+    204
+  ],
+  {
+    "type": 25,
+    "value": 205
+  },
+  "No entanto, há empresas que podem aceitar tranquilamente o seu veículo recuperado, enquanto outras poderão negar. A pesquisa, nesse momento, é extremamente importante. O mais adequado é procurar por um corretor e solicitar uma simulação.",
+  {
+    "type": 20,
+    "tag": 21,
+    "props": 207,
+    "children": 208
+  },
+  {},
+  [
+    209,
+    211,
+    220
+  ],
+  {
+    "type": 25,
+    "value": 210
+  },
+  "Quer participar de mais leilões? Então confira o ",
+  {
+    "type": 20,
+    "tag": 212,
+    "props": 213,
+    "children": 217
+  },
+  "a",
+  {
+    "href": 214,
+    "rel": 215
+  },
+  "https://www.sodresantoro.com.br/imoveis/",
+  [
+    216
+  ],
+  "nofollow",
+  [
+    218
+  ],
+  {
+    "type": 25,
+    "value": 219
+  },
+  "leilão de imóveis",
+  {
+    "type": 25,
+    "value": 221
+  },
+  " da Sodré Santoro.",
+  {
+    "title": 7,
+    "searchDepth": 223,
+    "depth": 223,
+    "links": 224
+  },
+  2,
+  [
+    225,
+    226,
+    227,
+    228,
+    229,
+    230
+  ],
+  {
+    "id": 43,
+    "depth": 223,
+    "text": 46
+  },
+  {
+    "id": 79,
+    "depth": 223,
+    "text": 82
+  },
+  {
+    "id": 110,
+    "depth": 223,
+    "text": 113
+  },
+  {
+    "id": 137,
+    "depth": 223,
+    "text": 140
+  },
+  {
+    "id": 159,
+    "depth": 223,
+    "text": 162
+  },
+  {
+    "id": 186,
+    "depth": 223,
+    "text": 189
+  },
+  "markdown",
+  "content:segment:lotes:leilao-de-carros-seminovos.md",
+  "content",
+  "segment/lotes/leilao-de-carros-seminovos.md",
+  "segment/lotes/leilao-de-carros-seminovos",
+  "md",
+  1770145432936
+]

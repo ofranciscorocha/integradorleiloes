@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "name": "Veículos",
+    "slug": "veiculos",
+    "icon": "vehicles",
+    "fixed": 1,
+    "quantity": null,
+    "categories": [
+      {
+        "id": 1,
+        "name": "Carros",
+        "slug": "carros",
+        "link": "carros",
+        "quantity": 246
+      },
+      {
+        "id": 4,
+        "name": "Utilitarios leves",
+        "slug": "utilitarios-leves",
+        "link": "utilitarios+leves",
+        "quantity": 77
+      },
+      {
+        "id": 2,
+        "name": "Motos",
+        "slug": "motos",
+        "link": "motos",
+        "quantity": 52
+      },
+      {
+        "id": 5,
+        "name": "Caminhões",
+        "slug": "caminhoes",
+        "link": "caminhões",
+        "quantity": 46
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Materiais e Equipamentos",
+    "slug": "materiais",
+    "icon": "materials",
+    "fixed": 1,
+    "quantity": 529,
+    "categories": [
+      {
+        "id": 1008,
+        "name": "Eletrodomesticos",
+        "slug": "eletrodomesticos",
+        "link": "eletrodomesticos",
+        "quantity": 161
+      },
+      {
+        "id": 800,
+        "name": "Diversos",
+        "slug": "diversos",
+        "link": "diversos",
+        "quantity": 111
+      },
+      {
+        "id": 1037,
+        "name": "Móveis p/ Casa",
+        "slug": "moveis-p-casa",
+        "link": "móveis+p/+casa",
+        "quantity": 55
+      },
+      {
+        "id": 1003,
+        "name": "Informatica",
+        "slug": "informatica",
+        "link": "informatica",
+        "quantity": 43
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Imóveis",
+    "slug": "imoveis",
+    "icon": "properties",
+    "fixed": 1,
+    "quantity": 33,
+    "categories": [
+      {
+        "id": 23,
+        "name": "Imóvel Residencial",
+        "slug": "imovel-residencial",
+        "link": "imóvel+residencial",
+        "quantity": 7
+      },
+      {
+        "id": 1768,
+        "name": "Direitos sobre apartamento",
+        "slug": "direitos-sobre-apartamento",
+        "link": "direitos+sobre+apartamento",
+        "quantity": 3
+      },
+      {
+        "id": 1815,
+        "name": "Lote de terreno",
+        "slug": "lote-de-terreno",
+        "link": "lote+de+terreno",
+        "quantity": 3
+      },
+      {
+        "id": 1,
+        "name": "Terreno",
+        "slug": "terreno",
+        "link": "terreno",
+        "quantity": 2
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Sucatas",
+    "slug": "sucatas",
+    "icon": "scraps",
+    "fixed": 1,
+    "quantity": 97,
+    "categories": null
+  },
+  {
+    "id": 5,
+    "name": "Judiciais",
+    "slug": "judiciais",
+    "icon": "judicials",
+    "fixed": 1,
+    "quantity": 74,
+    "categories": null
+  }
+]
