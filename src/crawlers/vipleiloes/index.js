@@ -27,7 +27,7 @@ const createCrawler = (db) => {
 
         try {
             const { data } = await axios.get(
-                `https://www.vipleiloes.com.br/Veiculos/ListarVeiculos?Pagina=${pagina}&OrdenacaoVeiculo=InicioLeilao&Financiavel=False&Favoritos=False`,
+                `https://www.vipleiloes.com.br/Portal/Veiculos/ListarVeiculos?Pagina=${pagina}&OrdenacaoVeiculo=InicioLeilao&Financiavel=False&Favoritos=False`,
                 { timeout: TIMEOUT }
             );
 

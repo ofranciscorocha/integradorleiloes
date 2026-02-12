@@ -226,6 +226,8 @@ app.get('/veiculos', async (req, res) => {
             shuffle: (sort === 'recente' || !sort)
         });
 
+        console.log(`🔍 [API] /veiculos: Encontrados ${result.items.length} itens de ${result.pagination.total} total (Pag ${page})`);
+
         res.json({ success: true, ...result });
     } catch (error) {
         console.error('Erro em /veiculos:', error);
@@ -355,18 +357,28 @@ app.post('/admin/crawl', requireAuth, (req, res) => {
 
     if (!scriptPath) return res.status(400).json({ success: false, error: 'Site desconhecido ou inativo' });
 
-    console.log(`🚀 Iniciando crawler manual: ${site}`);
+    const absoluteScriptPath = path.resolve(process.cwd(), scriptPath);
+    console.log(`🚀 [Admin] Iniciando crawler manual: ${site} | Script: ${absoluteScriptPath}`);
 
-    // Roda em background detacched
-    const child = spawn('node', [scriptPath], {
+    // Roda em background
+    const child = spawn('node', [absoluteScriptPath], {
         cwd: process.cwd(),
         detached: true,
-        stdio: 'ignore'
+        stdio: 'inherit',
+        shell: true // Adicionado para paridade com scheduler
+    });
+
+    child.on('error', (err) => {
+        console.error(`❌ [Admin] Falha ao iniciar processo do crawler ${site}:`, err);
+    });
+
+    child.on('exit', (code) => {
+        console.log(`ℹ️ [Admin] Crawler ${site} terminou com código ${code}`);
     });
 
     child.unref();
 
-    res.json({ success: true, message: `Crawler ${site} iniciado em background.` });
+    res.json({ success: true, message: `Crawler ${site} disparado no servidor. Acompanhe os logs para progresso.` });
 });
 
 // ============ MOCK AUTH ROUTES ============

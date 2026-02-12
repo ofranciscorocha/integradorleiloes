@@ -9,65 +9,59 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const runCrawler = (scriptPath, name) => {
-    console.log(`⏰ [Scheduler] Starting ${name}...`);
-    const child = spawn('node', [scriptPath], {
-        stdio: 'inherit',
-        shell: true
-    });
+    return new Promise((resolve) => {
+        console.log(`⏰ [Scheduler] Starting ${name}...`);
+        const child = spawn('node', [scriptPath], {
+            stdio: 'inherit',
+            shell: true
+        });
 
-    child.on('close', (code) => {
-        console.log(`⏰ [Scheduler] ${name} finished with code ${code}`);
+        child.on('close', (code) => {
+            console.log(`⏰ [Scheduler] ${name} finished with code ${code}`);
+            resolve(code);
+        });
+
+        child.on('error', (err) => {
+            console.error(`⏰ [Scheduler] Error starting ${name}:`, err);
+            resolve(1);
+        });
     });
 };
 
+const runSequentially = async (crawlers) => {
+    for (const { path, name } of crawlers) {
+        await runCrawler(path, name);
+    }
+};
+
 const initScheduler = (runImmediate = false) => {
-    console.log('📅 Scheduler initialized (Twice Daily: 09:00 & 16:00)');
+    console.log('📅 [Scheduler] Daily Cycles: 08:00 & 18:00');
+
+    const crawlerScripts = [
+        { path: path.join(__dirname, '../crawlers/palaciodosleiloes/run.js'), name: 'Palácio dos Leilões' },
+        { path: path.join(__dirname, '../crawlers/freitas/run.js'), name: 'Freitas Leiloeiro' },
+        { path: path.join(__dirname, '../crawlers/rogeriomenezes/run.js'), name: 'Rogério Menezes' },
+        { path: path.join(__dirname, '../crawlers/sodre/run.js'), name: 'Sodré Santoro' },
+        { path: path.join(__dirname, '../crawlers/parque/run.js'), name: 'Parque dos Leilões' },
+        { path: path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), name: 'Guariglia Leilões' },
+        { path: path.join(__dirname, '../crawlers/vipleiloes/run.js'), name: 'Vip Leilões' }
+    ];
 
     if (runImmediate) {
-        console.log('🚀 [Scheduler] Iniciando coleta TOTAL (Startup)...');
-        // Ordenação prioritária solicitada pelo usuário
-        runCrawler(path.join(__dirname, '../crawlers/palaciodosleiloes/run.js'), 'Palácio dos Leilões');
-        runCrawler(path.join(__dirname, '../crawlers/freitas/run.js'), 'Freitas Leiloeiro');
-        runCrawler(path.join(__dirname, '../crawlers/rogeriomenezes/run.js'), 'Rogério Menezes');
-        runCrawler(path.join(__dirname, '../crawlers/sodre/run.js'), 'Sodré Santoro');
-
-        // Outros
-        runCrawler(path.join(__dirname, '../crawlers/parque/run.js'), 'Parque dos Leilões');
-        runCrawler(path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), 'Guariglia Leilões');
-
-        // Menor prioridade / Problemáticos
-        runCrawler(path.join(__dirname, '../crawlers/vipleiloes/run.js'), 'Vip Leilões');
-        // Copart (se houver no futuro)
+        console.log('🚀 [Scheduler] Iniciando coleta TOTAL (Startup Sequencial)...');
+        runSequentially(crawlerScripts);
     }
 
     // Schedule 1: 08:00 AM (Manhã)
-    cron.schedule('0 8 * * *', () => {
+    cron.schedule('0 8 * * *', async () => {
         console.log('⏰ [Scheduler] Running Morning Cycle (08:00)');
-        runCrawler(path.join(__dirname, '../crawlers/palaciodosleiloes/run.js'), 'Palácio dos Leilões');
-        runCrawler(path.join(__dirname, '../crawlers/freitas/run.js'), 'Freitas Leiloeiro');
-        runCrawler(path.join(__dirname, '../crawlers/rogeriomenezes/run.js'), 'Rogério Menezes');
-        runCrawler(path.join(__dirname, '../crawlers/sodre/run.js'), 'Sodré Santoro');
-
-        // Outros
-        runCrawler(path.join(__dirname, '../crawlers/parque/run.js'), 'Parque dos Leilões');
-        runCrawler(path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), 'Guariglia Leilões');
-        runCrawler(path.join(__dirname, '../crawlers/vipleiloes/run.js'), 'Vip Leilões');
+        await runSequentially(crawlerScripts);
     });
 
     // Schedule 2: 18:00 PM (Tarde/Noite)
-    cron.schedule('0 18 * * *', () => {
+    cron.schedule('0 18 * * *', async () => {
         console.log('⏰ [Scheduler] Running Evening Cycle (18:00)');
-        runCrawler(path.join(__dirname, '../crawlers/palaciodosleiloes/run.js'), 'Palácio dos Leilões');
-        runCrawler(path.join(__dirname, '../crawlers/freitas/run.js'), 'Freitas Leiloeiro');
-        runCrawler(path.join(__dirname, '../crawlers/rogeriomenezes/run.js'), 'Rogério Menezes');
-        runCrawler(path.join(__dirname, '../crawlers/sodre/run.js'), 'Sodré Santoro');
-
-        // Outros
-        runCrawler(path.join(__dirname, '../crawlers/parque/run.js'), 'Parque dos Leilões');
-        runCrawler(path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), 'Guariglia Leilões');
-        runCrawler(path.join(__dirname, '../crawlers/vipleiloes/run.js'), 'Vip Leilões');
-
-        // Limpeza diária
+        await runSequentially(crawlerScripts);
         cleanExpired();
     });
 

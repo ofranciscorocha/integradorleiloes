@@ -118,11 +118,11 @@ const createCrawler = (db) => {
                 if (data) console.log('Snippet:', data.substring(0, 200));
             }
 
-            const $ = cheerio.load(data);
-            const lista = [];
-
             // Itera sobre cada cartão (div.col-md-3)
-            $('div.col-md-3').each((index, card) => {
+            const cards = $('div.col-md-3');
+            console.log(`📡 [${SITE}] Encontrados ${cards.length} blocos col-md-3 no HTML`);
+
+            cards.each((index, card) => {
                 // Busca o div.i-c que contém o onclick
                 const icDiv = $(card).find('div.i-c[onclick]');
                 const onclick = icDiv.attr('onclick');
@@ -146,7 +146,6 @@ const createCrawler = (db) => {
                 const h6Elements = $(card).find('.my-0.h6, .h6');
                 h6Elements.each((i, h6) => {
                     const text = $(h6).text().trim();
-                    // O primeiro h6 com letras maiúsculas e "/" é geralmente o veículo
                     if (text.match(/[A-Z]{2,}/) && (text.includes('/') || text.includes(' '))) {
                         if (!dado.bem) {
                             dado.bem = text;
@@ -157,6 +156,8 @@ const createCrawler = (db) => {
                         dado.ano = text;
                     }
                 });
+
+                if (index < 5) console.log(`   🔸 [Palácio] Item ${index}: ${dado.bem || 'SEM NOME'} | Lote: ${loteId}`);
 
                 // Descrição do primeiro .small (tipo de sinistro)
                 const smallElements = $(card).find('.small');
