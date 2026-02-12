@@ -98,7 +98,7 @@ const createCrawler = (db) => {
             const { data, status } = await axios.postForm(
                 'https://www.palaciodosleiloes.com.br/site/camada_ajax/coluna_esquerda_m.php',
                 {
-                    quebra: '0.65432140' + Math.random().toString().slice(2, 10), // Randomize
+                    quebra: '0.' + Date.now(), // Use timestamp as quebra
                     opcao: 'listar_lote',
                     categoria_pesquisa: '1',
                     subcategoria_pesquisa: '',

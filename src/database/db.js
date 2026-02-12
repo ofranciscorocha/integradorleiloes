@@ -228,10 +228,8 @@ const connectDatabase = async () => {
         let items = readData(colecao);
         const initialCount = items.length;
 
-        if (filtro['previsao.time']?.$lt) {
-            const limit = filtro['previsao.time'].$lt;
-            items = items.filter(item => (item.previsao?.time || 0) >= limit);
-        }
+        // Filtra para manter somente quem NÃO bate com o filtro de deleção
+        items = items.filter(item => !matchesFilter(item, filtro));
 
         writeData(colecao, items);
         return initialCount - items.length;

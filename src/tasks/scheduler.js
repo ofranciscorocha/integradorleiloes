@@ -8,6 +8,15 @@ import checkAlerts from './checkAlerts.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+let schedulerStatus = {
+    lastRun: null,
+    nextRun: null,
+    running: false,
+    history: []
+};
+
+export const getSchedulerStatus = () => schedulerStatus;
+
 const runCrawler = (scriptPath, name) => {
     return new Promise((resolve) => {
         console.log(`⏰ [Scheduler] Starting ${name}...`);
@@ -29,9 +38,19 @@ const runCrawler = (scriptPath, name) => {
 };
 
 const runSequentially = async (crawlers) => {
+    schedulerStatus.running = true;
+    schedulerStatus.lastRun = new Date();
+
     for (const { path, name } of crawlers) {
         await runCrawler(path, name);
     }
+
+    schedulerStatus.running = false;
+    schedulerStatus.history.push({
+        time: new Date(),
+        type: 'total_cycle'
+    });
+    if (schedulerStatus.history.length > 10) schedulerStatus.history.shift();
 };
 
 const initScheduler = (runImmediate = false) => {

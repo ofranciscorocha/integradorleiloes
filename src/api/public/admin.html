@@ -374,6 +374,16 @@
                     <div id="sites-list" style="display: flex; flex-direction: column; gap: 10px;">
                         <!-- JS Render -->
                     </div>
+
+                    <div class="box-header" style="margin-top: 2rem;">
+                        <h2>Status do Scheduler</h2>
+                    </div>
+                    <div id="scheduler-status-info" class="small"
+                        style="background: #f8fafc; padding: 10px; border-radius: 8px;">
+                        <p><strong>Última Rodada:</strong> <span id="sched-last">Nunca</span></p>
+                        <p><strong>Status:</strong> <span id="sched-running">Parado</span></p>
+                        <div id="sched-history" style="margin-top: 5px; font-size: 0.75rem; color: #64748b;"></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -489,6 +499,21 @@
                     document.getElementById('stat-total').innerText = data.total;
                     document.getElementById('stat-today').innerText = data.stats.novosHoje || 0;
                     document.getElementById('stat-users').innerText = data.stats.cadastros || 0;
+
+                    // Scheduler Status
+                    if (data.stats.scheduler) {
+                        const s = data.stats.scheduler;
+                        document.getElementById('sched-last').innerText = s.lastRun ? new Date(s.lastRun).toLocaleString() : 'Nunca';
+                        document.getElementById('sched-running').innerHTML = s.running ?
+                            '<span style="color: #22c55e;"><i class="fas fa-spinner fa-spin"></i> Rodando Agora</span>' :
+                            '<span style="color: #64748b;">Aguardando Próxima Coleta</span>';
+
+                        const historyHtml = s.history.length > 0 ?
+                            '<b>Histórico recente:</b><br>' + s.history.map(h => `- ${new Date(h.time).toLocaleTimeString()} (${h.type})`).join('<br>') :
+                            'Sem histórico recente.';
+                        document.getElementById('sched-history').innerHTML = historyHtml;
+                    }
+
                     renderChart(data.stats.porSite);
                     renderSitesList(data.stats.porSite);
                 }

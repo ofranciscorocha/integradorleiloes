@@ -54,11 +54,16 @@ app.get('/a-painel-secreto', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Redirect amigável para o admin
+app.get('/painel', (req, res) => {
+    res.redirect('/a-painel-secreto');
+});
+
 // Database connection
 let db = null;
 
 // ...existing code...
-import initScheduler from '../tasks/scheduler.js';
+import initScheduler, { getSchedulerStatus } from '../tasks/scheduler.js';
 
 // ...existing code...
 
@@ -163,6 +168,7 @@ app.get('/veiculos', async (req, res) => {
             kmMax,
             tipo,
             uf,
+            condicao,
             sort = 'recente'
         } = req.query;
 
@@ -208,6 +214,21 @@ app.get('/veiculos', async (req, res) => {
         if (uf && uf.trim() !== '') {
             query.localLeilao = { $regex: uf, $options: 'i' };
         }
+
+        // Filter by Condition (Sucata, Sinistro, etc)
+        if (condicao && condicao.trim() !== '') {
+            if (condicao === 'sucata') {
+                query.descricao = { $regex: 'sucata|baixa', $options: 'i' };
+            } else if (condicao === 'sinistro') {
+                query.descricao = { $regex: 'sinistro| recuperado|média monta|grande monta|colisão', $options: 'i' };
+            } else if (condicao === 'financiamento') {
+                query.descricao = { $regex: 'financeiro|financiamento|retomado|banco', $options: 'i' };
+            } else {
+                query.descricao = { $regex: condicao, $options: 'i' };
+            }
+        }
+
+        console.log(`🔎 [API] Filtrando: Search="${search || ''}", Site="${site || ''}", UF="${uf || ''}", Condicao="${condicao || ''}", Ano=${anoMin || ''}-${anoMax || ''}`);
 
         // Sort Mapping (handle accented chars from frontend)
         let sortObj = { criadoEm: -1 };
@@ -282,7 +303,8 @@ app.get('/stats', async (req, res) => {
                     'Sodré Santoro': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'sodre' } } }),
                     'Parque dos Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'parquedosleiloes.com.br' } }),
                     'Rogério Menezes': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'rogerio' } } })
-                }
+                },
+                scheduler: getSchedulerStatus()
             }
         };
 

@@ -139,6 +139,62 @@ const saveUser = (user) => {
     currentState.user = user;
     updateAuthUI();
     closeLoginModal();
+    // Refresh to show unmasked data
+    buscarVeiculos(1);
+};
+
+const handleLogin = (e) => {
+    e.preventDefault();
+    const email = e.target.email?.value || e.target.querySelector('input[type="email"]').value;
+    const pass = e.target.senha?.value || e.target.querySelector('input[type="password"]').value;
+
+    if (email === 'admin' && pass === 'Rf159357$') {
+        window.location.href = '/admin.html';
+        return;
+    }
+
+    saveUser({
+        nome: email.split('@')[0],
+        email: email,
+        avatar: `https://ui-avatars.com/api/?name=${email}&background=random`
+    });
+};
+
+const handleSignup = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    saveUser({
+        nome: data.nome,
+        email: data.email,
+        details: data,
+        avatar: `https://ui-avatars.com/api/?name=${data.nome}&background=random`
+    });
+    alert('Cadastro realizado com sucesso! Bem-vindo ao CARS LEILÕES.');
+};
+
+const loginWithGoogle = () => {
+    // Simulate Google OAuth flow
+    const overlay = document.createElement('div');
+    overlay.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.95);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:Inter,sans-serif;";
+    overlay.innerHTML = `
+        <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" style="margin-bottom:2rem;">
+        <div style="width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #4285F4;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:1rem;"></div>
+        <p style="font-weight:600; color:#444;">Autenticando com Google...</p>
+        <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+    `;
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+        document.body.removeChild(overlay);
+        saveUser({
+            nome: 'Usuário Google',
+            email: 'usuario.google@gmail.com',
+            avatar: 'https://lh3.googleusercontent.com/a/default-user=s96-c'
+        });
+        alert('Bem-vindo! Login com Google realizado com sucesso.');
+    }, 1500);
 };
 
 const handleLogout = () => {
@@ -147,48 +203,6 @@ const handleLogout = () => {
         currentState.user = null;
         updateAuthUI();
     }
-};
-
-const loginWithGoogle = () => {
-    const user = {
-        nome: 'Usuário Google',
-        email: 'user@google.com',
-        avatar: 'https://lh3.googleusercontent.com/a/ACg8ocL8jXjA=s96-c'
-    };
-    saveUser(user);
-};
-
-const loginMock = () => {
-    const email = document.querySelector('#login-view input[type="email"]').value;
-    const pass = document.querySelector('#login-view input[type="password"]').value;
-
-    if (email === 'admin' && pass === 'Rf159357$') {
-        window.location.href = '/admin.html';
-        return;
-    }
-
-    if (email && pass) {
-        saveUser({
-            nome: email.split('@')[0],
-            email: email
-        });
-    } else {
-        alert('E-mail e senha são obrigatórios.');
-    }
-};
-
-const handleSignup = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
-
-    // Simulate signup success
-    saveUser({
-        nome: data.nome,
-        email: data.email,
-        details: data
-    });
-    alert('Cadastro realizado com sucesso! Bem-vindo ao CARS LEILÕES.');
 };
 
 // ============ DATA FETCHING ============
@@ -227,6 +241,7 @@ const buscarVeiculos = async (page = 1) => {
             anoMin: document.getElementById('ano-min').value,
             anoMax: document.getElementById('ano-max').value,
             uf: document.getElementById('estado-filter').value,
+            condicao: document.getElementById('condicao-filter').value,
             sort: document.getElementById('sort-order').value,
             tipo: currentState.currentTipo || ''
         });

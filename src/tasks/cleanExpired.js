@@ -10,13 +10,14 @@ const cleanExpired = async () => {
         // O campo 'previsao.time' tem o timestamp
 
         const now = Date.now();
-        // Dá uma margem de segurança de 24h para não deletar algo que acabou de acontecer e ainda pode ser consultado?
-        // O usuário disse: "quando acabar o leilão... ele sair do nosso banco"
-        // Vou deletar imediatamente após a data prevista.
+        // Dá uma margem de segurança de 12h para não deletar algo que acabou de acontecer
+        // Assim leilões do dia continuam visíveis até a madrugada seguinte
+        const gracePeriod = 12 * 60 * 60 * 1000;
+        const threshold = now - gracePeriod;
 
         const deletedCount = await db.deleteItems({
             colecao: 'veiculos',
-            filtro: { 'previsao.time': { $lt: now } }
+            filtro: { 'previsao.time': { $lt: threshold } }
         });
 
         console.log(`🧹 Removidos ${deletedCount} leilões expirados.`);
