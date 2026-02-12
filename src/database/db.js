@@ -41,7 +41,66 @@ const writeData = (collection, data) => {
 /**
  * Conecta ao "Banco JSON" e retorna funções de acesso
  */
-export const connectDatabase = async () => {
+export const matchesFilter = (item, filtro) => {
+    if (!filtro || Object.keys(filtro).length === 0) return true;
+
+    for (const key in filtro) {
+        const val = filtro[key];
+
+        if (val instanceof RegExp) {
+            if (!val.test(item[key])) return false;
+            continue;
+        }
+
+        // Handle $or array (search text across multiple fields)
+        if (key === '$or' && Array.isArray(val)) {
+            const matchOne = val.some(cond => {
+                const k = Object.keys(cond)[0];
+                const v = cond[k];
+                const itemVal = String(item[k] || '');
+                if (v instanceof RegExp) return v.test(itemVal);
+                // Handle {$regex, $options} objects
+                if (typeof v === 'object' && v !== null && v.$regex) {
+                    try {
+                        const re = new RegExp(v.$regex, v.$options || '');
+                        return re.test(itemVal);
+                    } catch { return false; }
+                }
+                return itemVal === v;
+            });
+            if (!matchOne) return false;
+            continue;
+        }
+
+        if (typeof val === 'object' && val !== null) {
+            // Handle {$regex, $options} pattern
+            if (val.$regex !== undefined) {
+                try {
+                    const re = new RegExp(val.$regex, val.$options || '');
+                    if (!re.test(String(item[key] || ''))) return false;
+                } catch { return false; }
+                continue;
+            }
+            // Handle range comparisons ($gte, $lte, $gt, $lt)
+            let itemVal = item[key];
+            if (key === 'criadoEm' && typeof itemVal === 'string') itemVal = new Date(itemVal).getTime();
+            else if (itemVal instanceof Date) itemVal = itemVal.getTime();
+
+            // Normalize val if it's a date or timestamp
+            const checkVal = (v) => (v instanceof Date ? v.getTime() : v);
+
+            if (val.$gte !== undefined && (itemVal === undefined || itemVal < checkVal(val.$gte))) return false;
+            if (val.$lte !== undefined && (itemVal === undefined || itemVal > checkVal(val.$lte))) return false;
+            if (val.$gt !== undefined && (itemVal === undefined || itemVal <= checkVal(val.$gt))) return false;
+            if (val.$lt !== undefined && (itemVal === undefined || itemVal >= checkVal(val.$lt))) return false;
+        } else if (val !== undefined && val !== '' && item[key] != val) {
+            return false;
+        }
+    }
+    return true;
+};
+
+const connectDatabase = async () => {
     console.log('✅ JSON Database conectado (Modo Arquivo)');
 
     const buscarLista = async ({ colecao = 'veiculos', filtraEncerrados, encerrando, filtroHoras }) => {
@@ -144,15 +203,7 @@ export const connectDatabase = async () => {
     const count = async ({ colecao = 'veiculos', filtro = {} }) => {
         let items = readData(colecao);
         if (Object.keys(filtro).length > 0) {
-            items = items.filter(item => {
-                for (const key in filtro) {
-                    if (filtro[key]?.$regex) {
-                        const regex = new RegExp(filtro[key].$regex, 'i');
-                        if (!regex.test(item[key])) return false;
-                    } else if (item[key] !== filtro[key]) return false;
-                }
-                return true;
-            });
+            items = items.filter(item => matchesFilter(item, filtro));
         }
         return items.length;
     };
@@ -240,53 +291,7 @@ export const connectDatabase = async () => {
 
         // 1. Filter
         if (filtro) {
-            items = items.filter(item => {
-                for (const key in filtro) {
-                    const val = filtro[key];
-
-                    if (val instanceof RegExp) {
-                        if (!val.test(item[key])) return false;
-                        continue;
-                    }
-
-                    // Handle $or array (search text across multiple fields)
-                    if (key === '$or') {
-                        const matchOne = val.some(cond => {
-                            const k = Object.keys(cond)[0];
-                            const v = cond[k];
-                            const itemVal = String(item[k] || '');
-                            if (v instanceof RegExp) return v.test(itemVal);
-                            // Handle {$regex, $options} objects
-                            if (typeof v === 'object' && v !== null && v.$regex) {
-                                try {
-                                    const re = new RegExp(v.$regex, v.$options || '');
-                                    return re.test(itemVal);
-                                } catch { return false; }
-                            }
-                            return itemVal === v;
-                        });
-                        if (!matchOne) return false;
-                        continue;
-                    }
-
-                    if (typeof val === 'object' && val !== null) {
-                        // Handle {$regex, $options} pattern (site, localLeilao filters)
-                        if (val.$regex !== undefined) {
-                            try {
-                                const re = new RegExp(val.$regex, val.$options || '');
-                                if (!re.test(String(item[key] || ''))) return false;
-                            } catch { return false; }
-                            continue;
-                        }
-                        // Handle range comparisons ($gte, $lte)
-                        if (val.$gte !== undefined && (item[key] === undefined || item[key] < val.$gte)) return false;
-                        if (val.$lte !== undefined && (item[key] === undefined || item[key] > val.$lte)) return false;
-                    } else if (val !== undefined && val !== '' && item[key] != val) {
-                        return false;
-                    }
-                }
-                return true;
-            });
+            items = items.filter(item => matchesFilter(item, filtro));
         }
 
         // 2. Interleave Logic (Special handling for variant auctioneers)

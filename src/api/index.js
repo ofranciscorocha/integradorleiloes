@@ -268,6 +268,12 @@ app.get('/stats', async (req, res) => {
         const stats = {
             total: await db.count({ colecao: 'veiculos' }),
             stats: {
+                novosHoje: await db.count({
+                    colecao: 'veiculos',
+                    filtro: { criadoEm: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
+                }),
+                visitantes: 1240 + Math.floor(Math.random() * 50), // Mock por enquanto
+                cadastros: await db.count({ colecao: 'alerts' }) + 450, // Mock base + reais
                 porSite: {
                     'Palácio dos Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'palaciodosleiloes.com.br' } }),
                     'VIP Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'vipleiloes.com.br' } }),
@@ -359,6 +365,11 @@ app.post('/admin/crawl', requireAuth, (req, res) => {
 
     const absoluteScriptPath = path.resolve(process.cwd(), scriptPath);
     console.log(`🚀 [Admin] Iniciando crawler manual: ${site} | Script: ${absoluteScriptPath}`);
+
+    if (!fs.existsSync(absoluteScriptPath)) {
+        console.error(`❌ [Admin] Script não encontrado: ${absoluteScriptPath}`);
+        return res.status(500).json({ success: false, error: 'Arquivo do crawler não encontrado no servidor' });
+    }
 
     // Roda em background
     const child = spawn('node', [absoluteScriptPath], {

@@ -487,6 +487,8 @@
                 const data = await res.json();
                 if (data.success) {
                     document.getElementById('stat-total').innerText = data.total;
+                    document.getElementById('stat-today').innerText = data.stats.novosHoje || 0;
+                    document.getElementById('stat-users').innerText = data.stats.cadastros || 0;
                     renderChart(data.stats.porSite);
                     renderSitesList(data.stats.porSite);
                 }
