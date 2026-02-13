@@ -1,6 +1,6 @@
 {
   "name": "integradorleiloes",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Agregador de veículos de múltiplos sites de leilão brasileiro",
   "main": "src/index.js",
   "type": "module",
