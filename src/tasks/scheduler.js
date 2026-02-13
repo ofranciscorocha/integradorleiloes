@@ -104,7 +104,6 @@ const initScheduler = async (runImmediate = false) => {
         { path: path.join(__dirname, '../crawlers/mgl/run.js'), name: 'MGL' },
         { path: path.join(__dirname, '../crawlers/patiorocha/run.js'), name: 'Pátio Rocha' },
         { path: path.join(__dirname, '../crawlers/superbid/run.js'), name: 'Superbid' },
-        { path: path.join(__dirname, '../crawlers/megaleiloes/run.js'), name: 'Mega Leilões' },
         { path: path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), name: 'Guariglia Leilões' },
         { path: path.join(__dirname, '../crawlers/parque/run.js'), name: 'Parque dos Leilões' },
         { path: path.join(__dirname, '../crawlers/leilo/run.js'), name: 'Leilo' }

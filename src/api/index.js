@@ -342,7 +342,17 @@ app.get('/stats', async (req, res) => {
                     'Parque dos Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'parquedosleiloes.com.br' } }),
                     'Rogério Menezes': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'rogerio' } } }),
                     'Copart': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'copart' } } }),
-                    'Leilo.com.br': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'leilo.com.br' } } })
+                    'Leilo.com.br': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'leilo.com.br' } } }),
+                    'Milan Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'milanleiloes.com.br' } }),
+                    'Sumaré Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'sumareleiloes.com.br' } }),
+                    'Sato Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'satoleiloes.com.br' } }),
+                    'Daniel Garcia': await db.count({ colecao: 'veiculos', filtro: { site: 'danielgarcialeiloes.com.br' } }),
+                    'João Emílio': await db.count({ colecao: 'veiculos', filtro: { site: 'joaoemilio.com.br' } }),
+                    'MGL Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'mgl.com.br' } }),
+                    'Claudio Kuss': await db.count({ colecao: 'veiculos', filtro: { site: 'claudiokussleiloes.com.br' } }),
+                    'Pestana Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'pestanaleiloes.com.br' } }),
+                    'Pátio Rocha': await db.count({ colecao: 'veiculos', filtro: { site: 'patiorocha.com.br' } }),
+                    'Superbid': await db.count({ colecao: 'veiculos', filtro: { site: 'superbid.net' } })
                 },
                 scheduler: getSchedulerStatus()
             }
@@ -370,7 +380,17 @@ app.get('/sites', (req, res) => {
             { id: 'parque', name: 'Parque dos Leilões', domain: 'parquedosleiloes.com.br' },
             { id: 'rogeriomenezes', name: 'Rogério Menezes', domain: 'rogeriomenezes.com.br' },
             { id: 'copart', name: 'Copart', domain: 'copart.com.br' },
-            { id: 'leilo', name: 'Leilo.com.br', domain: 'leilo.com.br' }
+            { id: 'leilo', name: 'Leilo.com.br', domain: 'leilo.com.br' },
+            { id: 'milan', name: 'Milan Leilões', domain: 'milanleiloes.com.br' },
+            { id: 'sumare', name: 'Sumaré Leilões', domain: 'sumareleiloes.com.br' },
+            { id: 'sato', name: 'Sato Leilões', domain: 'satoleiloes.com.br' },
+            { id: 'danielgarcia', name: 'Daniel Garcia', domain: 'danielgarcialeiloes.com.br' },
+            { id: 'joaoemilio', name: 'João Emílio', domain: 'joaoemilio.com.br' },
+            { id: 'mgl', name: 'MGL Leilões', domain: 'mgl.com.br' },
+            { id: 'claudiokuss', name: 'Claudio Kuss', domain: 'claudiokussleiloes.com.br' },
+            { id: 'pestana', name: 'Pestana Leilões', domain: 'pestanaleiloes.com.br' },
+            { id: 'patiorocha', name: 'Pátio Rocha', domain: 'patiorocha.com.br' },
+            { id: 'superbid', name: 'Superbid', domain: 'superbid.net' }
         ]
     });
 });

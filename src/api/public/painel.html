@@ -528,15 +528,24 @@
             'copart': { name: 'Copart', color: '#14b8a6' },
             'rogeriomenezes': { name: 'Rogério Menezes', color: '#f59e0b' },
             'parque': { name: 'Parque dos Leilões', color: '#6366f1' },
-            'leilo': { name: 'Leilo.com.br', color: '#f97316' }
+            'leilo': { name: 'Leilo.com.br', color: '#f97316' },
+            'milan': { name: 'Milan Leilões', color: '#ef4444' },
+            'sumare': { name: 'Sumaré Leilões', color: '#84cc16' },
+            'sato': { name: 'Sato Leilões', color: '#06b6d4' },
+            'joaoemilio': { name: 'João Emílio', color: '#a855f7' },
+            'mgl': { name: 'MGL Leilões', color: '#ec4899' },
+            'claudiokuss': { name: 'Claudio Kuss Leilões', color: '#10b981' },
+            'pestana': { name: 'Pestana Leilões', color: '#f43f5e' },
+            'patiorocha': { name: 'Pátio Rocha', color: '#64748b' },
+            'superbid': { name: 'Superbid', color: '#fb923c' }
         };
-
-        async function init() {
-            await loadDashboard();
-            updateTime();
-            setInterval(updateTime, 1000);
-            // Refresh counts periodically
-            setInterval(loadDashboard, 30000);
+Line 532:Line 533: async function init() {
+Line 534: await loadDashboard();
+Line 535: updateTime();
+Line 536: setInterval(updateTime, 1000);
+Line 537:            // Refresh counts periodically
+Line 538: setInterval(loadDashboard, 30000);
+Line 539:
         }
 
         function updateTime() {
