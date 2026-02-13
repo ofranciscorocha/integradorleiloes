@@ -2864,3 +2864,13 @@ Raz�o: N�o h� ocorr�ncia da tarefa em execu��o.
 
 [Leilo] 📋 [leilo.com.br] Capturando leilão: https://leilo.com.br/leilao/aparecida-de-goiania-goias/carros/volkswagen/gol-1.0-giv-(2p%2F4p)/ano.2014/82804d48-c3e3-11f0-a1d0-0242ac500062
 [Leilo] 📋 [leilo.com.br] Capturando leilão: https://leilo.com.br/leilao/taguatinga-distrito-federal/carros/ford/fiesta-flex-(4p)/ano.2012/82c7c0c9-0398-11f1-8a4c-0242ac50000b
+[Leilo ERROR]    ❌ [leilo.com.br] Erro no leilão https://leilo.com.br/leilao/taguatinga-distrito-federal/carros/ford/fiesta-flex-(4p)/ano.2012/82c7c0c9-0398-11f1-8a4c-0242ac50000b: Navigation timeout of 60000 ms exceeded
+
+[Leilo ERROR]    ❌ [leilo.com.br] Erro no leilão https://leilo.com.br/leilao/aparecida-de-goiania-goias/carros/volkswagen/gol-1.0-giv-(2p%2F4p)/ano.2014/82804d48-c3e3-11f0-a1d0-0242ac500062: Navigation timeout of 60000 ms exceeded
+
+[Leilo] 📋 [leilo.com.br] Capturando leilão: https://leilo.com.br/leilao/aparecida-de-goiania-goias/carros/volkswagen/nova-saveiro-cs-(2p)/ano.2014/c757d623-d685-11f0-913b-02420a000005
+[Leilo] ✅ [leilo.com.br] Sucesso! 0 veículos coletados.
+
+--- [13/02/2026, 16:38:53] Leilo finished with code 0 ---
+
+--- [13/02/2026, 16:38:53] ✅ All crawlers finished. ---

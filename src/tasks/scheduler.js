@@ -129,5 +129,4 @@ const initScheduler = async (runImmediate = false) => {
     console.log('📅 [Scheduler] Daily Cycles: 08:00 & 18:00');
 };
 
-export { getSchedulerStatus };
 export default initScheduler;
