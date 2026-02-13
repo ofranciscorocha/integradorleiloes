@@ -8,6 +8,7 @@ import createRogerioMenezesCrawler from '../crawlers/rogeriomenezes/index.js';
 import createLeiloCrawler from '../crawlers/leilo/index.js';
 import { execute as executeFreitas } from '../crawlers/freitas/index.js';
 import { execute as executeSodre } from '../crawlers/sodre/index.js';
+import copart from '../crawlers/copart/index.js';
 import cleanExpired from '../tasks/cleanExpired.js';
 
 dotenv.config();
@@ -160,8 +161,11 @@ const executarTodos = async () => {
     console.log('\n6️⃣ Leilo');
     await leilo.buscarTodos();
 
-    console.log('\n7️⃣ Sodré Santoro (Pode demorar)');
-    // await executeSodre(db); // Sodré é pesado
+    console.log('\n7️⃣ Sodré Santoro (Iniciando Turbo API)');
+    await executeSodre(db);
+
+    console.log('\n8️⃣ Copart (Paginação profunda)');
+    await copart.buscarListaPrincipal();
 
     console.log('\n✅ Todos os crawlers executados!');
 };

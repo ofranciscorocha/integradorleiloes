@@ -1,138 +1,118 @@
 import cron from 'node-cron';
 import { spawn } from 'child_process';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import cleanExpired from './cleanExpired.js';
-import checkAlerts from './checkAlerts.js';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const LOG_FILE = path.join(__dirname, '../../crawler.log');
 
-let schedulerStatus = {
-    lastRun: null,
-    nextRun: null,
-    running: false,
-    history: []
+const CONCURRENCY = 4; // Number of parallel crawlers
+
+// Helper to log to file
+const logToFile = (message) => {
+    const timestamp = new Date().toLocaleString('pt-BR');
+    const logMessage = `\n--- [${timestamp}] ${message} ---\n`;
+    try {
+        fs.appendFileSync(LOG_FILE, logMessage);
+        console.log(logMessage.trim());
+    } catch (e) { console.error('Error writing log:', e); }
 };
 
-export const getSchedulerStatus = () => schedulerStatus;
-
 const runCrawler = (scriptPath, name) => {
-    return new Promise((resolve) => {
-        const logFile = path.resolve(process.cwd(), 'crawler.log');
-        const logStream = fs.createWriteStream(logFile, { flags: 'a' });
-
-        const timestamp = new Date().toLocaleString();
-        logStream.write(`\n--- [${timestamp}] Starting ${name} ---\n`);
-        console.log(`⏰ [Scheduler] Starting ${name}...`);
+    return new Promise((resolve, reject) => {
+        logToFile(`Starting ${name}`);
 
         const child = spawn('node', [scriptPath], {
-            stdio: ['ignore', 'pipe', 'pipe'],
-            shell: true
+            stdio: 'pipe',
+            shell: true,
+            env: { ...process.env, FORCE_COLOR: '1' }
         });
 
         child.stdout.on('data', (data) => {
-            logStream.write(data);
-            // Also log to console for Railway logs
-            process.stdout.write(`[${name}] ${data}`);
+            const output = data.toString();
+            const prefixed = output.trim().split('\n').map(line => `[${name}] ${line}`).join('\n');
+            console.log(prefixed);
+            try { fs.appendFileSync(LOG_FILE, prefixed + '\n'); } catch (e) { }
         });
 
         child.stderr.on('data', (data) => {
-            logStream.write(`ERROR: ${data}`);
-            process.stderr.write(`[${name}] ERR: ${data}`);
+            const output = data.toString();
+            console.error(`[${name} ERROR] ${output}`);
+            try { fs.appendFileSync(LOG_FILE, `[${name} ERROR] ${output}\n`); } catch (e) { }
         });
 
         child.on('close', (code) => {
-            logStream.write(`--- [${new Date().toLocaleString()}] ${name} finished with code ${code} ---\n`);
-            logStream.end();
-            console.log(`⏰ [Scheduler] ${name} finished with code ${code}`);
+            logToFile(`${name} finished with code ${code}`);
             resolve(code);
         });
 
         child.on('error', (err) => {
-            logStream.write(`FATAL ERROR: ${err.message}\n`);
-            logStream.end();
-            console.error(`⏰ [Scheduler] Error starting ${name}:`, err);
+            logToFile(`${name} failed to start: ${err.message}`);
             resolve(1);
         });
     });
 };
 
-const runInBatches = async (crawlers, batchSize = 2) => {
-    schedulerStatus.running = true;
-    schedulerStatus.lastRun = new Date();
+const runPool = async (scripts, concurrency) => {
+    const queue = [...scripts];
+    const active = new Set();
 
-    for (let i = 0; i < crawlers.length; i += batchSize) {
-        const batch = crawlers.slice(i, i + batchSize);
-        console.log(`🚀 [Scheduler] Iniciando Batalhão ${Math.floor(i / batchSize) + 1} de ${Math.ceil(crawlers.length / batchSize)}...`);
-        await Promise.all(batch.map(c =>
-            runCrawler(c.path, c.name).catch(e => console.error(`❌ [Batch Error] ${c.name}:`, e))
-        ));
+    logToFile(`🚀 Starting Dynamic Pool (Concurrency: ${concurrency}) with ${queue.length} crawlers`);
+
+    while (queue.length > 0 || active.size > 0) {
+        while (queue.length > 0 && active.size < concurrency) {
+            const script = queue.shift();
+            const promise = runCrawler(script.path, script.name).then(() => {
+                active.delete(promise);
+            });
+            active.add(promise);
+        }
+
+        if (active.size > 0) {
+            await Promise.race(active);
+        }
     }
-
-    schedulerStatus.running = false;
-    schedulerStatus.history.push({
-        time: new Date(),
-        type: 'total_cycle'
-    });
-    if (schedulerStatus.history.length > 10) schedulerStatus.history.shift();
-
-    // Trigger API Refresh
-    try {
-        console.log('🔄 [Scheduler] Triggering API DB Refresh...');
-        // We need to call the API running on localhost:8181
-        // Since we are in the same process group (usually), we might not have axios imported here.
-        // Let's use dynamic import or simple fetch if node version supports it, or just use child_process curl if lazy.
-        // But better to add axios import.
-        const { default: axios } = await import('axios');
-        await axios.post('http://localhost:8181/admin/refresh-db', {}, {
-            headers: { 'Authorization': 'Bearer admin-secret-token-bip-cars-2026' }
-        });
-        console.log('✅ [Scheduler] API DB Refreshed');
-    } catch (e) {
-        console.error('⚠️ [Scheduler] Failed to refresh API DB:', e.message);
-    }
+    logToFile('✅ All crawlers finished.');
 };
 
-const initScheduler = (runImmediate = false) => {
-    console.log('📅 [Scheduler] Daily Cycles: 08:00 & 18:00');
-
+const initScheduler = async (runImmediate = false) => {
+    // Priority Ordered List
     const crawlerScripts = [
+        { path: path.join(__dirname, '../crawlers/copart/run.js'), name: 'Copart' }, // Slowest, Start First
+        { path: path.join(__dirname, '../crawlers/sodre/run.js'), name: 'Sodré Santoro' },
+        { path: path.join(__dirname, '../crawlers/vipleiloes/run.js'), name: 'Vip Leilões' },
         { path: path.join(__dirname, '../crawlers/palaciodosleiloes/run.js'), name: 'Palácio dos Leilões' },
         { path: path.join(__dirname, '../crawlers/freitas/run.js'), name: 'Freitas Leiloeiro' },
         { path: path.join(__dirname, '../crawlers/rogeriomenezes/run.js'), name: 'Rogério Menezes' },
-        { path: path.join(__dirname, '../crawlers/sodre/run.js'), name: 'Sodré Santoro' },
-        { path: path.join(__dirname, '../crawlers/parque/run.js'), name: 'Parque dos Leilões' },
+        { path: path.join(__dirname, '../crawlers/loopleiloes/run.js'), name: 'Loop Leilões' },
+        { path: path.join(__dirname, '../crawlers/mgl/run.js'), name: 'MGL' },
+        { path: path.join(__dirname, '../crawlers/patiorocha/run.js'), name: 'Pátio Rocha' },
+        { path: path.join(__dirname, '../crawlers/superbid/run.js'), name: 'Superbid' },
+        { path: path.join(__dirname, '../crawlers/megaleiloes/run.js'), name: 'Mega Leilões' },
         { path: path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), name: 'Guariglia Leilões' },
-        { path: path.join(__dirname, '../crawlers/vipleiloes/run.js'), name: 'Vip Leilões' },
+        { path: path.join(__dirname, '../crawlers/parque/run.js'), name: 'Parque dos Leilões' },
         { path: path.join(__dirname, '../crawlers/leilo/run.js'), name: 'Leilo' }
     ];
 
     if (runImmediate) {
-        console.log('🚀 [Scheduler] Iniciando coleta TOTAL (Modo SURGE)...');
-        runInBatches(crawlerScripts, 2);
+        console.log('🚀 [Scheduler] Iniciando coleta TOTAL (Modo POOL Dynamic)...');
+        await runPool(crawlerScripts, CONCURRENCY);
     }
 
-    // Schedule 1: 08:00 AM (Manhã)
+    // Schedule: 08:00 and 18:00
     cron.schedule('0 8 * * *', async () => {
         console.log('⏰ [Scheduler] Running Morning Cycle (08:00)');
-        await runInBatches(crawlerScripts, 2);
+        await runPool(crawlerScripts, CONCURRENCY);
     });
 
-    // Schedule 2: 18:00 PM (Tarde/Noite)
     cron.schedule('0 18 * * *', async () => {
         console.log('⏰ [Scheduler] Running Evening Cycle (18:00)');
-        await runInBatches(crawlerScripts, 2);
-        cleanExpired();
+        await runPool(crawlerScripts, CONCURRENCY);
     });
 
-    // Run cleanup and alerts every hour
-    cron.schedule('0 * * * *', async () => {
-        await cleanExpired();
-        await checkAlerts();
-    });
+    console.log('📅 [Scheduler] Daily Cycles: 08:00 & 18:00');
 };
-
 
 export default initScheduler;

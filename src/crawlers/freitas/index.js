@@ -145,7 +145,7 @@ const createCrawler = (db) => {
         const page = await browser.newPage();
         let total = 0;
         try {
-            for (let p = 1; p <= 20; p++) {
+            for (let p = 1; p <= 100; p++) {
                 const url = `${BASE_URL}/Leiloes/PesquisarLotes?Categoria=1&PageNumber=${p}`;
                 await page.goto(url, { waitUntil: 'networkidle2', timeout: TIMEOUT });
                 await page.waitForSelector('.cardlote', { timeout: 15000 }).catch(() => null);
@@ -188,6 +188,11 @@ const createCrawler = (db) => {
     };
 
     return { buscarTodos, SITE };
+};
+
+export const execute = async (db) => {
+    const crawler = createCrawler(db);
+    return await crawler.buscarTodos();
 };
 
 export default createCrawler;

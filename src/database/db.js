@@ -22,10 +22,11 @@ const readData = (collection) => {
     }
     try {
         const data = fs.readFileSync(filePath, 'utf-8');
+        if (!data.trim()) return [];
         return JSON.parse(data);
     } catch (e) {
-        console.error(`Erro ao ler ${collection}:`, e);
-        return [];
+        console.error(`❌ Erro crítico ao ler ${collection}:`, e.message);
+        throw new Error(`Falha ao ler banco de dados ${collection}. Operação abortada para evitar perda de dados.`);
     }
 };
 

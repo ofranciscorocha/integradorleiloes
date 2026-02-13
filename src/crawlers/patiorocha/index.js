@@ -32,103 +32,82 @@ export const execute = async (database) => {
 
     try {
         const page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
-        // Navigation timeout to 60s
+        // Navigation timeout to 90s for slower sites
         await page.goto('https://www.patiorochaleiloes.com.br/lotes/search?tipo=veiculo', {
             waitUntil: 'networkidle2',
-            timeout: 60000
+            timeout: 90000
         });
 
-        // Basic AutoScroll to load content
+        // Deep Scroll to trigger infinite loading
+        console.log(`🔍 [${SITE}] Ativando Deep-Scroll...`);
         await autoScroll(page);
 
-        const items = await page.evaluate(() => {
+        const items = await page.evaluate((site) => {
             const results = [];
             const cards = document.querySelectorAll('.card');
 
             cards.forEach((card, idx) => {
                 try {
                     const linkEl = card.querySelector('a');
-                    const titleEl = card.querySelector('h5');
+                    const titleEl = card.querySelector('h5, .card-title, h3');
 
-                    // Image is usually a background-image on an <a> with class 'rounded'
-                    const imgEl = card.querySelector('a.rounded');
+                    if (!linkEl || !titleEl) return;
+
+                    // Improved Photo Extraction
+                    const imgEl = card.querySelector('a.rounded, .img-wrapper, img');
                     let foto = '';
                     if (imgEl) {
-                        const style = imgEl.getAttribute('style') || '';
-                        const match = style.match(/url\(['"]?(.*?)['"]?\)/);
-                        if (match) foto = match[1];
-                    }
-
-                    // If not found, fallback to img tag (comitente logo or fallback)
-                    if (!foto) {
-                        const imgTag = card.querySelector('img');
-                        if (imgTag) foto = imgTag.src;
-                    }
-
-                    // Condition
-                    const condTags = Array.from(card.querySelectorAll('b'));
-                    let condicao = 'Geral';
-                    const possibleConds = ['Sucata', 'Sinistro', 'Financiamento', 'Recuperado', 'Trânsito', 'Conservado'];
-                    for (const tag of condTags) {
-                        const text = tag.innerText.trim();
-                        if (possibleConds.some(c => text.includes(c))) {
-                            condicao = text;
-                            break;
+                        if (imgEl.tagName === 'IMG') {
+                            foto = imgEl.src || imgEl.getAttribute('data-src');
+                        } else {
+                            const style = imgEl.getAttribute('style') || '';
+                            const match = style.match(/url\(['"]?(.*?)['"]?\)/);
+                            if (match) foto = match[1];
                         }
                     }
 
-                    // Location
-                    const divs = Array.from(card.querySelectorAll('div'));
-                    let localText = 'Consultar Site';
-                    const localDiv = divs.find(d => d.innerText.includes('Local de Exposição:'));
-                    if (localDiv) {
-                        localText = localDiv.innerText.replace('Local de Exposição:', '').trim();
-                    }
+                    // Condition Parsing
+                    const textContent = card.innerText.toUpperCase();
+                    let condicao = 'Leilão';
+                    if (textContent.includes('SUCATA')) condicao = 'Sucata';
+                    else if (textContent.includes('SINISTRO')) condicao = 'Sinistrado';
+                    else if (textContent.includes('CONSERVADO')) condicao = 'Conservado';
+                    else if (textContent.includes('RECUPERADO')) condicao = 'Recuperado';
+
+                    // Year
+                    const anoMatch = textContent.match(/ANO\/MODELO:\s*(\d{4})/);
+                    const ano = anoMatch ? parseInt(anoMatch[1]) : null;
 
                     // Value
-                    const valueEl = card.querySelector('h4');
+                    const valueEl = card.querySelector('h4, .price, .valor');
                     const valorText = valueEl ? valueEl.innerText.trim() : '0';
                     const valor = parseFloat(valorText.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
 
-                    // Year (Ano/Modelo: 2005/2005)
-                    const contentText = card.innerText;
-                    const anoMatch = contentText.match(/Ano\/Modelo:\s*(\d{4})/);
-                    const ano = anoMatch ? parseInt(anoMatch[1]) : null;
+                    const link = linkEl.href;
+                    const titulo = titleEl.innerText.trim();
 
-                    if (linkEl && titleEl) {
-                        const link = linkEl.href;
-                        const titulo = titleEl.innerText.trim();
-
-                        results.push({
-                            index: idx,
-                            registro: link.split('/').pop().split('?')[0],
-                            site: 'patiorochaleiloes.com.br',
-                            link: link,
-                            veiculo: titulo,
-                            fotos: foto ? [foto] : [],
-                            valor: valor,
-                            condicao: condicao,
-                            ano: ano,
-                            localLeilao: localText,
-                            modalidade: 'leilao',
-                            previsao: { string: 'Consultar Site' }
-                        });
-                    }
-                } catch (e) {
-                    console.log('Error parsing card:', idx, e.message);
-                }
+                    results.push({
+                        registro: link.split('/').pop().split('?')[0],
+                        site: site,
+                        link: link,
+                        veiculo: titulo.toUpperCase(),
+                        fotos: foto ? [foto] : [],
+                        valor: valor,
+                        condicao: condicao,
+                        ano: ano,
+                        localLeilao: 'PR / BR',
+                        modalidade: 'leilao'
+                    });
+                } catch (e) { }
             });
             return results;
-        });
+        }, SITE);
 
-        console.log(`Debug [${SITE}]: found ${items.length} initial items`);
-        const validItems = items.filter(v => v.fotos.length > 0);
-        console.log(`Debug [${SITE}]: found ${validItems.length} items with photos`);
-
-        if (validItems.length > 0) {
-            await db.salvarLista(validItems);
-            capturados = validItems.length;
+        if (items.length > 0) {
+            await db.salvarLista(items);
+            capturados = items.length;
             console.log(`✅ [${SITE}] Capturados ${capturados} veículos.`);
         }
 
@@ -142,19 +121,22 @@ export const execute = async (database) => {
 async function autoScroll(page) {
     await page.evaluate(async () => {
         await new Promise((resolve) => {
-            var totalHeight = 0;
-            var distance = 200;
-            var timer = setInterval(() => {
-                var scrollHeight = document.body.scrollHeight;
+            let totalHeight = 0;
+            let distance = 300;
+            let count = 0;
+            let timer = setInterval(() => {
+                let scrollHeight = document.body.scrollHeight;
                 window.scrollBy(0, distance);
                 totalHeight += distance;
-                if (totalHeight >= scrollHeight) {
+                count++;
+                if (totalHeight >= scrollHeight || count > 100) {
                     clearInterval(timer);
                     resolve();
                 }
             }, 100);
         });
     });
+    await new Promise(r => setTimeout(r, 2000));
 }
 
 if (process.argv[1].includes('patiorocha')) {
