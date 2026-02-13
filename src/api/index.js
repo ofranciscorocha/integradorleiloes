@@ -111,9 +111,7 @@ const initDatabase = async () => {
     try {
         db = await connectDatabase();
         console.log('📦 Database pronta para uso');
-
-        // Start Scheduler after DB is ready
-        initScheduler(true);
+        // initScheduler now triggered after server listen
 
     } catch (error) {
         // ...
@@ -708,6 +706,10 @@ const startServer = async () => {
         console.log(`   POST /admin/clean    - Limpar expirados`);
         console.log(`   POST /admin/crawl    - Rodar Crawler`);
         console.log('');
+
+        // Start Scheduler safely after server is up
+        const runOnStart = process.env.RUN_CRAWLER_ON_START === 'true';
+        initScheduler(runOnStart);
     });
 };
 

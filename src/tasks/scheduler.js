@@ -10,6 +10,15 @@ const LOG_FILE = path.join(__dirname, '../../crawler.log');
 
 const CONCURRENCY = 4; // Number of parallel crawlers
 
+// Status Tracking
+const schedulerStatus = {
+    running: false,
+    lastRun: null,
+    history: []
+};
+
+export const getSchedulerStatus = () => schedulerStatus;
+
 // Helper to log to file
 const logToFile = (message) => {
     const timestamp = new Date().toLocaleString('pt-BR');
@@ -45,6 +54,8 @@ const runCrawler = (scriptPath, name) => {
 
         child.on('close', (code) => {
             logToFile(`${name} finished with code ${code}`);
+            schedulerStatus.history.push({ name, code, time: new Date() });
+            if (schedulerStatus.history.length > 20) schedulerStatus.history.shift();
             resolve(code);
         });
 
@@ -60,6 +71,8 @@ const runPool = async (scripts, concurrency) => {
     const active = new Set();
 
     logToFile(`🚀 Starting Dynamic Pool (Concurrency: ${concurrency}) with ${queue.length} crawlers`);
+    schedulerStatus.running = true;
+    schedulerStatus.lastRun = new Date();
 
     while (queue.length > 0 || active.size > 0) {
         while (queue.length > 0 && active.size < concurrency) {
@@ -74,6 +87,7 @@ const runPool = async (scripts, concurrency) => {
             await Promise.race(active);
         }
     }
+    schedulerStatus.running = false;
     logToFile('✅ All crawlers finished.');
 };
 
@@ -115,4 +129,5 @@ const initScheduler = async (runImmediate = false) => {
     console.log('📅 [Scheduler] Daily Cycles: 08:00 & 18:00');
 };
 
+export { getSchedulerStatus };
 export default initScheduler;
