@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { MongoClient } from 'mongodb';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -102,6 +103,162 @@ export const matchesFilter = (item, filtro) => {
 };
 
 const connectDatabase = async () => {
+    const mongoUri = process.env.MONGODB_URI;
+
+    if (mongoUri) {
+        try {
+            console.log('🔌 Tentando conectar ao MongoDB...');
+            const client = new MongoClient(mongoUri);
+            await client.connect();
+            const db = client.db();
+            console.log('✅ MongoDB conectado com sucesso!');
+
+            // collections
+            const veiculos = db.collection('veiculos');
+            const alerts = db.collection('alerts');
+
+            // Seed/Migration from JSON if empty
+            const totalInMongo = await veiculos.countDocuments();
+            if (totalInMongo === 0) {
+                console.log('🚚 MongoDB vazio. Iniciando migração do JSON...');
+                const jsonData = readData('veiculos');
+                if (jsonData.length > 0) {
+                    // Remove _id from JSON to avoid conflicts and let Mongo generate new ones if needed, 
+                    // or keep them if they are unique. JSON _ids are custom strings.
+                    await veiculos.insertMany(jsonData);
+                    console.log(`✅ Migração concluída: ${jsonData.length} veículos importados.`);
+                }
+            }
+
+            // Implementation methods
+            const buscarLista = async ({ colecao = 'veiculos', filtraEncerrados, encerrando }) => {
+                const query = {};
+                if (encerrando) query.encerrado = { $gte: 1 };
+                if (filtraEncerrados) query.encerrado = { $ne: true };
+                return await db.collection(colecao).find(query).toArray();
+            };
+
+            const list = async ({ colecao = 'veiculos', filtro = {} }) => {
+                return await db.collection(colecao).find(filtro).toArray();
+            };
+
+            const get = async ({ colecao = 'veiculos', registro, site }) => {
+                return await db.collection(colecao).findOne({ registro, site });
+            };
+
+            const insert = async ({ colecao = 'veiculos', dados }) => {
+                const doc = {
+                    ...dados,
+                    criadoEm: new Date(),
+                    log: [{ momento: new Date(), acao: 'insert' }]
+                };
+                const result = await db.collection(colecao).insertOne(doc);
+                return result.insertedId;
+            };
+
+            const update = async ({ colecao = 'veiculos', registro, site, set }) => {
+                const result = await db.collection(colecao).updateOne(
+                    { registro, site },
+                    {
+                        $set: { ...set, atualizadoEm: new Date() },
+                        $push: { log: { momento: new Date(), acao: 'update' } }
+                    }
+                );
+                return result.modifiedCount > 0;
+            };
+
+            const count = async ({ colecao = 'veiculos', filtro = {} }) => {
+                return await db.collection(colecao).countDocuments(filtro);
+            };
+
+            const deleteItems = async ({ colecao, filtro }) => {
+                const result = await db.collection(colecao).deleteMany(filtro);
+                return result.deletedCount;
+            };
+
+            const salvarLista = async (lista) => {
+                const col = db.collection('veiculos');
+                let inseridos = 0;
+                let atualizados = 0;
+                let semAlteracao = 0;
+
+                // Bulk operations would be better, but keeping it simple for compatibility
+                for (const item of lista) {
+                    const existing = await col.findOne({ registro: item.registro, site: item.site });
+                    if (existing) {
+                        // Check if changed
+                        const { _id, criadoEm, log, atualizadoEm, ...oldData } = existing;
+                        if (JSON.stringify(oldData) !== JSON.stringify(item)) {
+                            await col.updateOne(
+                                { _id: existing._id },
+                                {
+                                    $set: { ...item, atualizadoEm: new Date() },
+                                    $push: { log: { momento: new Date(), acao: 'update' } }
+                                }
+                            );
+                            atualizados++;
+                        } else {
+                            semAlteracao++;
+                        }
+                    } else {
+                        await col.insertOne({
+                            ...item,
+                            criadoEm: new Date(),
+                            log: []
+                        });
+                        inseridos++;
+                    }
+                }
+                console.log(`\n📊 Resumo MongoDB: ${inseridos} inseridos, ${atualizados} atualizados, ${semAlteracao} sem alteração`);
+                return { inseridos, atualizados, semAlteracao };
+            };
+
+            const paginate = async ({ colecao = 'veiculos', filtro = {}, page = 1, limit = 20, sort = { criadoEm: -1 } }) => {
+                const col = db.collection(colecao);
+                const query = filtro || {};
+
+                const total = await col.countDocuments(query);
+                const totalPages = Math.ceil(total / limit);
+                const skip = (page - 1) * limit;
+
+                // Simple skip/limit for now. Interleave/Shuffle would require aggregation or local processing.
+                // Keeping it standard for yield tracking.
+                const items = await col.find(query)
+                    .sort(sort)
+                    .skip(skip)
+                    .limit(limit)
+                    .toArray();
+
+                return {
+                    items,
+                    pagination: { page, limit, total, totalPages }
+                };
+            };
+
+            const getAlerts = async () => await alerts.find({}).toArray();
+            const saveAlert = async (data) => {
+                const doc = { ...data, createdAt: new Date() };
+                await alerts.insertOne(doc);
+                return doc;
+            };
+
+            const overwrite = async ({ colecao, data }) => {
+                await db.collection(colecao).deleteMany({});
+                if (data.length > 0) await db.collection(colecao).insertMany(data);
+            };
+
+            const close = async () => await client.close();
+            const reload = async () => true;
+
+            return {
+                buscarLista, close, count, deleteItems, get, insert, list, paginate, salvarLista, update, overwrite, getAlerts, saveAlert, reload
+            };
+
+        } catch (e) {
+            console.error('❌ Erro ao conectar ao MongoDB, caindo para modo JSON:', e.message);
+        }
+    }
+
     console.log('✅ JSON Database conectado (Modo Arquivo)');
 
     const buscarLista = async ({ colecao = 'veiculos', filtraEncerrados, encerrando, filtroHoras }) => {
@@ -382,12 +539,6 @@ const connectDatabase = async () => {
 
     const reload = async () => {
         console.log('🔄 Recarregando dados do disco...');
-        // In file-based mode, reading happens on demand in some methods, but not all.
-        // Actually, readData is called in every method (get, list, paginate).
-        // BUT, if we want to ensure any internal caching is cleared (if we had any), we would do it here.
-        // Since readData reads from FS every time, 'reload' is mostly about confirming connectivity or clearing any potential memory cache if we added one.
-        // For now, let's just log and maybe return status.
-        // Wait, if we use in-memory cache later, this is where we clear it.
         return true;
     };
 
@@ -402,8 +553,6 @@ const connectDatabase = async () => {
         paginate,
         salvarLista,
         update,
-        overwrite,
-        getAlerts,
         overwrite,
         getAlerts,
         saveAlert,
