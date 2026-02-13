@@ -4,20 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Premium - CARS LEILÕES</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Control Center - CARS LEILÕES</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #FF9F1C;
-            --primary-dark: #0f172a;
+            --accent: #22c55e;
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
             --sidebar-width: 260px;
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(15, 23, 42, 0.6);
+            --danger: #ef4444;
         }
 
         * {
@@ -27,561 +31,517 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(255, 159, 28, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(34, 197, 94, 0.05) 0px, transparent 50%);
             color: var(--text-main);
             display: flex;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Sidebar */
+        /* Glassmorphism sidebar */
         .sidebar {
             width: var(--sidebar-width);
-            background: var(--primary-dark);
-            color: white;
-            padding: 2rem 1.5rem;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border);
+            padding: 2.5rem 1.5rem;
             display: flex;
             flex-direction: column;
             position: fixed;
             height: 100vh;
-            left: 0;
-            transition: all 0.3s;
+            z-index: 100;
         }
 
         .sidebar-logo {
+            font-family: 'Outfit', sans-serif;
             display: flex;
             align-items: center;
             gap: 12px;
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin-bottom: 2.5rem;
-            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.4rem;
+            margin-bottom: 3rem;
+            color: white;
+            letter-spacing: -0.5px;
         }
 
-        .sidebar-nav {
+        .sidebar-logo span {
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .nav-list {
             list-style: none;
             flex: 1;
         }
 
-        .sidebar-nav li {
-            margin-bottom: 0.5rem;
+        .nav-list li {
+            margin-bottom: 0.6rem;
         }
 
-        .nav-item {
+        .nav-link {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            color: #94a3b8;
+            gap: 14px;
+            padding: 14px 18px;
+            color: var(--text-dim);
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-weight: 500;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .nav-item:hover,
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.1);
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.05);
             color: white;
+            transform: translateX(5px);
         }
 
-        .nav-item.active {
-            background: var(--primary);
-            color: black;
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), #fbbf24);
+            color: #000;
+            box-shadow: 0 10px 15px -3px rgba(255, 159, 28, 0.3);
         }
 
-        /* Main Content */
+        .logout-btn {
+            margin-top: auto;
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* Main area */
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
-            padding: 2rem;
+            padding: 2.5rem 3rem;
+            max-width: 1600px;
         }
 
-        .header-top {
+        header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
+            align-items: flex-end;
+            margin-bottom: 3rem;
         }
 
-        .top-title h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
+        .header-title h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
         }
 
-        .top-title p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+        .header-title p {
+            color: var(--text-dim);
+            margin-top: 5px;
         }
 
-        /* Dashboards Cards */
-        .stats-grid {
+        /* KPI Grid */
+        .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
 
-        .stat-card {
+        .kpi-card {
             background: var(--bg-card);
-            padding: 1.5rem;
-            border-radius: 12px;
             border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+            padding: 1.8rem;
+            border-radius: 20px;
+            transition: all 0.3s;
         }
 
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
+        .kpi-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
         }
 
-        .bg-orange {
-            background: #fff7ed;
-            color: #f97316;
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 10px 0;
+            display: block;
         }
 
-        .bg-blue {
-            background: #eff6ff;
-            color: #3b82f6;
-        }
-
-        .bg-green {
-            background: #f0fdf4;
-            color: #22c55e;
-        }
-
-        .stat-info h3 {
-            font-size: 0.85rem;
-            color: var(--text-muted);
+        .kpi-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .stat-info span {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        /* Charts & Tables Section */
-        .content-grid {
+        /* Layout columns */
+        .grid-layout {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 1.5rem;
+            grid-template-columns: 1.8fr 1.2fr;
+            gap: 2rem;
         }
 
-        .admin-box {
+        /* Crawler Cards */
+        .crawler-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.2rem;
+        }
+
+        .crawler-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 1.2rem;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .box-header {
+        .crawler-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--text-dim);
+        }
+
+        .crawler-card.online::before {
+            background: var(--accent);
+        }
+
+        .crawler-card.running::before {
+            background: var(--primary);
+            animation: pulse 2s infinite;
+        }
+
+        .crawler-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
+            align-items: flex-start;
         }
 
-        .box-header h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
+        .crawler-name {
+            font-weight: 700;
+            font-size: 1rem;
         }
 
-        /* Actions Bar */
-        .action-btns {
+        .crawler-stats {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .crawler-actions {
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.8rem;
+            gap: 8px;
+            margin-top: auto;
         }
 
-        .btn-admin {
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: white;
-            font-family: inherit;
-            font-weight: 500;
-            font-size: 0.9rem;
+        .btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
             cursor: pointer;
+            border: none;
             display: flex;
             align-items: center;
             gap: 8px;
             transition: all 0.2s;
         }
 
-        .btn-admin:hover {
-            border-color: var(--primary);
-            background: #fffcf0;
-        }
-
-        .btn-primary {
+        .btn-glow {
             background: var(--primary);
-            border-color: var(--primary);
             color: black;
+            box-shadow: 0 4px 14px 0 rgba(255, 159, 28, 0.2);
         }
 
-        .btn-primary:hover {
-            opacity: 0.9;
-            background: var(--primary);
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid var(--border);
         }
 
-        /* Console/Terminal Log */
-        .terminal-box {
-            background: #0f172a;
-            color: #d1d5db;
-            font-family: 'Courier New', Courier, monospace;
-            padding: 1rem;
-            border-radius: 8px;
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Unified Terminal */
+        .terminal-container {
+            background: #020617;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-top: 2rem;
+            position: relative;
+        }
+
+        .terminal-header {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-body {
             height: 400px;
             overflow-y: auto;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            margin-top: 1.5rem;
-            border: 1px solid #1e293b;
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
         }
 
-        .terminal-line {
-            margin-bottom: 2px;
-            white-space: pre-wrap;
-            word-break: break-all;
+        .line {
+            margin-bottom: 4px;
+            border-left: 2px solid transparent;
+            padding-left: 10px;
         }
 
-        .terminal-error {
-            color: #ef4444;
+        .line-info {
+            color: #38bdf8;
+            border-color: #38bdf8;
         }
 
-        .terminal-success {
-            color: #22c55e;
+        .line-success {
+            color: #4ade80;
+            border-color: #4ade80;
         }
 
-        .terminal-info {
-            color: #3b82f6;
+        .line-error {
+            color: #f87171;
+            border-color: #f87171;
         }
 
-        .terminal-warn {
+        .line-warn {
             color: #fbbf24;
+            border-color: #fbbf24;
         }
 
-        /* Branding Section */
-        .branding-item {
-            margin-bottom: 1.5rem;
-        }
-
-        .branding-item h6 {
-            margin-bottom: 0.5rem;
-        }
-
-        .file-upload {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-        }
-
-        .file-upload-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px dashed var(--border);
-            border-radius: 8px;
-            background: #fdfdfd;
-            font-size: 0.85rem;
-        }
-
-        .btn-mini-play {
-            padding: 4px 8px;
-            border-radius: 4px;
+        /* Feed Columns */
+        .feed-box {
+            background: var(--glass);
+            border-radius: 20px;
+            padding: 1.5rem;
             border: 1px solid var(--border);
-            background: white;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s;
+            height: fit-content;
         }
 
-        .btn-mini-play:hover {
-            color: var(--primary);
-            border-color: var(--primary);
-            background: #fff7ed;
-        }
-
-        /* Modal Overlay */
-        #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
+        .feed-title {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
             align-items: center;
-            z-index: 3000;
-            color: white;
-            flex-direction: column;
-            gap: 1rem;
+            gap: 10px;
         }
 
-        @media (max-width: 1024px) {
-            .content-grid {
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-layout {
                 grid-template-columns: 1fr;
             }
 
-            .sidebar {
-                width: 80px;
-                padding: 2rem 0.5rem;
-            }
-
-            .sidebar-logo span,
-            .nav-item span {
-                display: none;
-            }
-
-            .main-content {
-                margin-left: 80px;
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 
 <body>
-
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <img src="/img/logo.png" alt="CARS LEILÕES"
-                style="height: 40px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+            <i class="fas fa-bolt" style="color: var(--primary);"></i>
+            <span>CONTROL<b>CENTER</b></span>
         </div>
-        <ul class="sidebar-nav">
-            <li><a href="#" class="nav-item active" onclick="showSection('dashboard')"><i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span></a></li>
-            <li><a href="#" class="nav-item" onclick="showSection('crawlers')"><i class="fas fa-robot"></i>
-                    <span>Crawlers</span></a></li>
-            <li><a href="#" class="nav-item" onclick="showSection('branding')"><i class="fas fa-palette"></i>
-                    <span>Identidade</span></a></li>
-            <li><a href="#" class="nav-item" onclick="showSection('settings')"><i class="fas fa-cog"></i>
-                    <span>Configurações</span></a></li>
+        <ul class="nav-list">
+            <li><a href="#" class="nav-link active" onclick="showSection('dashboard')"><i class="fas fa-grid-2"></i>
+                    Dashboard</a></li>
+            <li><a href="#" class="nav-link" onclick="showSection('crawlers')"><i class="fas fa-robot"></i> Crawlers</a>
+            </li>
+            <li><a href="#" class="nav-link" onclick="showSection('settings')"><i class="fas fa-sliders"></i> Engine
+                    Fixes</a></li>
+            <li><a href="#" class="nav-link" onclick="showSection('branding')"><i class="fas fa-paint-brush"></i> UI
+                    Branding</a></li>
         </ul>
-        <a href="#" class="nav-item" onclick="logout()" style="margin-top: auto; color: #ef4444;">
-            <i class="fas fa-sign-out-alt"></i> <span>Sair do Sistema</span>
+        <a href="#" class="nav-link logout-btn" onclick="logout()">
+            <i class="fas fa-power-off"></i> Encerrar Sessão
         </a>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
-        <header class="header-top">
-            <div class="top-title">
-                <h1 id="section-title">Dashboard Principal</h1>
-                <p>Bem-vindo, Administrador. Aqui está o resumo atual.</p>
+        <header>
+            <div class="header-title">
+                <h1>Sistema de Coleta</h1>
+                <p id="time-display">Acompanhamento em tempo real • Versão 2.4</p>
             </div>
-            <div class="user-meta">
-                <a href="/" class="btn-admin"><i class="fas fa-external-link-alt"></i> Ver Site</a>
+            <div class="header-actions">
+                <a href="/" target="_blank" class="btn btn-outline"><i class="fas fa-external-link"></i> Visualizar
+                    Site</a>
             </div>
         </header>
 
-        <!-- DASHBOARD SECTION -->
-        <section id="section-dashboard">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon bg-blue"><i class="fas fa-car"></i></div>
-                    <div class="stat-info">
-                        <h3>Total Veículos</h3>
-                        <span id="stat-total">0</span>
+        <!-- KPI GRID -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-label">Base de Dados</span>
+                <span class="kpi-value" id="stat-total">---</span>
+                <div style="font-size: 0.7rem; color: var(--accent);"><i class="fas fa-arrow-up"></i> Crescimento
+                    estável</div>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Captura 24h</span>
+                <span class="kpi-value" id="stat-today" style="color: var(--primary);">---</span>
+                <div style="font-size: 0.7rem; color: var(--text-dim);">Novos registros hoje</div>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Leiloeiros</span>
+                <span class="kpi-value" id="stat-sites">9</span>
+                <div style="font-size: 0.7rem; color: var(--accent);"><i class="fas fa-check"></i> Todos ativos</div>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Saúde Engine</span>
+                <span class="kpi-value" style="color: var(--accent);">98%</span>
+                <div style="font-size: 0.7rem; color: var(--text-dim);">Estabilidade de rede</div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <!-- LEFT: CRAWLERS & TERMINAL -->
+            <div class="main-column">
+                <div class="feed-title"><i class="fas fa-robot"></i> Motores de Busca</div>
+                <div class="crawler-grid" id="crawler-container">
+                    <!-- Cards via JS -->
+                    <div class="kpi-card"
+                        style="grid-column: span 2; display: flex; justify-content: center; padding: 3rem;">
+                        <i class="fas fa-circle-notch fa-spin"></i>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon bg-orange"><i class="fas fa-clock"></i></div>
-                    <div class="stat-info">
-                        <h3>Novos 24h</h3>
-                        <span id="stat-today">0</span>
+
+                <div class="terminal-container">
+                    <div class="terminal-header">
+                        <div style="display: flex; gap: 8px;">
+                            <span style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f56;"></span>
+                            <span style="width: 12px; height: 12px; border-radius: 50%; background: #ffbd2e;"></span>
+                            <span style="width: 12px; height: 12px; border-radius: 50%; background: #27c93f;"></span>
+                        </div>
+                        <div style="font-size: 0.7rem; font-family: 'JetBrains Mono'; color: var(--text-dim);">
+                            CRAWLER_LOG_STREAM</div>
+                        <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.7rem;"
+                            onclick="clearTerminal()">Limpar</button>
                     </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon bg-green"><i class="fas fa-users"></i></div>
-                    <div class="stat-info">
-                        <h3>Arrematantes</h3>
-                        <span id="stat-users">1.2k</span>
+                    <div class="terminal-body" id="crawler-console">
+                        <div class="line line-info">Aguardando gatilho de execução...</div>
                     </div>
                 </div>
             </div>
 
-            <div class="content-grid">
-                <div class="admin-box">
-                    <div class="box-header">
-                        <h2>Veículos por Site</h2>
+            <!-- RIGHT: FEED & ANALYTICS -->
+            <div class="side-column">
+                <div class="feed-box">
+                    <div class="feed-title"><i class="fas fa-bolt" style="color: var(--primary);"></i> Eventos Recentes
                     </div>
-                    <div style="height: 300px;">
-                        <canvas id="chart-sites"></canvas>
-                    </div>
-                </div>
-                <div class="admin-box">
-                    <div class="box-header">
-                        <h2>Sites Ativos</h2>
-                    </div>
-                    <div id="sites-list" style="display: flex; flex-direction: column; gap: 10px;">
-                        <!-- JS Render -->
+                    <div id="live-feed" style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="crawler-stats" style="text-align: center; padding: 2rem;">
+                            Carregando feed de atividade...
+                        </div>
                     </div>
 
-                    <div class="box-header" style="margin-top: 2rem;">
-                        <h2>Status do Scheduler</h2>
-                    </div>
-                    <div id="scheduler-status-info" class="small"
-                        style="background: #f8fafc; padding: 10px; border-radius: 8px;">
-                        <p><strong>Última Rodada:</strong> <span id="sched-last">Nunca</span></p>
-                        <p><strong>Status:</strong> <span id="sched-running">Parado</span></p>
-                        <div id="sched-history" style="margin-top: 5px; font-size: 0.75rem; color: #64748b;"></div>
+                    <div class="feed-title" style="margin-top: 2.5rem;"><i class="fas fa-layer-group"></i> Ações
+                        Administrativas</div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn btn-glow" style="width: 100%; justify-content: center;"
+                            onclick="runAllCrawlers()">
+                            <i class="fas fa-play"></i> Rodar Coleta Sequencial
+                        </button>
+                        <button class="btn btn-outline" style="width: 100%; justify-content: center;"
+                            onclick="cleanExpired()">
+                            <i class="fas fa-broom"></i> Limpar Leilões Expirados
+                        </button>
+                        <button class="btn btn-outline" style="width: 100%; justify-content: center;"
+                            onclick="refreshDB()">
+                            <i class="fas fa-sync"></i> Sincronizar Base Local
+                        </button>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- CRAWLERS SECTION -->
-        <section id="section-crawlers" style="display: none;">
-            <div class="admin-box">
-                <div class="box-header">
-                    <h2>Controle de Crawlers</h2>
-                    <p class="small text-muted">Inicie a coleta de dados manualmente.</p>
-                </div>
-                <div class="action-btns">
-                    <button class="btn-admin btn-primary" onclick="runAllCrawlers()"
-                        style="background: #10b981; border-color: #10b981; color: white;">
-                        <i class="fas fa-play-circle"></i> Rodar Todos (Sequencial)
-                    </button>
-                    <button class="btn-admin" onclick="runCrawler('palacio')"><i class="fas fa-play"></i> Palácio dos
-                        Leilões</button>
-                    <button class="btn-admin" onclick="runCrawler('guariglia')"><i class="fas fa-play"></i> Guariglia
-                        Leilões</button>
-                    <button class="btn-admin" onclick="runCrawler('vip')"><i class="fas fa-play"></i> VIP
-                        Leilões</button>
-                    <button class="btn-admin" onclick="runCrawler('freitas')"><i class="fas fa-play"></i> Freitas
-                        Leiloeiro</button>
-                    <button class="btn-admin" onclick="runCrawler('sodre')"><i class="fas fa-play"></i> Sodré
-                        Santoro</button>
-                    <button class="btn-admin" onclick="runCrawler('copart')"><i class="fas fa-play"></i> Copart</button>
-                    <button class="btn-admin" onclick="runCrawler('rogeriomenezes')"><i class="fas fa-play"></i> Rogério
-                        Menezes</button>
-                    <button class="btn-admin" onclick="runCrawler('parque')"><i class="fas fa-play"></i> Parque dos
-                        Leilões</button>
-                    <button class="btn-admin" onclick="runCrawler('leilo')"><i class="fas fa-play"></i> Leilo</button>
-                </div>
-
-                <div id="crawler-console-container" style="display: none; margin-top: 2rem;">
-                    <div class="box-header" style="margin-bottom: 0.5rem;">
-                        <h2><i class="fas fa-terminal"></i> Console de Execução (Tempo Real)</h2>
-                        <span id="console-status" class="small" style="color: #22c55e;"></span>
-                    </div>
-                    <div id="crawler-console" class="terminal-box">
-                        <div class="terminal-line terminal-info">Aguardando saída do processo...</div>
-                    </div>
-                </div>
-            </div>
-            <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
-            <div class="box-header">
-                <h2>Ações em Massa</h2>
-            </div>
-            <div class="action-btns">
-                <button class="btn-admin btn-primary" onclick="cleanExpired()"
-                    style="color: white; background: #ef4444; border: none;">
-                    <i class="fas fa-trash-alt"></i> Limpar Leilões Expirados
-                </button>
-                <button class="btn-admin btn-primary" onclick="refreshDB()"
-                    style="color: white; background: #3b82f6; border: none;">
-                    <i class="fas fa-sync-alt"></i> Atualizar Dados (Recarregar DB)
-                </button>
-            </div>
-            </div>
-        </section>
-
-        <!-- BRANDING SECTION -->
-        <section id="section-branding" style="display: none;">
-            <div class="admin-box">
-                <div class="box-header">
-                    <h2>Identidade Visual</h2>
-                </div>
-                <div class="content-grid">
+        <!-- Branding Section Hidden by default -->
+        <section id="section-branding" style="display: none; margin-top: 3rem;">
+            <div class="kpi-card">
+                <div class="feed-title">Personalização de Interface</div>
+                <!-- Branding controls inherited from previous version but styled -->
+                <div class="grid-layout">
                     <div>
-                        <div class="branding-item">
-                            <h6>Logotipo Principal</h6>
-                            <p class="small text-muted">Substitui o ícone da Gavel no header.</p>
-                            <input type="file" id="upload-logo" class="file-upload-input" accept="image/png, image/jpeg"
-                                onchange="previewImage(this, 'preview-logo')">
-                            <button class="btn-admin btn-primary" onclick="uploadBranding('logo')"
-                                style="margin-top: 10px;">Salvar Logo</button>
-                        </div>
-                        <div class="branding-item">
-                            <h6>Banner do Hero (Pátio)</h6>
-                            <p class="small text-muted">Imagem de fundo da área de busca principal.</p>
-                            <input type="file" id="upload-hero" class="file-upload-input" accept="image/jpeg"
-                                onchange="previewImage(this, 'preview-hero')">
-                            <button class="btn-admin btn-primary" onclick="uploadBranding('hero')"
-                                style="margin-top: 10px;">Salvar Fundo</button>
-                        </div>
-                    </div>
-                    <div
-                        style="background: #f1f5f9; border-radius: 8px; padding: 1rem; display: flex; align-items: center; justify-content: center; flex-direction: column; min-height: 200px;">
-                        <div id="preview-logo-container"
-                            style="margin-bottom: 1rem; text-align: center; display: none;">
-                            <span style="font-size: 0.7rem; color: #64748b;">Preview Logo:</span><br>
-                            <img id="preview-logo"
-                                style="max-height: 50px; width: auto; background: #e2e8f0; padding: 5px; border-radius: 4px;">
-                        </div>
-                        <div id="preview-hero-container" style="text-align: center; display: none;">
-                            <span style="font-size: 0.7rem; color: #64748b;">Preview Fundo:</span><br>
-                            <img id="preview-hero"
-                                style="max-height: 100px; width: 200px; object-fit: cover; border-radius: 4px;">
-                        </div>
-                        <div id="preview-placeholder">
-                            <i class="fas fa-image fa-3x" style="color: #cbd5e1; margin-bottom: 1rem;"></i>
-                            <span style="font-size: 0.8rem; color: #64748b;">Visualize antes de salvar</span>
-                        </div>
+                        <p class="crawler-stats">Logo (PNG/JPG)</p>
+                        <input type="file" id="upload-logo" class="btn btn-outline"
+                            style="width: 100%; margin: 10px 0;">
+                        <button class="btn btn-glow" onclick="uploadBranding('logo')">Atualizar Logo</button>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <div id="loading-overlay">
-        <i class="fas fa-spinner fa-spin fa-2x"></i>
-        <span id="loading-msg">Processando...</span>
-    </div>
-
     <script>
-        const API_URL = ''; // Mesma porta da API
-        let chart = null;
-
-        // AUTH CHECK
         const token = localStorage.getItem('admin_token');
-        if (!token) {
-            window.location.href = '/login.html';
+        if (!token) window.location.href = '/login.html';
+
+        const SITES_RESOURCES = {
+            'palacio': { name: 'Palácio dos Leilões', color: '#FF9F1C' },
+            'vip': { name: 'VIP Leilões', color: '#3b82f6' },
+            'guariglia': { name: 'Guariglia Leilões', color: '#22c55e' },
+            'freitas': { name: 'Freitas Leiloeiro', color: '#8b5cf6' },
+            'sodre': { name: 'Sodré Santoro', color: '#ec4899' },
+            'copart': { name: 'Copart', color: '#14b8a6' },
+            'rogeriomenezes': { name: 'Rogério Menezes', color: '#f59e0b' },
+            'parque': { name: 'Parque dos Leilões', color: '#6366f1' },
+            'leilo': { name: 'Leilo.com.br', color: '#f97316' }
+        };
+
+        async function init() {
+            await loadDashboard();
+            updateTime();
+            setInterval(updateTime, 1000);
+            // Refresh counts periodically
+            setInterval(loadDashboard, 30000);
         }
 
-        // Pre-flight auth check
-        async function checkAuth() {
-            try {
-                const res = await fetch('/admin/check-auth', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.status === 401) {
-                    localStorage.removeItem('admin_token');
-                    window.location.href = '/login.html';
-                }
-            } catch (e) { console.error('Auth check fail', e); }
-        }
-        checkAuth();
-
-        function showSection(id) {
-            document.querySelectorAll('section').forEach(s => s.style.display = 'none');
-            document.getElementById('section-' + id).style.display = 'block';
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            event.target.closest('.nav-item').classList.add('active');
-            document.getElementById('section-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('time-display').innerText = `Status Operacional • ${now.toLocaleTimeString('pt-BR')} • ${now.toLocaleDateString('pt-BR')}`;
         }
 
         async function loadDashboard() {
@@ -591,284 +551,139 @@
                 if (data.success) {
                     document.getElementById('stat-total').innerText = data.total;
                     document.getElementById('stat-today').innerText = data.stats.novosHoje || 0;
-                    document.getElementById('stat-users').innerText = data.stats.cadastros || 0;
 
-                    // Scheduler Status
-                    if (data.stats.scheduler) {
-                        const s = data.stats.scheduler;
-                        document.getElementById('sched-last').innerText = s.lastRun ? new Date(s.lastRun).toLocaleString() : 'Nunca';
-                        document.getElementById('sched-running').innerHTML = s.running ?
-                            '<span style="color: #22c55e;"><i class="fas fa-spinner fa-spin"></i> Rodando Agora</span>' :
-                            '<span style="color: #64748b;">Aguardando Próxima Coleta</span>';
-
-                        const historyHtml = s.history.length > 0 ?
-                            '<b>Histórico recente:</b><br>' + s.history.map(h => `- ${new Date(h.time).toLocaleTimeString()} (${h.type})`).join('<br>') :
-                            'Sem histórico recente.';
-                        document.getElementById('sched-history').innerHTML = historyHtml;
-                    }
-
-                    renderChart(data.stats.porSite);
-                    renderSitesList(data.stats.porSite);
+                    renderCrawlerCards(data.stats.porSite, data.stats.scheduler);
+                    renderLiveFeed(data.ultimos || []);
                 }
             } catch (e) {
-                console.error('Erro ao carregar dashboard', e);
+                console.error('Dash error', e);
             }
         }
 
-        function renderChart(stats) {
-            const ctx = document.getElementById('chart-sites').getContext('2d');
-            const labels = Object.keys(stats);
-            const values = Object.values(stats);
+        function renderCrawlerCards(stats, scheduler) {
+            const container = document.getElementById('crawler-container');
+            const runningSite = scheduler.running ? (localStorage.getItem('running_crawler') || 'all') : null;
 
-            if (chart) chart.destroy();
+            container.innerHTML = Object.entries(SITES_RESOURCES).map(([id, info]) => {
+                const count = stats[info.name] || 0;
+                const isRunning = runningSite === 'all' || runningSite === id;
+                const statusClass = isRunning ? 'running' : (count > 0 ? 'online' : '');
 
-            chart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: ['#FF9F1C', '#3b82f6', '#22c55e', '#a855f7', '#ec4899', '#6366f1'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
-                }
-            });
+                return `
+                    <div class="crawler-card ${statusClass}">
+                        <div class="crawler-header">
+                            <div>
+                                <div class="crawler-name">${info.name}</div>
+                                <div class="crawler-stats">${count} automóveis ativos</div>
+                            </div>
+                            <i class="fas ${isRunning ? 'fa-spinner fa-spin' : 'fa-check-circle'}" 
+                               style="color: ${isRunning ? 'var(--primary)' : (count > 0 ? 'var(--accent)' : 'var(--text-dim)')}"></i>
+                        </div>
+                        <div class="crawler-actions">
+                            <button class="btn btn-outline" style="flex: 1; padding: 6px;" onclick="runCrawler('${id}')">
+                                <i class="fas fa-play"></i> Iniciar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function renderSitesList(stats) {
-            const container = document.getElementById('sites-list');
+        function renderLiveFeed(recent) {
+            const container = document.getElementById('live-feed');
+            if (recent.length === 0) {
+                container.innerHTML = '<div class="crawler-stats">Nenhuma atividade recente detectada.</div>';
+                return;
+            }
 
-            // Helper to map display name to id
-            const nameToId = (name) => {
-                const map = {
-                    'Palácio dos Leilões': 'palacio',
-                    'VIP Leilões': 'vip',
-                    'Guariglia Leilões': 'guariglia',
-                    'Freitas Leiloeiro': 'freitas',
-                    'Sodré Santoro': 'sodre',
-                    'Parque dos Leilões': 'parque',
-                    'Rogério Menezes': 'rogeriomenezes',
-                    'Copart': 'copart',
-                    'Leilo.com.br': 'leilo'
-                };
-                return map[name] || name.toLowerCase().split(' ')[0];
-            };
-
-            container.innerHTML = Object.entries(stats).map(([site, count]) => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #f1f5f9;">
-                    <div style="display: flex; flex-direction: column;">
-                        <span style="font-size: 0.85rem; font-weight: 500;">${site}</span>
-                        <span style="font-size: 0.75rem; color: var(--text-muted);">${count} veículos</span>
+            container.innerHTML = recent.slice(0, 5).map(item => `
+                <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid var(--border); display: flex; gap: 10px; align-items: center;">
+                    <div style="width: 40px; height: 40px; border-radius: 8px; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--primary);">
+                        <i class="fas fa-car-side"></i>
                     </div>
-                    <button class="btn-mini-play" title="Rodar Crawler Agora" onclick="runCrawler('${nameToId(site)}')">
-                        <i class="fas fa-play"></i>
-                    </button>
+                    <div style="flex: 1; overflow: hidden;">
+                        <div style="font-size: 0.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.veiculo}</div>
+                        <div style="font-size: 0.65rem; color: var(--text-dim);">${item.site} • ${new Date(item.criadoEm).toLocaleTimeString()}</div>
+                    </div>
                 </div>
             `).join('');
         }
 
         async function runCrawler(site) {
-            const container = document.getElementById('crawler-console-container');
-            container.style.display = 'block';
-            showSection('crawlers'); // Switch to crawlers tab to see the console
-
+            localStorage.setItem('running_crawler', site);
             const consoleEl = document.getElementById('crawler-console');
-            consoleEl.innerHTML = '<div class="terminal-line terminal-info">🚀 Iniciando processo...</div>';
-
-            document.getElementById('console-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Crawler em execução...';
+            consoleEl.innerHTML = `<div class="line line-info">🔄 Solicitação enviada: Inicializando Engine ${site}...</div>`;
 
             try {
                 const res = await fetch('/admin/crawl', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ site })
                 });
-
                 const data = await res.json();
-
                 if (data.success) {
-                    console.log('Crawler started successfully');
                     startLogPolling();
+                    loadDashboard();
                 } else {
-                    alert('❌ Erro: ' + data.error);
+                    appendTerminal(`ERRO: ${data.error}`, 'error');
                 }
             } catch (e) {
-                console.error(e);
-                alert('Erro de conexão ao tentar iniciar crawler.');
+                appendTerminal(`FALHA DE CONEXÃO: Tente novamente.`, 'error');
             }
-        }
-
-        let logPollingInterval = null;
-
-        function startLogPolling() {
-            if (logPollingInterval) clearInterval(logPollingInterval);
-
-            logPollingInterval = setInterval(async () => {
-                try {
-                    const res = await fetch('/admin/logs', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (res.status === 401) {
-                        localStorage.removeItem('admin_token');
-                        window.location.href = '/login.html';
-                        return;
-                    }
-
-                    const data = await res.json();
-
-                    if (data.success && data.logs) {
-                        const consoleEl = document.getElementById('crawler-console');
-
-                        // Parse and highlight
-                        const lines = data.logs.split('\n').map(line => {
-                            if (line.includes('ERROR') || line.includes('Erro') || line.includes('Fail')) return `<div class="terminal-line terminal-error">${line}</div>`;
-                            if (line.includes('Success') || line.includes('Saved') || line.includes('Finalizado')) return `<div class="terminal-line terminal-success">${line}</div>`;
-                            if (line.includes('Searching') || line.includes('Buscando') || line.includes('🔍')) return `<div class="terminal-line terminal-info">${line}</div>`;
-                            return `<div class="terminal-line">${line}</div>`;
-                        }).join('');
-
-                        consoleEl.innerHTML = lines;
-                        consoleEl.scrollTop = consoleEl.scrollHeight;
-
-                        // Check if finished
-                        if (data.logs.includes('Finalizado')) {
-                            document.getElementById('console-status').innerHTML = '<i class="fas fa-check-circle"></i> Execução Concluída';
-                            setTimeout(loadDashboard, 2000);
-                            // Stop polling eventually, but maybe keep it a bit more
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error polling logs:', e);
-                }
-            }, 2000);
         }
 
         async function runAllCrawlers() {
-            const container = document.getElementById('crawler-console-container');
-            container.style.display = 'block';
-
-            document.getElementById('crawler-console').innerHTML = '<div class="terminal-line terminal-info">🚀 Iniciando sequência global...</div>';
-            document.getElementById('console-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Executando todos os crawlers...';
-
+            localStorage.setItem('running_crawler', 'all');
+            appendTerminal(`🚀 SEQUÊNCIA GLOBAL ATIVADA: Processando todos os leiloeiros...`, 'info');
             try {
                 const res = await fetch('/admin/crawl-all', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const data = await res.json();
-                if (data.success) {
-                    startLogPolling();
-                } else {
-                    alert('❌ Erro: ' + data.error);
-                }
+                if (res.status === 401) return logout();
+                startLogPolling();
             } catch (e) {
-                alert('Erro de conexão');
+                appendTerminal(`FALHA AO DISPARAR SEQUÊNCIA.`, 'error');
             }
         }
 
-        async function runAICrawler() {
-            const name = document.getElementById('ai-site-name').value;
-            const url = document.getElementById('ai-site-url').value;
-
-            if (!name || !url) return alert('Preencha Nome e URL!');
-
-            const overlay = document.getElementById('loading-overlay');
-            overlay.style.display = 'flex';
-            document.getElementById('loading-msg').innerText = '🤖 IA Analisando Página... Isso pode levar 1 minuto.';
-            document.getElementById('ai-result').style.display = 'none';
-
-            try {
-                const res = await fetch('/admin/crawl-ai', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ name, url })
-                });
+        function startLogPolling() {
+            if (window.logPolling) clearInterval(window.logPolling);
+            window.logPolling = setInterval(async () => {
+                const res = await fetch('/admin/logs', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.status === 401) return logout();
                 const data = await res.json();
-
-                const resDiv = document.getElementById('ai-result');
-                resDiv.style.display = 'block';
-
-                if (data.success) {
-                    resDiv.innerHTML = `<span style="color: green;">✅ Sucesso! <b>${data.count}</b> veículos encontrados e salvos.</span>`;
-                    setTimeout(loadDashboard, 2000);
-                } else {
-                    resDiv.innerHTML = `<span style="color: red;">❌ Erro: ${data.error}</span>`;
-                }
-            } catch (e) {
-                alert('Erro de conexão');
-            } finally {
-                overlay.style.display = 'none';
-            }
-        }
-
-        async function uploadBranding(type) {
-            const input = document.getElementById(`upload-${type}`);
-            const file = input.files[0];
-            if (!file) return alert('Selecione uma imagem!');
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64Data = e.target.result;
-                const overlay = document.getElementById('loading-overlay');
-                overlay.style.display = 'flex';
-
-                try {
-                    const res = await fetch('/admin/upload-branding', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ type, base64Data })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        alert(`${type.toUpperCase()} atualizado com sucesso! Reinicie a página para ver as mudanças.`);
-                        input.value = '';
-                        // Opcional: Recarregar a página ou atualizar o CSS via JS
-                        if (type === 'hero') {
-                            document.body.style.setProperty('--hero-bg', `url('/img/hero-bg.jpg?t=${Date.now()}')`);
-                        }
-                    } else {
-                        alert('Erro: ' + data.error);
+                if (data.success && data.logs) {
+                    updateTerminal(data.logs);
+                    if (data.logs.includes('Finalizado')) {
+                        localStorage.removeItem('running_crawler');
+                        loadDashboard();
                     }
-                } catch (err) {
-                    alert('Erro ao enviar imagem');
-                } finally {
-                    overlay.style.display = 'none';
                 }
-            };
-            reader.readAsDataURL(file);
+            }, 1500);
         }
 
-        function previewImage(input, previewId) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const preview = document.getElementById(previewId);
-                    preview.src = e.target.result;
-                    document.getElementById(`${previewId}-container`).style.display = 'block';
-                    document.getElementById('preview-placeholder').style.display = 'none';
-                }
-                reader.readAsDataURL(file);
-            }
+        function updateTerminal(logs) {
+            const consoleEl = document.getElementById('crawler-console');
+            const lines = logs.split('\n').map(line => {
+                let type = '';
+                if (line.includes('ERROR') || line.includes('Erro')) type = 'line-error';
+                else if (line.includes('Success') || line.includes('Saved') || line.includes('Finalizado')) type = 'line-success';
+                else if (line.includes('🔍') || line.includes('Starting')) type = 'line-info';
+                return `<div class="line ${type}">${line}</div>`;
+            }).join('');
+            consoleEl.innerHTML = lines;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function appendTerminal(msg, type) {
+            const consoleEl = document.getElementById('crawler-console');
+            consoleEl.innerHTML += `<div class="line line-${type}">${msg}</div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function clearTerminal() {
+            document.getElementById('crawler-console').innerHTML = '<div class="line line-info">Terminal limpo. Aguardando atividade...</div>';
         }
 
         function logout() {
@@ -876,35 +691,142 @@
             window.location.href = '/login.html';
         }
 
-        async function refreshDB() {
-            const overlay = document.getElementById('loading-overlay');
-            overlay.style.display = 'flex';
-            document.getElementById('loading-msg').innerText = 'Recarregando Banco de Dados...';
-
-            try {
-                const res = await fetch('/admin/refresh-db', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await res.json();
-                if (data.success) {
-                    alert('✅ ' + data.message);
-                    loadDashboard();
-                } else {
-                    alert('❌ Erro: ' + data.error);
-                }
-            } catch (e) {
-                alert('Erro de conexão');
-            } finally {
-                overlay.style.display = 'none';
-            }
+        // Shared Actions
+        async function cleanExpired() {
+            if (!confirm('Deseja realmente remover leilões que já foram encerrados?')) return;
+            const res = await fetch('/admin/clean', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            alert(`Limpeza concluída! ${data.removed} veículos removidos.`);
+            loadDashboard();
         }
 
-        loadDashboard();
-        setInterval(loadDashboard, 60000);
+        async function refreshDB() {
+            await fetch('/admin/refresh-db', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            loadDashboard();
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById('section-' + id);
+            if (target) target.style.display = 'block';
+
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.querySelector(`[onclick="showSection('${id}')"]`).classList.add('active');
+        }
+
+        init();
     </script>
+</body>
+
+</html>
+
+});
+const data = await res.json();
+
+const resDiv = document.getElementById('ai-result');
+resDiv.style.display = 'block';
+
+if (data.success) {
+resDiv.innerHTML = `<span style="color: green;">✅ Sucesso! <b>${data.count}</b> veículos encontrados e salvos.</span>`;
+setTimeout(loadDashboard, 2000);
+} else {
+resDiv.innerHTML = `<span style="color: red;">❌ Erro: ${data.error}</span>`;
+}
+} catch (e) {
+alert('Erro de conexão');
+} finally {
+overlay.style.display = 'none';
+}
+}
+
+async function uploadBranding(type) {
+const input = document.getElementById(`upload-${type}`);
+const file = input.files[0];
+if (!file) return alert('Selecione uma imagem!');
+
+const reader = new FileReader();
+reader.onload = async (e) => {
+const base64Data = e.target.result;
+const overlay = document.getElementById('loading-overlay');
+overlay.style.display = 'flex';
+
+try {
+const res = await fetch('/admin/upload-branding', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Authorization': `Bearer ${token}`
+},
+body: JSON.stringify({ type, base64Data })
+});
+const data = await res.json();
+if (data.success) {
+alert(`${type.toUpperCase()} atualizado com sucesso! Reinicie a página para ver as mudanças.`);
+input.value = '';
+// Opcional: Recarregar a página ou atualizar o CSS via JS
+if (type === 'hero') {
+document.body.style.setProperty('--hero-bg', `url('/img/hero-bg.jpg?t=${Date.now()}')`);
+}
+} else {
+alert('Erro: ' + data.error);
+}
+} catch (err) {
+alert('Erro ao enviar imagem');
+} finally {
+overlay.style.display = 'none';
+}
+};
+reader.readAsDataURL(file);
+}
+
+function previewImage(input, previewId) {
+const file = input.files[0];
+if (file) {
+const reader = new FileReader();
+reader.onload = function (e) {
+const preview = document.getElementById(previewId);
+preview.src = e.target.result;
+document.getElementById(`${previewId}-container`).style.display = 'block';
+document.getElementById('preview-placeholder').style.display = 'none';
+}
+reader.readAsDataURL(file);
+}
+}
+
+function logout() {
+localStorage.removeItem('admin_token');
+window.location.href = '/login.html';
+}
+
+async function refreshDB() {
+const overlay = document.getElementById('loading-overlay');
+overlay.style.display = 'flex';
+document.getElementById('loading-msg').innerText = 'Recarregando Banco de Dados...';
+
+try {
+const res = await fetch('/admin/refresh-db', {
+method: 'POST',
+headers: {
+'Authorization': `Bearer ${token}`
+}
+});
+const data = await res.json();
+if (data.success) {
+alert('✅ ' + data.message);
+loadDashboard();
+} else {
+alert('❌ Erro: ' + data.error);
+}
+} catch (e) {
+alert('Erro de conexão');
+} finally {
+overlay.style.display = 'none';
+}
+}
+
+loadDashboard();
+setInterval(loadDashboard, 60000);
+</script>
 </body>
 
 </html>

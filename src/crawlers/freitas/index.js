@@ -11,9 +11,8 @@ let db;
 const run = async () => {
     try {
         const connection = await connectDatabase();
-        console.log('--- Iniciando Crawler Freitas Leiloeiro (Puppeteer) ---');
+        console.log('🚀 [FREITAS] HIGH-YIELD: Iniciando coleta profunda...');
         await execute(connection);
-        console.log('--- Finalizado Freitas ---');
         process.exit(0);
     } catch (error) {
         console.error('Erro fatal:', error);
@@ -36,8 +35,8 @@ const execute = async (database) => {
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
-        for (let p = 1; p <= 10; p++) {
-            console.log(`🔍 [${SITE}] Buscando página ${p}...`);
+        for (let p = 1; p <= 30; p++) { // Increased to 30 pages
+            console.log(`🔍 [${SITE}] Página ${p}...`);
             const url = `${baseUrl}/Leiloes/PesquisarLotes?Categoria=1&PageNumber=${p}`;
 
             await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
@@ -67,29 +66,37 @@ const execute = async (database) => {
                         fotos: imgEl && imgEl.src ? [imgEl.src] : [],
                         valor: priceEl ? parseFloat(priceEl.innerText.replace(/[^0-9,]/g, '').replace(',', '.')) || 0 : 0,
                         localLeilao: 'SP',
-                        modalidade: 'leilao'
+                        modalidade: 'leilao',
+                        tipo: 'veiculo'
                     });
                 });
                 return results;
             }, baseUrl, SITE);
 
-            if (itens.length === 0) break;
+            if (itens.length === 0) {
+                console.log(`   🔸 [${SITE}] Sem mais lotes na página ${p}.`);
+                break;
+            }
 
             await db.salvarLista(itens);
             totalGeral += itens.length;
-            console.log(`   Saved ${itens.length} lots.`);
+            console.log(`   ✅ Saved ${itens.length} lots. Total: ${totalGeral}`);
 
             const hasNext = await page.evaluate(() => {
                 const nav = document.querySelector('.pagination');
-                return nav && !nav.innerText.includes('Próximo') ? false : true; // Simplified check
+                if (!nav) return false;
+                const links = Array.from(nav.querySelectorAll('a'));
+                return links.some(a => a.innerText.includes('Próximo') || a.innerText.includes('>>'));
             });
-            if (!hasNext) break;
+
+            if (!hasNext && p > 1) break;
         }
 
     } catch (error) {
         console.error(`❌ [${SITE}] Erro:`, error.message);
     } finally {
         await browser.close();
+        console.log(`✅ [${SITE}] Finalizado com ${totalGeral} veículos.`);
     }
     return totalGeral;
 };

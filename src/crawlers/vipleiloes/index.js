@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 puppeteer.use(StealthPlugin());
 
-const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 45000;
+const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 60000;
 
 const createCrawler = (db) => {
     const { salvarLista } = db;
@@ -13,191 +13,140 @@ const createCrawler = (db) => {
     const BASE_URL = 'https://www.vipleiloes.com.br';
 
     const parseCardText = (text) => {
-        // Card text format:
-        // "ABERTO PARA LANCES\nFPACE 380CV V6 S - 2017/2018\nJaguar\n59.580 Km\nPlaca Final 2\nValor Atual\nR$ 99.000,00\nValor inicial:\nR$ 99.000,00\nLote: 3  Local: GO\n1 Lance\nInício: 13/02/2026\n10:00\nVer mais"
         const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
         const result = {
             veiculo: '',
-            marca: '',
-            km: 0,
             ano: null,
             valor: 0,
-            valorInicial: 0,
-            localLeilao: '',
-            lote: '',
+            local: '',
             previsao: ''
         };
 
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
+        try {
+            // Line 1: Header (LANCE, etc)
+            // Line 2: Model (ONIX PLUS 1.0 TURBO - 2020/2021)
+            const modelLine = lines[1] || '';
+            const yearMatch = modelLine.match(/(\d{4})\/(\d{4})/);
+            result.ano = yearMatch ? parseInt(yearMatch[2]) : null;
+            result.veiculo = modelLine.split('-')[0].trim();
 
-            // Line 2 is usually the vehicle model + year (e.g. "FPAGE 380CV V6 S - 2017/2018")
-            if (i === 1) {
-                const yearMatch = line.match(/(\d{4})\/(\d{4})/);
-                if (yearMatch) {
-                    result.ano = parseInt(yearMatch[2]);
-                    result.veiculo = line.replace(/\s*-\s*\d{4}\/\d{4}/, '').trim();
-                } else {
-                    result.veiculo = line;
-                }
-            }
-
-            // Line 3 is usually the brand (e.g. "Jaguar")
-            if (i === 2 && !line.includes('Km') && !line.includes('R$')) {
-                result.marca = line;
-                result.veiculo = `${result.marca} ${result.veiculo}`;
+            // Find price
+            const priceLine = lines.find(l => l.includes('R$'));
+            if (priceLine) {
+                result.valor = parseFloat(priceLine.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
             }
 
-            // KM line (e.g. "59.580 Km")
-            if (line.match(/[\d.]+\s*Km/i)) {
-                result.km = parseInt(line.replace(/[^\d]/g, '')) || 0;
+            // Find location
+            const localLine = lines.find(l => l.includes('Local:'));
+            if (localLine) {
+                result.local = localLine.split('Local:')[1].trim();
             }
-
-            // Valor Atual value (line after "Valor Atual")
-            if (line === 'Valor Atual' && i + 1 < lines.length) {
-                result.valor = parseFloat(lines[i + 1].replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
-            }
-
-            // Valor inicial
-            if (line.startsWith('Valor inicial') && i + 1 < lines.length) {
-                result.valorInicial = parseFloat(lines[i + 1].replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
-            }
-
-            // Lote and Location (e.g. "Lote: 3  Local: GO")
-            const loteMatch = line.match(/Lote:\s*(\d+)/);
-            if (loteMatch) {
-                result.lote = loteMatch[1];
-            }
-            const localMatch = line.match(/Local:\s*(\S+)/);
-            if (localMatch) {
-                result.localLeilao = localMatch[1];
-            }
-
-            // Início date (e.g. "Início: 13/02/2026")
-            const inicioMatch = line.match(/Início:\s*(\d{2}\/\d{2}\/\d{4})/);
-            if (inicioMatch) {
-                result.previsao = inicioMatch[1];
-            }
-        }
+        } catch (e) { }
 
         return result;
     };
 
     const buscarTodasPaginas = async () => {
-        console.log(`🚀 [${SITE}] Iniciando crawler (Puppeteer Mode)...`);
+        console.log(`🚀 [${SITE}] HIGH-YIELD: Iniciando coleta profunda...`);
 
         const browser = await puppeteer.launch({
             headless: "new",
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
 
-        const listaCompleta = [];
+        const listaTotal = [];
         try {
             const page = await browser.newPage();
-            page.on('console', msg => console.log('PAGE LOG:', msg.text()));
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
-            console.log(`🔍 [${SITE}] Navegando para listagem...`);
-            await page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: TIMEOUT });
-
-            // Wait for vehicle cards with the new selector
-            console.log(`⌛ [${SITE}] Aguardando cards...`);
-            await page.waitForSelector('.card-anuncio', { timeout: 20000 }).catch(() => null);
-
-            // Scroll down to trigger lazy loading of all cards
-            await page.evaluate(async () => {
-                for (let i = 0; i < 10; i++) {
-                    window.scrollBy(0, 500);
-                    await new Promise(r => setTimeout(r, 300));
-                }
+            // Navigate to main listing
+            await page.goto(`${BASE_URL}/leilao/todos`, { waitUntil: 'networkidle2', timeout: TIMEOUT }).catch(() => {
+                return page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: TIMEOUT });
             });
-            await new Promise(r => setTimeout(r, 2000));
 
-            // Collect items from the page
-            const itens = await page.evaluate((site) => {
+            console.log(`🔍 [${SITE}] Descobrindo lotes...`);
+
+            // Aggressive scroll for infinite loading
+            await autoScroll(page);
+
+            const cards = await page.evaluate((site) => {
                 const results = [];
-                const cards = document.querySelectorAll('.card-anuncio');
-                console.log(`DEBUG: Found ${cards.length} .card-anuncio elements`);
-                console.log(`DEBUG: HTML length: ${document.body.innerHTML.length}`);
-
-                cards.forEach(card => {
+                document.querySelectorAll('.card-anuncio').forEach(card => {
                     const linkEl = card.querySelector('a');
                     const imgEl = card.querySelector('img');
-                    const text = card.innerText.trim();
-
-                    if (!linkEl) {
-                        console.log('DEBUG: Card missing link');
-                        return;
-                    }
-
-                    const link = linkEl.href;
-                    // Extract slug from URL as registro (e.g. "jaguar-fpace-380cv-v6-s-96826")
-                    const slug = link.split('/').pop();
-                    // The numeric ID at the end is the unique identifier
-                    const idMatch = slug.match(/(\d+)$/);
-                    const registro = idMatch ? idMatch[1] : slug;
+                    if (!linkEl) return;
 
                     results.push({
-                        registro,
-                        site: site,
-                        link: link,
-                        fotos: imgEl && imgEl.src ? [imgEl.src] : [],
-                        text: text
+                        site,
+                        link: linkEl.href,
+                        fotos: imgEl ? [imgEl.src] : [],
+                        text: card.innerText,
+                        registro: linkEl.href.split('/').pop().match(/\d+/)?.[0] || Math.random().toString(36).substr(2, 5)
                     });
                 });
                 return results;
             }, SITE);
 
-            console.log(`📦 [${SITE}] ${itens.length} cards encontrados, processando...`);
+            console.log(`📦 [${SITE}] Total de ${cards.length} veículos detectados.`);
 
-            for (const item of itens) {
-                const parsed = parseCardText(item.text);
-                const title = (parsed.veiculo || 'VEÍCULO').toUpperCase();
-                const desc = `${parsed.veiculo} - ${parsed.ano || ''} - ${parsed.km}km`.trim().toUpperCase();
+            for (const card of cards) {
+                const p = parseCardText(card.text);
+                if (!p.veiculo) continue;
 
-                // CATEGORY FILTERING
-                const textToTest = title + ' ' + desc;
-                const whitelist = ['AUTOMOVEL', 'VEICULO', 'CARRO', 'MOTO', 'CAMINHAO', 'ONIBUS', 'TRATOR', 'REBOQUE', 'SEMI-REBOQUE', 'CAVALO MECANICO', 'EMPILHADEIRA', 'RETROESCAVADEIRA', 'MAQUINA', 'SUCATA DE VEICULO', 'HONDA', 'TOYOTA', 'FIAT', 'VOLKSWAGEN', 'CHEVROLET', 'FORD', 'YAMAHA', 'KAWASAKI', 'SUZUKI', 'HYUNDAI', 'RENAULT'];
-                const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'LOTE DE PEÇAS', 'DIVERSOS', 'TELEVISAO', 'CELULAR', 'CADEIRA', 'MESA', 'ARMARIO', 'GELADEIRA', 'FOGAO', 'MACBOOK', 'IPHONE', 'NOTEBOOK', 'MONITOR', 'BEBEDOURO', 'SOFA', 'ROUPAS', 'CALCADOS', 'BOLSAS', 'BRINQUEDOS', 'IMOVEL', 'IMOVEIS', 'CASA', 'APARTAMENTO', 'TERRENO', 'SITIO', 'FAZENDA', 'GALPAO'];
+                // Fuzzy filter: Keep everything that isn't furniture/electronics
+                const text = (p.veiculo + ' ' + card.text).toUpperCase();
+                const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'CELULAR', 'CADEIRA', 'MESA'];
+                if (blacklist.some(b => text.includes(b)) && !p.ano) continue;
 
-                const isWhitelisted = whitelist.some(w => textToTest.includes(w));
-                const isBlacklisted = blacklist.some(b => textToTest.includes(b));
-                const hasYear = parsed.ano && parsed.ano > 1900;
-
-                if (isBlacklisted && !hasYear) continue;
-                if (!isWhitelisted && !hasYear) continue;
-
-                listaCompleta.push({
-                    registro: item.registro,
+                listaTotal.push({
+                    registro: card.registro,
                     site: SITE,
-                    link: item.link,
-                    veiculo: title,
-                    fotos: item.fotos,
-                    valor: parsed.valor || parsed.valorInicial || 0,
-                    valorInicial: parsed.valorInicial || 0,
-                    km: parsed.km,
-                    ano: parsed.ano,
-                    descricao: desc,
-                    localLeilao: parsed.localLeilao || '',
-                    previsao: parsed.previsao ? { string: parsed.previsao } : { string: '' },
+                    link: card.link,
+                    veiculo: p.veiculo,
+                    ano: p.ano,
+                    fotos: card.fotos,
+                    valor: p.valor,
+                    valorInicial: p.valor,
+                    descricao: `${p.veiculo} - ${p.ano || ''} - ${p.local}`,
+                    localLeilao: p.local,
+                    previsao: { string: '' },
                     modalidade: 'leilao',
                     tipo: 'veiculo'
                 });
             }
 
-            console.log(`✅ [${SITE}] ${listaCompleta.length} lotes capturados.`);
-            if (listaCompleta.length > 0) {
-                await salvarLista(listaCompleta);
+            if (listaTotal.length > 0) {
+                await salvarLista(listaTotal);
             }
+            console.log(`✅ [${SITE}] Salvos ${listaTotal.length} veículos.`);
+
         } catch (error) {
             console.error(`❌ [${SITE}] Erro:`, error.message);
         } finally {
             await browser.close();
         }
-        return listaCompleta.length;
+        return listaTotal.length;
     };
 
     return { buscarTodasPaginas, SITE };
 };
+
+async function autoScroll(page) {
+    await page.evaluate(async () => {
+        await new Promise((resolve) => {
+            let totalHeight = 0;
+            let distance = 400;
+            let timer = setInterval(() => {
+                let scrollHeight = document.body.scrollHeight;
+                window.scrollBy(0, distance);
+                totalHeight += distance;
+                if (totalHeight >= scrollHeight || totalHeight > 10000) { // Limit to 10k pixels or end
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 100);
+        });
+    });
+}
 
 export default createCrawler;

@@ -59,12 +59,16 @@ const runCrawler = (scriptPath, name) => {
     });
 };
 
-const runSequentially = async (crawlers) => {
+const runInBatches = async (crawlers, batchSize = 2) => {
     schedulerStatus.running = true;
     schedulerStatus.lastRun = new Date();
 
-    for (const { path, name } of crawlers) {
-        await runCrawler(path, name);
+    for (let i = 0; i < crawlers.length; i += batchSize) {
+        const batch = crawlers.slice(i, i + batchSize);
+        console.log(`🚀 [Scheduler] Iniciando Batalhão ${Math.floor(i / batchSize) + 1} de ${Math.ceil(crawlers.length / batchSize)}...`);
+        await Promise.all(batch.map(c =>
+            runCrawler(c.path, c.name).catch(e => console.error(`❌ [Batch Error] ${c.name}:`, e))
+        ));
     }
 
     schedulerStatus.running = false;
@@ -106,20 +110,20 @@ const initScheduler = (runImmediate = false) => {
     ];
 
     if (runImmediate) {
-        console.log('🚀 [Scheduler] Iniciando coleta TOTAL (Startup Sequencial)...');
-        runSequentially(crawlerScripts);
+        console.log('🚀 [Scheduler] Iniciando coleta TOTAL (Modo SURGE)...');
+        runInBatches(crawlerScripts, 2);
     }
 
     // Schedule 1: 08:00 AM (Manhã)
     cron.schedule('0 8 * * *', async () => {
         console.log('⏰ [Scheduler] Running Morning Cycle (08:00)');
-        await runSequentially(crawlerScripts);
+        await runInBatches(crawlerScripts, 2);
     });
 
     // Schedule 2: 18:00 PM (Tarde/Noite)
     cron.schedule('0 18 * * *', async () => {
         console.log('⏰ [Scheduler] Running Evening Cycle (18:00)');
-        await runSequentially(crawlerScripts);
+        await runInBatches(crawlerScripts, 2);
         cleanExpired();
     });
 
