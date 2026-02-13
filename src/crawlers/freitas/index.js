@@ -1,108 +1,193 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
-import connectDatabase from '../../database/db.js';
 
 dotenv.config();
 puppeteer.use(StealthPlugin());
 
-let db;
+const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 60000;
+const CONCURRENCY = 2;
 
-const run = async () => {
-    try {
-        const connection = await connectDatabase();
-        console.log('🚀 [FREITAS] HIGH-YIELD: Iniciando coleta profunda...');
-        await execute(connection);
-        process.exit(0);
-    } catch (error) {
-        console.error('Erro fatal:', error);
-        process.exit(1);
-    }
-};
-
-const execute = async (database) => {
-    db = database;
+const createCrawler = (db) => {
+    const { salvarLista } = db;
     const SITE = 'freitasleiloeiro.com.br';
-    const baseUrl = 'https://www.freitasleiloeiro.com.br';
+    const BASE_URL = 'https://www.freitasleiloeiro.com.br';
 
-    const browser = await puppeteer.launch({
-        headless: "new",
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-
-    let totalGeral = 0;
-    try {
+    const crawlAuction = async (browser, link) => {
+        console.log(`📋 [${SITE}] Capturando leilão: ${link}`);
         const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+        const results = [];
+        try {
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
-        for (let p = 1; p <= 30; p++) { // Increased to 30 pages
-            console.log(`🔍 [${SITE}] Página ${p}...`);
-            const url = `${baseUrl}/Leiloes/PesquisarLotes?Categoria=1&PageNumber=${p}`;
+            let currentUrl = link;
+            while (currentUrl) {
+                await page.goto(currentUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                await page.waitForSelector('.cardlote', { timeout: 15000 }).catch(() => null);
 
-            await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
-            await page.waitForSelector('.cardlote', { timeout: 20000 }).catch(() => null);
+                const itens = await page.evaluate((site) => {
+                    const found = [];
+                    const cards = document.querySelectorAll('.cardlote');
 
-            const itens = await page.evaluate((base, site) => {
-                const results = [];
-                const cards = document.querySelectorAll('.cardlote');
+                    cards.forEach(card => {
+                        const linkEl = card.querySelector('a');
+                        const titleEl = card.querySelector('.cardLote-descVeic');
+                        const imgEl = card.querySelector('.cardLote-img');
+                        const priceEl = card.querySelector('.cardLote-vlr');
 
-                cards.forEach(card => {
-                    const linkEl = card.querySelector('a');
-                    const titleEl = card.querySelector('.cardLote-descVeic');
-                    const imgEl = card.querySelector('.cardLote-img');
-                    const priceEl = card.querySelector('.cardLote-vlr');
+                        if (!linkEl || !titleEl) return;
 
-                    if (!linkEl || !titleEl) return;
+                        const title = titleEl.innerText.trim();
+                        const url = linkEl.href;
+                        const registro = card.querySelector('.cardLote-lote')?.innerText.replace('Lote:', '').trim() || url.split('=').pop();
 
-                    const title = titleEl.innerText.trim();
-                    const link = linkEl.href;
-                    const registro = card.querySelector('.cardLote-lote')?.innerText.replace('Lote:', '').trim() || link.split('=').pop();
-
-                    results.push({
-                        registro,
-                        site: site,
-                        veiculo: title.toUpperCase(),
-                        link: link,
-                        fotos: imgEl && imgEl.src ? [imgEl.src] : [],
-                        valor: priceEl ? parseFloat(priceEl.innerText.replace(/[^0-9,]/g, '').replace(',', '.')) || 0 : 0,
-                        localLeilao: 'SP',
-                        modalidade: 'leilao',
-                        tipo: 'veiculo'
+                        found.push({
+                            registro,
+                            site: site,
+                            veiculo: title.toUpperCase(),
+                            link: url,
+                            fotos: imgEl && imgEl.src ? [imgEl.src] : [],
+                            valor: priceEl ? parseFloat(priceEl.innerText.replace(/[^0-9,]/g, '').replace(',', '.')) || 0 : 0,
+                            localLeilao: 'SP',
+                            modalidade: 'leilao',
+                            tipo: 'veiculo'
+                        });
                     });
+                    return found;
+                }, SITE);
+
+                results.push(...itens);
+
+                // Check for next page inside auction
+                const nextLink = await page.evaluate(() => {
+                    const next = Array.from(document.querySelectorAll('.pagination a')).find(a =>
+                        a.innerText.includes('Próximo') || a.innerText.includes('>>')
+                    );
+                    return next ? next.href : null;
                 });
-                return results;
-            }, baseUrl, SITE);
 
-            if (itens.length === 0) {
-                console.log(`   🔸 [${SITE}] Sem mais lotes na página ${p}.`);
-                break;
+                if (nextLink && nextLink !== currentUrl) {
+                    currentUrl = nextLink;
+                } else {
+                    currentUrl = null;
+                }
             }
+        } catch (e) {
+            console.error(`   ❌ [${SITE}] Erro no leilão ${link}:`, e.message);
+        } finally {
+            await page.close();
+        }
+        return results;
+    };
 
-            await db.salvarLista(itens);
-            totalGeral += itens.length;
-            console.log(`   ✅ Saved ${itens.length} lots. Total: ${totalGeral}`);
+    const buscarTodos = async () => {
+        console.log(`🚀 [${SITE}] HIGH-YIELD: Iniciando captura profunda...`);
 
-            const hasNext = await page.evaluate(() => {
-                const nav = document.querySelector('.pagination');
-                if (!nav) return false;
-                const links = Array.from(nav.querySelectorAll('a'));
-                return links.some(a => a.innerText.includes('Próximo') || a.innerText.includes('>>'));
+        const browser = await puppeteer.launch({
+            headless: "new",
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+
+        const listaTotal = [];
+        try {
+            const page = await browser.newPage();
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+
+            console.log(`🔍 [${SITE}] Mapeando agenda de leilões...`);
+            // We use the search page with vehicles as base for broad discovery
+            await page.goto(`${BASE_URL}/Leiloes/PesquisarLotes?Categoria=1`, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+
+            const auctionLinks = await page.evaluate(() => {
+                const links = new Set();
+                // Find links to specific auctions from cards or sidebar
+                document.querySelectorAll('a[href*="Leilao="]').forEach(a => {
+                    const m = a.href.match(/Leilao=(\d+)/);
+                    if (m) links.add(`https://www.freitasleiloeiro.com.br/Leiloes/PesquisarLotes?Leilao=${m[1]}`);
+                });
+                return [...links];
             });
 
-            if (!hasNext && p > 1) break;
-        }
+            console.log(`✅ [${SITE}] ${auctionLinks.length} leilões detectados. Iniciando processamento paralelo...`);
+            await page.close();
 
-    } catch (error) {
-        console.error(`❌ [${SITE}] Erro:`, error.message);
-    } finally {
-        await browser.close();
-        console.log(`✅ [${SITE}] Finalizado com ${totalGeral} veículos.`);
-    }
-    return totalGeral;
+            if (auctionLinks.length === 0) {
+                // Fallback to simple search if no specific auctions found
+                console.log(`⚠️ [${SITE}] Nenhum leilão específico detectado. Usando busca global...`);
+                return await executeSimple(browser, db);
+            }
+
+            for (let i = 0; i < auctionLinks.length; i += CONCURRENCY) {
+                const chunk = auctionLinks.slice(i, i + CONCURRENCY);
+                const chunkResults = await Promise.all(chunk.map(link => crawlAuction(browser, link)));
+
+                const filtered = chunkResults.flat().filter(item => {
+                    const text = item.veiculo.toUpperCase();
+                    const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'IMOVEL', 'TERRENO'];
+                    return !blacklist.some(b => text.includes(b));
+                });
+
+                if (filtered.length > 0) {
+                    await salvarLista(filtered);
+                    listaTotal.push(...filtered);
+                }
+                console.log(`   🔸 [Pool] Processado lote ${Math.floor(i / CONCURRENCY) + 1}. Total: ${listaTotal.length} veículos.`);
+            }
+
+        } catch (error) {
+            console.error(`❌ [${SITE}] Erro:`, error.message);
+        } finally {
+            await browser.close();
+        }
+        return listaTotal.length;
+    };
+
+    const executeSimple = async (browser, db) => {
+        const page = await browser.newPage();
+        let total = 0;
+        try {
+            for (let p = 1; p <= 20; p++) {
+                const url = `${BASE_URL}/Leiloes/PesquisarLotes?Categoria=1&PageNumber=${p}`;
+                await page.goto(url, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                await page.waitForSelector('.cardlote', { timeout: 15000 }).catch(() => null);
+
+                const itens = await page.evaluate(() => {
+                    // Same extraction logic as crawlAuction...
+                    const found = [];
+                    document.querySelectorAll('.cardlote').forEach(card => {
+                        const linkEl = card.querySelector('a');
+                        const titleEl = card.querySelector('.cardLote-descVeic');
+                        if (!linkEl || !titleEl) return;
+                        found.push({
+                            veiculo: titleEl.innerText.trim().toUpperCase(),
+                            link: linkEl.href,
+                            registro: card.querySelector('.cardLote-lote')?.innerText.replace('Lote:', '').trim() || linkEl.href.split('=').pop(),
+                            fotos: card.querySelector('.cardLote-img') ? [card.querySelector('.cardLote-img').src] : [],
+                            valor: parseFloat(card.querySelector('.cardLote-vlr')?.innerText.replace(/[^0-9,]/g, '').replace(',', '.')) || 0
+                        });
+                    });
+                    return found;
+                });
+
+                if (itens.length === 0) break;
+
+                const filtered = itens.map(item => ({
+                    ...item,
+                    site: SITE,
+                    localLeilao: 'SP',
+                    modalidade: 'leilao',
+                    tipo: 'veiculo'
+                }));
+
+                await db.salvarLista(filtered);
+                total += filtered.length;
+            }
+        } finally {
+            await page.close();
+        }
+        return total;
+    };
+
+    return { buscarTodos, SITE };
 };
 
-if (process.argv[1].includes('freitas')) {
-    run();
-}
-
-export default { run, execute };
+export default createCrawler;

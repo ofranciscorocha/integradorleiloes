@@ -93,10 +93,28 @@ const createCrawler = (db) => {
 
                                 // FUZZY FILTER: Keep if has year or looks like vehicle
                                 const text = (title + ' ' + condition).toUpperCase();
-                                const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'PEÇAS', 'TELEVISAO', 'CELULAR', 'CADEIRA', 'MESA', 'ARMARIO', 'GELADEIRA', 'FOGAO', 'MACBOOK', 'IPHONE', 'NOTEBOOK', 'MONITOR', 'BEBEDOURO', 'SOFA', 'ROUPAS', 'CALCADOS', 'BOLSAS', 'BRINQUEDOS', 'IMOVEL', 'IMOVEIS', 'CASA', 'APARTAMENTO', 'TERRENO', 'SITIO', 'FAZENDA', 'GALPAO'];
-                                const isBlacklisted = blacklist.some(b => text.includes(b));
+                                const blacklist = [
+                                    'MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'PEÇAS', 'TELEVISAO', 'CELULAR',
+                                    'CADEIRA', 'MESA', 'ARMARIO', 'GELADEIRA', 'FOGAO', 'MACBOOK', 'IPHONE', 'NOTEBOOK',
+                                    'MONITOR', 'BEBEDOURO', 'SOFA', 'ROUPAS', 'CALCADOS', 'BOLSAS', 'BRINQUEDOS',
+                                    'IMOVEL', 'IMOVEIS', 'CASA', 'APARTAMENTO', 'TERRENO', 'SITIO', 'FAZENDA', 'GALPAO',
+                                    'MATERIAL', 'FERRAGENS', 'SUCATA DE BENS', 'ESCRITORIO', 'EQUIPAMENTO', 'MAQUINAS'
+                                ];
 
-                                if (isBlacklisted && !yearNum) return;
+                                const isBlacklisted = blacklist.some(b => text.includes(b));
+                                const whitelist = ['AUTOMOVEL', 'VEICULO', 'PICKUP', 'CAMINHAO', 'MOTO', 'MOTOCICLETA', 'ONIBUS', 'VAN', 'UTILITARIO'];
+                                const isWhitelisted = whitelist.some(w => text.includes(w));
+
+                                // If it's explicitly blacklisted, we drop it (even if it has a year, as real estate can have years)
+                                if (isBlacklisted && !isWhitelisted) return;
+
+                                // If it's not blacklisted, we still want to ensure it's a vehicle or has a year
+                                if (!yearNum && !isWhitelisted) {
+                                    // Final check: brand names
+                                    const brands = ['HONDA', 'TOYOTA', 'FIAT', 'VOLKSWAGEN', 'CHEVROLET', 'FORD', 'YAMAHA', 'KAWASAKI', 'SUZUKI', 'HYUNDAI', 'RENAULT', 'JEEP', 'BMW', 'MERCEDES'];
+                                    const hasBrand = brands.some(b => text.includes(b));
+                                    if (!hasBrand) return;
+                                }
 
                                 found.push({
                                     registro: { lote: parseInt(registro) || registro, leilao: parseInt(currentAuctionId) },
@@ -165,24 +183,36 @@ const createCrawler = (db) => {
 
         try {
             const page = await browser.newPage();
-            console.log(`🔍 [${SITE}] Mapeando leilões ativos...`);
-            await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+            console.log(`🔍 [${SITE}] Mapeando leilões ativos across pages...`);
+            const discoveryUrls = [
+                `${BASE_URL}/`,
+                `${BASE_URL}/site/leiloes_andamento.php`,
+                `${BASE_URL}/site/proximos_leiloes.php`
+            ];
 
-            const auctionIds = await page.evaluate(() => {
-                const ids = new Set();
-                document.querySelectorAll('input[name="leilao_pesquisa[]"]').forEach(i => ids.add(i.value));
-                document.querySelectorAll('a[href*="leilao_pesquisa="]').forEach(a => {
-                    const m = a.href.match(/leilao_pesquisa=(\d+)/);
-                    if (m) ids.add(m[1]);
-                });
-                return [...ids];
-            });
+            const auctionIds = new Set();
+            for (const dUrl of discoveryUrls) {
+                try {
+                    await page.goto(dUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+                    const foundIds = await page.evaluate(() => {
+                        const ids = [];
+                        document.querySelectorAll('input[name="leilao_pesquisa[]"]').forEach(i => ids.push(i.value));
+                        document.querySelectorAll('a[href*="leilao_pesquisa="]').forEach(a => {
+                            const m = a.href.match(/leilao_pesquisa=(\d+)/);
+                            if (m) ids.push(m[1]);
+                        });
+                        return ids;
+                    });
+                    foundIds.forEach(id => auctionIds.add(id));
+                } catch (err) { }
+            }
 
-            console.log(`📋 [${SITE}] ${auctionIds.length} leilões detectados. Iniciando processamento paralelo...`);
+            const idsArray = [...auctionIds];
+            console.log(`📋 [${SITE}] ${idsArray.length} leilões detectados. Iniciando processamento paralelo...`);
 
             // Parallel execution with chunking
-            for (let i = 0; i < auctionIds.length; i += CONCURRENCY) {
-                const chunk = auctionIds.slice(i, i + CONCURRENCY);
+            for (let i = 0; i < idsArray.length; i += CONCURRENCY) {
+                const chunk = idsArray.slice(i, i + CONCURRENCY);
                 const promises = chunk.map(id => crawlAuction(browser, id));
                 const chunkResults = await Promise.all(promises);
 

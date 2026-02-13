@@ -45,9 +45,29 @@ const createCrawler = (db) => {
                         else if (text.includes('FINANCEIRA') || text.includes('RECUPERADO')) cond = 'Recuperado de Financiamento';
                         else if (text.includes('DOCUMENTÁVEL')) cond = 'Documentável';
 
-                        // Basic garbage filter
-                        const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'PEÇAS', 'DIVERSOS', 'TELEVISAO', 'CELULAR'];
-                        if (blacklist.some(b => text.includes(b)) && !text.includes('SINISTRO')) return;
+                        // FUZZY FILTER V2: Blacklist + Whitelist hybrid
+                        const blacklist = [
+                            'MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'PEÇAS', 'TELEVISAO', 'CELULAR',
+                            'CADEIRA', 'MESA', 'ARMARIO', 'GELADEIRA', 'FOGAO', 'MACBOOK', 'IPHONE', 'NOTEBOOK',
+                            'MONITOR', 'BEBEDOURO', 'SOFA', 'ROUPAS', 'CALCADOS', 'BOLSAS', 'BRINQUEDOS',
+                            'IMOVEL', 'IMOVEIS', 'CASA', 'APARTAMENTO', 'TERRENO', 'SITIO', 'FAZENDA', 'GALPAO',
+                            'MATERIAL', 'FERRAGENS', 'SUCATA DE BENS', 'ESCRITORIO', 'EQUIPAMENTO', 'MAQUINAS'
+                        ];
+                        const whitelist = ['AUTOMOVEL', 'VEICULO', 'PICKUP', 'CAMINHAO', 'MOTO', 'MOTOCICLETA', 'ONIBUS', 'VAN', 'UTILITARIO'];
+
+                        const isBlacklisted = blacklist.some(b => text.includes(b));
+                        const isWhitelisted = whitelist.some(w => text.includes(w));
+
+                        if (isBlacklisted && !isWhitelisted) return;
+
+                        // Only continue if it's a vehicle or explicitly mentioned as such
+                        if (!isWhitelisted) {
+                            const commonVehicleTerms = ['CARRO', 'CAMIONETE', 'TRAILER', 'REBOQUE', 'TRATOR'];
+                            if (!commonVehicleTerms.some(t => text.includes(t))) {
+                                // Double check: years are usually present in vehicle titles on RM
+                                if (!text.match(/\d{4}\/\d{4}/)) return;
+                            }
+                        }
 
                         found.push({
                             site: site,
@@ -87,22 +107,32 @@ const createCrawler = (db) => {
         let total = 0;
         try {
             const page = await browser.newPage();
-            console.log(`🔍 [${SITE}] Mapeando leilões na home...`);
-            await page.goto(BASE, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+            console.log(`🔍 [${SITE}] Mapeando leilões na home e categorias...`);
+            const discoveryUrls = [BASE, `${BASE}/leiloes`, `${BASE}/veiculos`];
+            const auctionLinks = new Set();
 
-            const auctionLinks = await page.evaluate(() => {
-                const links = new Set();
-                document.querySelectorAll('a[href*="/leilao/"]').forEach(a => {
-                    const h = a.getAttribute('href');
-                    if (h && !h.includes('/lista') && h.split('/').pop().length > 2) links.add(h);
-                });
-                return [...links];
-            });
+            for (const dUrl of discoveryUrls) {
+                try {
+                    await page.goto(dUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+                    const found = await page.evaluate(() => {
+                        const links = [];
+                        document.querySelectorAll('a[href*="/leilao/"]').forEach(a => {
+                            const h = a.getAttribute('href');
+                            if (h && !h.includes('/lista') && h.split('/').pop().length > 2) {
+                                links.push(h);
+                            }
+                        });
+                        return links;
+                    });
+                    found.forEach(l => auctionLinks.add(l));
+                } catch (e) { }
+            }
 
-            console.log(`✅ [${SITE}] ${auctionLinks.length} leilões encontrados. Processando em paralelo...`);
+            const linksArray = [...auctionLinks];
+            console.log(`✅ [${SITE}] ${linksArray.length} leilões encontrados. Processando em paralelo...`);
 
-            for (let i = 0; i < auctionLinks.length; i += CONCURRENCY) {
-                const chunk = auctionLinks.slice(i, i + CONCURRENCY);
+            for (let i = 0; i < linksArray.length; i += CONCURRENCY) {
+                const chunk = linksArray.slice(i, i + CONCURRENCY);
                 const results = await Promise.all(chunk.map(link => crawlAuction(browser, link)));
                 const flattened = results.flat();
 
@@ -129,17 +159,22 @@ async function autoScroll(page) {
         await new Promise((resolve) => {
             let totalHeight = 0;
             let distance = 300;
+            let count = 0;
             let timer = setInterval(() => {
                 let scrollHeight = document.body.scrollHeight;
                 window.scrollBy(0, distance);
                 totalHeight += distance;
-                if (totalHeight >= scrollHeight) {
+                count++;
+                // Max 150 scrolls or till end
+                if (totalHeight >= scrollHeight || count > 150) {
                     clearInterval(timer);
                     resolve();
                 }
-            }, 100);
+            }, 150);
         });
     });
+    // Wait for dynamic loads
+    await new Promise(r => setTimeout(r, 2000));
 }
 
 export default createCrawler;
