@@ -1,7 +1,6 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
-import moment from 'moment';
 
 dotenv.config();
 puppeteer.use(StealthPlugin());
