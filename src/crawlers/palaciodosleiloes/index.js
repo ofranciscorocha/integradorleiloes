@@ -5,8 +5,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 puppeteer.use(StealthPlugin());
 
-const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 60000;
-const WAIT_UNTIL = 'domcontentloaded'; // Faster than networkidle2
+const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 90000;
+const WAIT_UNTIL = 'networkidle2'; // More reliable in production latency
 
 /**
  * Trata string de data/hora para objeto com date e timestamp
@@ -49,14 +49,11 @@ const createCrawler = (db) => {
                 console.log(`   [BROWSER] ${text}`);
             });
 
-            // Block unnecessary resources to speed up and avoid timeouts
+            // Block known problematic trackers only, allowing more site resources
             await page.setRequestInterception(true);
             page.on('request', (req) => {
                 const url = req.url();
-                const type = req.resourceType();
-                if (['image', 'font', 'media'].includes(type) && !url.includes('lote')) {
-                    req.abort();
-                } else if (url.includes('google-analytics') || url.includes('facebook') || url.includes('reclameaqui') || url.includes('tracker')) {
+                if (url.includes('google-analytics') || url.includes('facebook') || url.includes('reclameaqui') || url.includes('tracker') || url.includes('doubleclick')) {
                     req.abort();
                 } else {
                     req.continue();
@@ -104,9 +101,9 @@ const createCrawler = (db) => {
 
                         await page.goto(currentPageUrl, { waitUntil: WAIT_UNTIL, timeout: TIMEOUT });
 
-                        // Esperar carregamento dos cards
-                        await page.waitForSelector('.col-md-3', { timeout: 10000 }).catch(() => {
-                            console.log(`⚠️ [${SITE}] Timeout aguardando lotes para leilão ${idLeilao} (pode estar vazio).`);
+                        // Esperar carregamento real dos cards (body do card)
+                        await page.waitForSelector('.card-body', { timeout: 20000 }).catch(() => {
+                            console.log(`⚠️ [${SITE}] Cards não renderizados para leilão ${idLeilao} após 20s.`);
                         });
 
                         const itens = await page.evaluate((baseUrl, currentAuctionId) => {
