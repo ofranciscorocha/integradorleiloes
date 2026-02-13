@@ -64,14 +64,31 @@ const createCrawler = (db) => {
                     return results;
                 }, SITE);
 
-                if (itens.length === 0) {
+                const filteredItens = itens.filter(item => {
+                    const textToTest = (item.veiculo + ' ' + item.descricao).toUpperCase();
+                    const whitelist = ['AUTOMOVEL', 'VEICULO', 'CARRO', 'MOTO', 'CAMINHAO', 'ONIBUS', 'TRATOR', 'REBOQUE', 'SEMI-REBOQUE', 'CAVALO MECANICO', 'EMPILHADEIRA', 'RETROESCAVADEIRA', 'MAQUINA', 'SUCATA DE VEICULO', 'HONDA', 'TOYOTA', 'FIAT', 'VOLKSWAGEN', 'CHEVROLET', 'FORD', 'YAMAHA', 'KAWASAKI', 'SUZUKI', 'HYUNDAI', 'RENAULT'];
+                    const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'LOTE DE PEÇAS', 'DIVERSOS', 'TELEVISAO', 'CELULAR', 'CADEIRA', 'MESA', 'ARMARIO', 'GELADEIRA', 'FOGAO', 'MACBOOK', 'IPHONE', 'NOTEBOOK', 'MONITOR', 'BEBEDOURO', 'SOFA', 'ROUPAS', 'CALCADOS', 'BOLSAS', 'BRINQUEDOS', 'IMOVEL', 'IMOVEIS', 'CASA', 'APARTAMENTO', 'TERRENO', 'SITIO', 'FAZENDA', 'GALPAO'];
+
+                    const isWhitelisted = whitelist.some(w => textToTest.includes(w));
+                    const isBlacklisted = blacklist.some(b => textToTest.includes(b));
+
+                    if (isBlacklisted) return false;
+                    if (!isWhitelisted) return false;
+                    return true;
+                });
+
+                if (filteredItens.length === 0 && itens.length > 0) {
+                    console.log(`   Page ${p} items were filtered out.`);
+                }
+
+                if (filteredItens.length === 0 && itens.length === 0) {
                     console.log(`   No more lots found.`);
                     break;
                 }
 
-                await salvarLista(itens);
-                totalGeral += itens.length;
-                console.log(`   Saved ${itens.length} lots.`);
+                await salvarLista(filteredItens);
+                totalGeral += filteredItens.length;
+                console.log(`   Saved ${filteredItens.length} vehicles.`);
 
                 // Check if next page exists
                 const hasNext = await page.evaluate(() => !!document.querySelector('li.next:not(.disabled)'));

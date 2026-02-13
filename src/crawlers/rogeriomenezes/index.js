@@ -29,6 +29,7 @@ const createCrawler = (db) => {
 
         try {
             const page = await browser.newPage();
+            page.on('console', msg => console.log(`   [BROWSER] ${msg.text()}`));
 
             // 1. Get Auction Links
             console.log(`🔍 [${SITE}] Visitando home...`);
@@ -36,10 +37,10 @@ const createCrawler = (db) => {
 
             const auctionLinks = await page.evaluate(() => {
                 const links = [];
+                // Look for all auction links. On home page, they typically look like /leilao/1234
                 document.querySelectorAll('a[href*="/leilao/"]').forEach(a => {
                     const href = a.getAttribute('href');
-                    const text = a.innerText;
-                    if ((text.includes('VEÍCULO') || text.includes('Seguradora') || text.includes('Bancos') || text.includes('Financeira')) && !links.includes(href)) {
+                    if (href && !links.includes(href) && !href.includes('/lista')) {
                         links.push(href);
                     }
                 });
@@ -71,20 +72,21 @@ const createCrawler = (db) => {
                                 const imgEl = linkEl.querySelector('img');
                                 const loteNum = el.querySelector('.lote-num strong')?.innerText.trim() || '';
                                 const titulo = el.querySelector('.info h3')?.innerText.trim();
-                                const lance = el.querySelector('.lance-atual')?.innerText.trim();
+                                const lance = el.querySelector('.lance-atual span')?.innerText.trim() || el.querySelector('.lance-atual')?.innerText.trim();
                                 const details = Array.from(el.querySelectorAll('.info p')).map(p => p.innerText).join(' ');
 
-                                // Filter garbage
-                                const isDateTitle = titulo && (titulo.match(/^\d{2}\/\d{2}/) || titulo.includes('Daqui a') || titulo.includes('Lance'));
+                                // Filter garbage but be less strict
+                                // Rogério Menezes sometimes has date as title for empty slots, skip those
+                                const isDateTitle = titulo && (titulo.match(/^\d{2}\/\d{2}/) && titulo.length < 15);
                                 const hasPhoto = imgEl && imgEl.src && !imgEl.src.includes('sem_foto') && !imgEl.src.includes('placehold');
 
-                                if (titulo && !isDateTitle && hasPhoto) {
+                                if (titulo && !isDateTitle) {
                                     items.push({
                                         site: site,
                                         registro: loteNum || href.split('/').pop(),
                                         link: href,
                                         veiculo: titulo,
-                                        fotos: imgEl ? [imgEl.src] : [],
+                                        fotos: hasPhoto ? [imgEl.src] : [],
                                         valor: lance ? parseFloat(lance.replace(/[^0-9,]/g, '').replace(',', '.')) : 0,
                                         descricao: details,
                                         localLeilao: 'Rio de Janeiro - RJ',
@@ -98,40 +100,68 @@ const createCrawler = (db) => {
 
                     console.log(`   found ${preLotes.length} valid lots in listing.`);
 
-                    // 3. Visit Lots for Condition
+                    // 3. Visit Lots for Condition only if not found in listing
                     const lotesFinais = [];
                     for (const lote of preLotes) {
                         try {
-                            await page.goto(lote.link, { waitUntil: 'domcontentloaded', timeout: 30000 });
+                            // HEURISTIC: Check if condition is already in description (from listing <p> tags)
+                            const descUpper = lote.descricao.toUpperCase();
+                            let condicao = 'Desconhecida';
 
-                            const details = await page.evaluate(() => {
-                                const body = document.body.innerText;
-                                let condicao = 'Desconhecida';
-                                if (body.match(/sucata/i)) condicao = 'Sucata';
-                                else if (body.match(/sinistrado|colisão|batido/i)) condicao = 'Colisão/Sinistrado';
-                                else if (body.match(/recuperado|financeira/i)) condicao = 'Recuperado de Financiamento';
-                                else if (body.match(/documento|documentavel/i)) condicao = 'Documentável';
+                            if (descUpper.includes('SUCATA')) condicao = 'Sucata';
+                            else if (descUpper.includes('SINISTRO') || descUpper.includes('COLISÃO') || descUpper.includes('BATIDO')) condicao = 'Colisão/Sinistrado';
+                            else if (descUpper.includes('RECUPERADO') || descUpper.includes('FINANCEIRA')) condicao = 'Recuperado de Financiamento';
+                            else if (descUpper.includes('DOCUMENTÁVEL') || descUpper.includes('DOCUMENTO')) condicao = 'Documentável';
+                            else if (descUpper.includes('PEÇAS')) condicao = 'Lote de Peças';
 
-                                const tds = Array.from(document.querySelectorAll('td'));
-                                const condTd = tds.find(td => td.innerText.includes('Condição') || td.innerText.includes('Tipo de Monta'));
-                                if (condTd && condTd.nextElementSibling) {
-                                    condicao = condTd.nextElementSibling.innerText.trim();
-                                }
-                                return { condicao };
-                            });
+                            // If condition found, skip navigation to save time
+                            if (condicao !== 'Desconhecida') {
+                                lote.condicao = condicao;
+                                lote.descricao = `[${condicao}] ${lote.descricao}`;
+                                lotesFinais.push(lote);
+                                continue;
+                            }
 
-                            lote.condicao = details.condicao;
-                            lote.descricao = `[${details.condicao}] ${lote.descricao}`;
+                            // If not found, visit only for very promising items or first N items to keep it fast
+                            if (lotesFinais.length < 50) { // Limit deep visits per auction for speed
+                                await page.goto(lote.link, { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => { });
+                                const details = await page.evaluate(() => {
+                                    const body = document.body.innerText;
+                                    let cond = 'Desconhecida';
+                                    if (body.match(/sucata/i)) cond = 'Sucata';
+                                    else if (body.match(/sinistrado|colisão|batido/i)) cond = 'Colisão/Sinistrado';
+                                    else if (body.match(/recuperado|financeira/i)) cond = 'Recuperado de Financiamento';
+                                    const tds = Array.from(document.querySelectorAll('td'));
+                                    const condTd = tds.find(td => td.innerText.includes('Condição') || td.innerText.includes('Tipo de Monta'));
+                                    if (condTd && condTd.nextElementSibling) cond = condTd.nextElementSibling.innerText.trim();
+                                    return { condicao: cond };
+                                });
+                                lote.condicao = details.condicao;
+                                lote.descricao = `[${details.condicao}] ${lote.descricao}`;
+                            } else {
+                                lote.condicao = 'Ver Site';
+                            }
                             lotesFinais.push(lote);
                         } catch (e) {
                             lotesFinais.push(lote);
                         }
                     }
 
-                    // Strict Filter: No Photos or Bad Titles = Skip
+                    // Category and garbage filter
                     const validLotes = lotesFinais.filter(l => {
+                        const textToTest = (l.veiculo + ' ' + l.descricao).toUpperCase();
+                        const whitelist = ['AUTOMOVEL', 'VEICULO', 'CARRO', 'MOTO', 'CAMINHAO', 'ONIBUS', 'TRATOR', 'REBOQUE', 'SEMI-REBOQUE', 'CAVALO MECANICO', 'EMPILHADEIRA', 'RETROESCAVADEIRA', 'MAQUINA', 'SUCATA DE VEICULO', 'HONDA', 'TOYOTA', 'FIAT', 'VOLKSWAGEN', 'CHEVROLET', 'FORD', 'YAMAHA', 'KAWASAKI', 'SUZUKI', 'HYUNDAI', 'RENAULT'];
+                        const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'LOTE DE PEÇAS', 'DIVERSOS', 'TELEVISAO', 'CELULAR', 'CADEIRA', 'MESA', 'ARMARIO', 'GELADEIRA', 'FOGAO', 'MACBOOK', 'IPHONE', 'NOTEBOOK', 'MONITOR', 'BEBEDOURO', 'SOFA', 'ROUPAS', 'CALCADOS', 'BOLSAS', 'BRINQUEDOS', 'IMOVEL', 'IMOVEIS', 'CASA', 'APARTAMENTO', 'TERRENO', 'SITIO', 'FAZENDA', 'GALPAO'];
+
+                        const isWhitelisted = whitelist.some(w => textToTest.includes(w));
+                        const isBlacklisted = blacklist.some(b => textToTest.includes(b));
+
                         if (!l.fotos || l.fotos.length === 0) return false;
                         if (l.veiculo && l.veiculo.match(/^\d{2}\/\d{2}/)) return false; // Date titles
+
+                        if (isBlacklisted) return false;
+                        if (!isWhitelisted) return false;
+
                         return true;
                     });
 

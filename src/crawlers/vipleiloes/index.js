@@ -152,17 +152,32 @@ const createCrawler = (db) => {
 
             for (const item of itens) {
                 const parsed = parseCardText(item.text);
+                const title = (parsed.veiculo || 'VEÍCULO').toUpperCase();
+                const desc = `${parsed.veiculo} - ${parsed.ano || ''} - ${parsed.km}km`.trim().toUpperCase();
+
+                // CATEGORY FILTERING
+                const textToTest = title + ' ' + desc;
+                const whitelist = ['AUTOMOVEL', 'VEICULO', 'CARRO', 'MOTO', 'CAMINHAO', 'ONIBUS', 'TRATOR', 'REBOQUE', 'SEMI-REBOQUE', 'CAVALO MECANICO', 'EMPILHADEIRA', 'RETROESCAVADEIRA', 'MAQUINA', 'SUCATA DE VEICULO', 'HONDA', 'TOYOTA', 'FIAT', 'VOLKSWAGEN', 'CHEVROLET', 'FORD', 'YAMAHA', 'KAWASAKI', 'SUZUKI', 'HYUNDAI', 'RENAULT'];
+                const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'LOTE DE PEÇAS', 'DIVERSOS', 'TELEVISAO', 'CELULAR', 'CADEIRA', 'MESA', 'ARMARIO', 'GELADEIRA', 'FOGAO', 'MACBOOK', 'IPHONE', 'NOTEBOOK', 'MONITOR', 'BEBEDOURO', 'SOFA', 'ROUPAS', 'CALCADOS', 'BOLSAS', 'BRINQUEDOS', 'IMOVEL', 'IMOVEIS', 'CASA', 'APARTAMENTO', 'TERRENO', 'SITIO', 'FAZENDA', 'GALPAO'];
+
+                const isWhitelisted = whitelist.some(w => textToTest.includes(w));
+                const isBlacklisted = blacklist.some(b => textToTest.includes(b));
+                const hasYear = parsed.ano && parsed.ano > 1900;
+
+                if (isBlacklisted && !hasYear) continue;
+                if (!isWhitelisted && !hasYear) continue;
+
                 listaCompleta.push({
                     registro: item.registro,
                     site: SITE,
                     link: item.link,
-                    veiculo: (parsed.veiculo || 'VEÍCULO').toUpperCase(),
+                    veiculo: title,
                     fotos: item.fotos,
                     valor: parsed.valor || parsed.valorInicial || 0,
                     valorInicial: parsed.valorInicial || 0,
                     km: parsed.km,
                     ano: parsed.ano,
-                    descricao: `${parsed.veiculo} - ${parsed.ano || ''} - ${parsed.km}km`.trim(),
+                    descricao: desc,
                     localLeilao: parsed.localLeilao || '',
                     previsao: parsed.previsao ? { string: parsed.previsao } : { string: '' },
                     modalidade: 'leilao',

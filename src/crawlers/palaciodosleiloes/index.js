@@ -13,10 +13,6 @@ const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 45000;
 const tratarDataHora = (dataHoraStr) => {
     if (!dataHoraStr) return { string: '', time: null, date: null };
     const str = dataHoraStr.trim();
-    // Ex: "12/02/26" or "12/02/2026"
-    // Sometimes it might have time? specific logic needed?
-    // The previous regex was /(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s*(\d{1,2}):(\d{2}))?/
-    // The extracted string is "12/02/26".
     const match = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s*(\d{1,2}):(\d{2}))?/);
     if (match) {
         let [, dia, mes, ano, hora, minuto] = match;
@@ -46,7 +42,7 @@ const createCrawler = (db) => {
 
         try {
             const page = await browser.newPage();
-            // User-Agent real
+            page.on('console', msg => console.log(`   [BROWSER] ${msg.text()}`));
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
             // 1. Ir para Home para pegar IDs dos leilões
@@ -54,9 +50,18 @@ const createCrawler = (db) => {
             await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle2', timeout: TIMEOUT });
 
             const auctionIds = await page.evaluate(() => {
-                const inputs = Array.from(document.querySelectorAll('input[name="leilao_pesquisa[]"]'));
-                // Sort by date or just take them all
-                return inputs.map(input => input.value);
+                const ids = new Set();
+
+                // Method 1: Checkboxes (traditional)
+                document.querySelectorAll('input[name="leilao_pesquisa[]"]').forEach(i => ids.add(i.value));
+
+                // Method 2: Links like leilao.php?id=...
+                document.querySelectorAll('a[href*="leilao.php?leilao_pesquisa="]').forEach(a => {
+                    const match = a.href.match(/leilao_pesquisa=(\d+)/);
+                    if (match) ids.add(match[1]);
+                });
+
+                return [...ids];
             });
 
             console.log(`📋 [${SITE}] Leilões encontrados: ${auctionIds.length} (${auctionIds.join(', ')})`);
@@ -69,122 +74,158 @@ const createCrawler = (db) => {
             for (const idLeilao of auctionIds) {
                 try {
                     console.log(`➡️ [${SITE}] Crawling leilão ${idLeilao}...`);
-                    await page.goto(`${BASE_URL}/site/leilao.php?leilao_pesquisa=${idLeilao}`, { waitUntil: 'networkidle2', timeout: TIMEOUT });
 
-                    // Esperar carregamento dos cards
-                    await page.waitForSelector('.col-md-3', { timeout: 10000 }).catch(() => {
-                        console.log(`⚠️ [${SITE}] Timeout aguardando lotes para leilão ${idLeilao} (pode estar vazio).`);
-                    });
+                    let currentPageUrl = `${BASE_URL}/site/leilao.php?leilao_pesquisa=${idLeilao}`;
+                    let pageCount = 0;
 
-                    const itens = await page.evaluate((baseUrl, currentAuctionId) => {
-                        const results = [];
-                        const cardContainers = document.querySelectorAll('.col-md-3');
+                    while (currentPageUrl) {
+                        pageCount++;
+                        console.log(`   📄 Processando página ${pageCount} do leilão ${idLeilao}`);
 
-                        cardContainers.forEach(container => {
-                            const cardBody = container.querySelector('.card-body');
-                            const icDiv = container.querySelector('.i-c');
-                            const imgEl = icDiv ? icDiv.querySelector('img') : null;
+                        await page.goto(currentPageUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
 
-                            if (!cardBody) return;
+                        // Esperar carregamento dos cards
+                        await page.waitForSelector('.col-md-3', { timeout: 10000 }).catch(() => {
+                            console.log(`⚠️ [${SITE}] Timeout aguardando lotes para leilão ${idLeilao} (pode estar vazio).`);
+                        });
 
-                            // Title: div.quebraln.h6
-                            const titleEl = cardBody.querySelector('.quebraln.h6');
-                            let title = titleEl ? titleEl.innerText.trim() : 'VEÍCULO';
-                            // Remove icons or prefixes if part of text? 
-                            // title often has " HONDA/POP 110I". The icon is <i>. innerText should be fine.
+                        const itens = await page.evaluate((baseUrl, currentAuctionId) => {
+                            const results = [];
+                            const cardContainers = document.querySelectorAll('.col-md-3');
 
-                            // Year
-                            const yearEl = cardBody.querySelector('.my-0.h6');
-                            let year = yearEl ? yearEl.innerText.trim() : '';
-                            // If it's like "2023/2024", take the model year (the second one) or just clean it
-                            const yearMatch = year.match(/(\d{4})/g);
-                            const yearNum = yearMatch ? parseInt(yearMatch[yearMatch.length - 1]) : null;
+                            cardContainers.forEach(container => {
+                                const cardBody = container.querySelector('.card-body');
+                                const icDiv = container.querySelector('.i-c');
+                                const imgEl = icDiv ? icDiv.querySelector('img') : null;
 
-                            // Condition
-                            const conditionEl = cardBody.querySelector('.mt-0.small.mb-2');
-                            const condition = conditionEl ? conditionEl.innerText.trim() : 'No estado';
+                                if (!cardBody) return;
 
-                            // Price
-                            const priceEl = cardBody.querySelector('.h3');
-                            let priceStr = priceEl ? priceEl.innerText : '0';
-                            priceStr = priceStr.replace('último lance', '').trim();
+                                // Title
+                                const titleEl = cardBody.querySelector('.quebraln.h6');
+                                let title = titleEl ? titleEl.innerText.trim() : 'VEÍCULO';
 
-                            // Registro/Link
-                            const onclick = icDiv ? icDiv.getAttribute('onclick') : '';
-                            const match = onclick ? onclick.match(/exibir_lote\((\d+),(\d+)\)/) : null;
-                            const registro = match ? match[1] : Math.random().toString(36).substr(2, 9);
+                                // Year
+                                const yearEl = cardBody.querySelector('.my-0.h6');
+                                let year = yearEl ? yearEl.innerText.trim() : '';
+                                const yearMatch = year.match(/(\d{4})/g);
+                                const yearNum = yearMatch ? parseInt(yearMatch[yearMatch.length - 1]) : null;
 
-                            // Photos - Ensure absolute URLs
-                            let fotos = [];
-                            if (imgEl && imgEl.src) {
-                                let src = imgEl.getAttribute('src');
-                                if (src && !src.startsWith('http')) {
-                                    src = baseUrl.endsWith('/') ? baseUrl + src : baseUrl + '/' + src;
-                                } else if (imgEl.src) {
-                                    src = imgEl.src; // Puppeteer sometimes resolves it automatically
+                                // Condition
+                                const conditionEl = cardBody.querySelector('.mt-0.small.mb-2');
+                                const condition = conditionEl ? conditionEl.innerText.trim() : 'No estado';
+
+                                // Price
+                                const priceEl = cardBody.querySelector('.h3');
+                                let priceStr = priceEl ? priceEl.innerText : '0';
+                                priceStr = priceStr.replace('último lance', '').trim();
+
+                                // Registro/Link
+                                const onclick = icDiv ? icDiv.getAttribute('onclick') : '';
+                                const match = onclick ? onclick.match(/exibir_lote\((\d+),(\d+)\)/) : null;
+                                const registro = match ? match[1] : Math.random().toString(36).substr(2, 9);
+
+                                // Photos
+                                let fotos = [];
+                                if (imgEl && imgEl.src) {
+                                    let src = imgEl.getAttribute('src');
+                                    if (src && !src.startsWith('http')) {
+                                        src = baseUrl.endsWith('/') ? baseUrl + src : baseUrl + '/' + src;
+                                    } else if (imgEl.src) {
+                                        src = imgEl.src;
+                                    }
+                                    if (src && !src.includes('placeholder')) {
+                                        fotos.push(src);
+                                    }
                                 }
-                                if (src && !src.includes('placeholder')) {
-                                    fotos.push(src);
+
+                                // Info divs
+                                const infos = Array.from(cardBody.querySelectorAll('.inf.small'));
+                                let local = 'Juatuba - MG';
+                                let dataStr = '';
+
+                                infos.forEach(info => {
+                                    const text = info.innerText;
+                                    if (text.includes('Cajamar')) local = 'Cajamar - SP';
+                                    if (text.includes('Simões Filho')) local = 'Simões Filho - BA';
+                                    if (text.includes('Juatuba')) local = 'Juatuba - MG';
+
+                                    const floatRight = info.querySelector('.float-right');
+                                    if (floatRight && floatRight.innerText.includes('/')) {
+                                        dataStr = floatRight.innerText.trim();
+                                    }
+                                });
+
+                                const descricao = `${title} - ${year} - ${condition}`;
+
+                                // CATEGORY FILTERING
+                                const textToTest = (title + ' ' + descricao).toUpperCase();
+                                const whitelist = ['AUTOMOVEL', 'VEICULO', 'CARRO', 'MOTO', 'CAMINHAO', 'ONIBUS', 'TRATOR', 'REBOQUE', 'SEMI-REBOQUE', 'CAVALO MECANICO', 'EMPILHADEIRA', 'RETROESCAVADEIRA', 'MAQUINA', 'SUCATA DE VEICULO', 'HONDA', 'TOYOTA', 'FIAT', 'VOLKSWAGEN', 'CHEVROLET', 'FORD', 'YAMAHA', 'KAWASAKI', 'SUZUKI', 'HYUNDAI', 'RENAULT'];
+                                const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'LOTE DE PEÇAS', 'DIVERSOS', 'TELEVISAO', 'CELULAR', 'CADEIRA', 'MESA', 'ARMARIO', 'GELADEIRA', 'FOGAO', 'MACBOOK', 'IPHONE', 'NOTEBOOK', 'MONITOR', 'BEBEDOURO', 'SOFA', 'ROUPAS', 'CALCADOS', 'BOLSAS', 'BRINQUEDOS', 'IMOVEL', 'IMOVEIS', 'CASA', 'APARTAMENTO', 'TERRENO', 'SITIO', 'FAZENDA', 'GALPAO'];
+
+                                const isWhitelisted = whitelist.some(w => textToTest.includes(w));
+                                const isBlacklisted = blacklist.some(b => textToTest.includes(b));
+                                const hasYear = yearNum && yearNum > 1900;
+
+                                if (isBlacklisted && !hasYear) {
+                                    console.log(`   🚫 Blacklisted: ${title}`);
+                                    return;
                                 }
-                            }
-
-                            // Info divs
-                            const infos = Array.from(cardBody.querySelectorAll('.inf.small'));
-                            let local = 'Juatuba - MG';
-                            let dataStr = '';
-
-                            infos.forEach(info => {
-                                const text = info.innerText;
-                                if (text.includes('Cajamar')) local = 'Cajamar - SP';
-                                if (text.includes('Simões Filho')) local = 'Simões Filho - BA';
-                                if (text.includes('Juatuba')) local = 'Juatuba - MG';
-
-                                const floatRight = info.querySelector('.float-right');
-                                if (floatRight && floatRight.innerText.includes('/')) {
-                                    dataStr = floatRight.innerText.trim();
+                                if (!isWhitelisted && !hasYear) {
+                                    console.log(`   ❓ Not whitelisted: ${title}`);
+                                    return;
                                 }
+
+                                results.push({
+                                    registro: { lote: parseInt(registro), leilao: parseInt(currentAuctionId) },
+                                    veiculo: title,
+                                    ano: yearNum,
+                                    descricao: descricao,
+                                    link: `${baseUrl}/site/lotem.php?cl=${registro}`,
+                                    fotos: fotos,
+                                    valor: parseFloat(priceStr.replace(/[^0-9,]/g, '').replace(',', '.')) || 0,
+                                    dataStr: dataStr,
+                                    localLeilao: local,
+                                    condicao: condition
+                                });
                             });
+                            return results;
+                        }, BASE_URL, idLeilao);
 
-                            // Construct description from title + year + condition
-                            const descricao = `${title} - ${year} - ${condition}`;
+                        console.log(`   [${SITE}] Encontrados ${itens.length} itens na página ${pageCount}`);
 
-                            results.push({
-                                registro: { lote: parseInt(registro), leilao: parseInt(currentAuctionId) },
-                                veiculo: title,
-                                ano: yearNum,
-                                descricao: descricao,
-                                link: `${baseUrl}/site/lotem.php?cl=${registro}`,
-                                fotos: fotos,
-                                valor: parseFloat(priceStr.replace(/[^0-9,]/g, '').replace(',', '.')) || 0,
-                                dataStr: dataStr,
-                                localLeilao: local,
-                                condicao: condition
+                        itens.forEach(item => {
+                            const timeObj = tratarDataHora(item.dataStr);
+                            listaTotal.push({
+                                registro: item.registro,
+                                site: SITE,
+                                link: item.link,
+                                veiculo: item.veiculo,
+                                ano: item.ano,
+                                fotos: item.fotos,
+                                valor: item.valor,
+                                valorInicial: item.valor,
+                                descricao: item.descricao,
+                                localLeilao: item.localLeilao,
+                                previsao: timeObj,
+                                modalidade: 'leilao',
+                                tipo: 'veiculo',
+                                condicao: item.condicao
                             });
                         });
-                        return results;
-                    }, BASE_URL, idLeilao);
 
-                    console.log(`   [${SITE}] Encontrados ${itens.length} itens no leilão ${idLeilao}`);
-
-                    itens.forEach(item => {
-                        const timeObj = tratarDataHora(item.dataStr);
-                        listaTotal.push({
-                            registro: item.registro,
-                            site: SITE,
-                            link: item.link,
-                            veiculo: item.veiculo,
-                            ano: item.ano,
-                            fotos: item.fotos,
-                            valor: item.valor,
-                            valorInicial: item.valor,
-                            descricao: item.descricao,
-                            localLeilao: item.localLeilao,
-                            previsao: timeObj,
-                            modalidade: 'leilao',
-                            tipo: 'veiculo',
-                            condicao: item.condicao
+                        // Check for Next Page logic
+                        const nextLink = await page.evaluate(() => {
+                            const pageLinks = Array.from(document.querySelectorAll('.pagination .page-link'));
+                            const next = pageLinks.find(a => a.innerText.includes('Próximo') || a.innerText.includes('Next') || a.innerText.includes('»'));
+                            return next ? next.href : null;
                         });
-                    });
+
+                        if (nextLink && nextLink !== currentPageUrl) {
+                            currentPageUrl = nextLink;
+                        } else {
+                            currentPageUrl = null;
+                        }
+                    }
 
                 } catch (err) {
                     console.error(`❌ [${SITE}] Erro ao processar leilão ${idLeilao}:`, err.message);
