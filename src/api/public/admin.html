@@ -258,6 +258,23 @@
             font-size: 0.85rem;
         }
 
+        .btn-mini-play {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .btn-mini-play:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: #fff7ed;
+        }
+
         /* Modal Overlay */
         #loading-overlay {
             position: fixed;
@@ -396,6 +413,10 @@
                     <p class="small text-muted">Inicie a coleta de dados manualmente.</p>
                 </div>
                 <div class="action-btns">
+                    <button class="btn-admin btn-primary" onclick="runAllCrawlers()"
+                        style="background: #10b981; border-color: #10b981; color: white;">
+                        <i class="fas fa-play-circle"></i> Rodar Todos (Sequencial)
+                    </button>
                     <button class="btn-admin" onclick="runCrawler('palacio')"><i class="fas fa-play"></i> Palácio dos
                         Leilões</button>
                     <button class="btn-admin" onclick="runCrawler('guariglia')"><i class="fas fa-play"></i> Guariglia
@@ -406,17 +427,28 @@
                         Leiloeiro</button>
                     <button class="btn-admin" onclick="runCrawler('sodre')"><i class="fas fa-play"></i> Sodré
                         Santoro</button>
+                    <button class="btn-admin" onclick="runCrawler('copart')"><i class="fas fa-play"></i> Copart</button>
+                    <button class="btn-admin" onclick="runCrawler('rogeriomenezes')"><i class="fas fa-play"></i> Rogério
+                        Menezes</button>
                     <button class="btn-admin" onclick="runCrawler('parque')"><i class="fas fa-play"></i> Parque dos
                         Leilões</button>
+                    <button class="btn-admin" onclick="runCrawler('leilo')"><i class="fas fa-play"></i> Leilo</button>
                 </div>
-                <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
-                <div class="box-header">
-                    <h2>Ações em Massa</h2>
-                </div>
+            </div>
+            <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+            <div class="box-header">
+                <h2>Ações em Massa</h2>
+            </div>
+            <div class="action-btns">
                 <button class="btn-admin btn-primary" onclick="cleanExpired()"
                     style="color: white; background: #ef4444; border: none;">
                     <i class="fas fa-trash-alt"></i> Limpar Leilões Expirados
                 </button>
+                <button class="btn-admin btn-primary" onclick="refreshDB()"
+                    style="color: white; background: #3b82f6; border: none;">
+                    <i class="fas fa-sync-alt"></i> Atualizar Dados (Recarregar DB)
+                </button>
+            </div>
             </div>
         </section>
 
@@ -551,10 +583,32 @@
 
         function renderSitesList(stats) {
             const container = document.getElementById('sites-list');
+
+            // Helper to map display name to id
+            const nameToId = (name) => {
+                const map = {
+                    'Palácio dos Leilões': 'palacio',
+                    'VIP Leilões': 'vip',
+                    'Guariglia Leilões': 'guariglia',
+                    'Freitas Leiloeiro': 'freitas',
+                    'Sodré Santoro': 'sodre',
+                    'Parque dos Leilões': 'parque',
+                    'Rogério Menezes': 'rogeriomenezes',
+                    'Copart': 'copart',
+                    'Leilo.com.br': 'leilo'
+                };
+                return map[name] || name.toLowerCase().split(' ')[0];
+            };
+
             container.innerHTML = Object.entries(stats).map(([site, count]) => `
-                <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #f1f5f9;">
-                    <span style="font-size: 0.85rem; font-weight: 500;">${site}</span>
-                    <span style="font-weight: 700;">${count}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #f1f5f9;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 0.85rem; font-weight: 500;">${site}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">${count} veículos</span>
+                    </div>
+                    <button class="btn-mini-play" title="Rodar Crawler Agora" onclick="runCrawler('${nameToId(site)}')">
+                        <i class="fas fa-play"></i>
+                    </button>
                 </div>
             `).join('');
         }
@@ -588,6 +642,70 @@
             } catch (e) {
                 console.error(e);
                 alert('Erro de conexão ao tentar iniciar crawler.');
+            } finally {
+                overlay.style.display = 'none';
+            }
+        }
+
+        async function runAllCrawlers() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = 'flex';
+            document.getElementById('loading-msg').innerText = 'Iniciando Sequência Global de Crawlers...';
+
+            try {
+                const res = await fetch('/admin/crawl-all', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                } else {
+                    alert('❌ Erro: ' + data.error);
+                }
+                setTimeout(loadDashboard, 2000);
+            } catch (e) {
+                alert('Erro de conexão');
+            } finally {
+                overlay.style.display = 'none';
+            }
+        }
+
+        async function runAICrawler() {
+            const name = document.getElementById('ai-site-name').value;
+            const url = document.getElementById('ai-site-url').value;
+
+            if (!name || !url) return alert('Preencha Nome e URL!');
+
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = 'flex';
+            document.getElementById('loading-msg').innerText = '🤖 IA Analisando Página... Isso pode levar 1 minuto.';
+            document.getElementById('ai-result').style.display = 'none';
+
+            try {
+                const res = await fetch('/admin/crawl-ai', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, url })
+                });
+                const data = await res.json();
+
+                const resDiv = document.getElementById('ai-result');
+                resDiv.style.display = 'block';
+
+                if (data.success) {
+                    resDiv.innerHTML = `<span style="color: green;">✅ Sucesso! <b>${data.count}</b> veículos encontrados e salvos.</span>`;
+                    setTimeout(loadDashboard, 2000);
+                } else {
+                    resDiv.innerHTML = `<span style="color: red;">❌ Erro: ${data.error}</span>`;
+                }
+            } catch (e) {
+                alert('Erro de conexão');
             } finally {
                 overlay.style.display = 'none';
             }
@@ -650,6 +768,32 @@
         function logout() {
             localStorage.removeItem('admin_token');
             window.location.href = '/login.html';
+        }
+
+        async function refreshDB() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = 'flex';
+            document.getElementById('loading-msg').innerText = 'Recarregando Banco de Dados...';
+
+            try {
+                const res = await fetch('/admin/refresh-db', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    loadDashboard();
+                } else {
+                    alert('❌ Erro: ' + data.error);
+                }
+            } catch (e) {
+                alert('Erro de conexão');
+            } finally {
+                overlay.style.display = 'none';
+            }
         }
 
         loadDashboard();

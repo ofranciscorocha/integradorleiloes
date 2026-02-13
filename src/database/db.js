@@ -175,12 +175,12 @@ const connectDatabase = async () => {
         return newItem._id;
     };
 
-    const update = async ({ colecao = 'veiculos', registro, set, debugUpdate = false }) => {
+    const update = async ({ colecao = 'veiculos', registro, site, set, debugUpdate = false }) => {
         const items = readData(colecao);
         const regStr = typeof registro === 'object' ? JSON.stringify(registro) : registro;
         const index = items.findIndex(item => {
             const itemRegStr = typeof item.registro === 'object' ? JSON.stringify(item.registro) : item.registro;
-            return itemRegStr === regStr;
+            return itemRegStr === regStr && (!site || item.site === site);
         });
 
         if (index === -1) return false;
@@ -379,6 +379,17 @@ const connectDatabase = async () => {
         console.log('JSON DB fechado');
     };
 
+    const reload = async () => {
+        console.log('🔄 Recarregando dados do disco...');
+        // In file-based mode, reading happens on demand in some methods, but not all.
+        // Actually, readData is called in every method (get, list, paginate).
+        // BUT, if we want to ensure any internal caching is cleared (if we had any), we would do it here.
+        // Since readData reads from FS every time, 'reload' is mostly about confirming connectivity or clearing any potential memory cache if we added one.
+        // For now, let's just log and maybe return status.
+        // Wait, if we use in-memory cache later, this is where we clear it.
+        return true;
+    };
+
     return {
         buscarLista,
         close,
@@ -392,7 +403,10 @@ const connectDatabase = async () => {
         update,
         overwrite,
         getAlerts,
-        saveAlert
+        overwrite,
+        getAlerts,
+        saveAlert,
+        reload
     };
 };
 

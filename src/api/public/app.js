@@ -283,8 +283,8 @@ const renderVeiculos = () => {
         container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 4rem;">Nenhum veículo encontrado com os filtros selecionados.</div>';
         return;
     }
+    // Removido o filtro de fotos para mostrar todos os veículos
     container.innerHTML = currentState.veiculos
-        .filter(v => v.fotos && v.fotos.length > 0)
         .map(v => renderCard(v))
         .join('');
 };
@@ -316,10 +316,22 @@ const renderCard = (veiculo) => {
     const condicao = veiculo.condicao || 'Geral';
     const condicaoClass = condicao.toLowerCase().replace(/[^a-z0-9]/gi, '-');
 
+    // Photo with Proxy fallback
+    let photoUrl = 'https://placehold.co/400x300?text=Sem+Foto';
+    if (veiculo.fotos && veiculo.fotos.length > 0) {
+        const rawUrl = veiculo.fotos[0];
+        // Don't proxy if it's already a local path or a placeholder
+        if (rawUrl.startsWith('http') && !rawUrl.includes('placehold.co')) {
+            photoUrl = `/proxy-img?url=${encodeURIComponent(rawUrl)}`;
+        } else {
+            photoUrl = rawUrl;
+        }
+    }
+
     return `
     <div class="vehicle-card">
         <div class="card-image">
-            <img src="${veiculo.fotos?.[0] || 'https://placehold.co/400x300?text=Sem+Foto'}" loading="lazy">
+            <img src="${photoUrl}" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=Erro+na+Imagem'">
             <div class="card-badges">
                 ${siteBadge}
             </div>

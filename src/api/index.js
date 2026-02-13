@@ -6,6 +6,7 @@ import connectDatabase from '../database/db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
+import axios from 'axios';
 import cleanExpired from '../tasks/cleanExpired.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,6 +24,44 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public'))); // Serve arquivos estáticos
+
+/**
+ * Proxy de Imagens para evitar bloqueio 403 (CORS/Hotlink)
+ */
+app.get('/proxy-img', async (req, res) => {
+    try {
+        const { url } = req.query;
+        if (!url) return res.status(400).send('URL missing');
+
+        const response = await axios({
+            url: decodeURIComponent(url),
+            method: 'GET',
+            responseType: 'stream',
+            timeout: 10000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': new URL(url).origin
+            },
+            validateStatus: false
+        });
+
+        if (response.status !== 200) {
+            console.error(`[Proxy] Falha ao buscar imagem (${response.status}): ${url}`);
+            return res.status(response.status).send('Proxy error');
+        }
+
+        const contentType = response.headers['content-type'];
+        if (contentType) res.setHeader('Content-Type', contentType);
+
+        // Cache por 24h
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+
+        response.data.pipe(res);
+    } catch (error) {
+        console.error('[Proxy] Erro fatal:', error.message);
+        res.status(500).send('Proxy failure');
+    }
+});
 
 // Debug middleware para logs no Railway
 app.use((req, res, next) => {
@@ -302,7 +341,9 @@ app.get('/stats', async (req, res) => {
                     'Freitas Leiloeiro': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'freitas' } } }),
                     'Sodré Santoro': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'sodre' } } }),
                     'Parque dos Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'parquedosleiloes.com.br' } }),
-                    'Rogério Menezes': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'rogerio' } } })
+                    'Rogério Menezes': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'rogerio' } } }),
+                    'Copart': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'copart' } } }),
+                    'Leilo.com.br': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'leilo.com.br' } } })
                 },
                 scheduler: getSchedulerStatus()
             }
@@ -327,7 +368,10 @@ app.get('/sites', (req, res) => {
             { id: 'guariglia', name: 'Guariglia Leilões', domain: 'guariglialeiloes.com.br' },
             { id: 'freitas', name: 'Freitas Leiloeiro', domain: 'freitasleiloeiro.com.br' },
             { id: 'sodre', name: 'Sodré Santoro', domain: 'sodresantoro.com.br' },
-            { id: 'parque', name: 'Parque dos Leilões', domain: 'parquedosleiloes.com.br' }
+            { id: 'parque', name: 'Parque dos Leilões', domain: 'parquedosleiloes.com.br' },
+            { id: 'rogeriomenezes', name: 'Rogério Menezes', domain: 'rogeriomenezes.com.br' },
+            { id: 'copart', name: 'Copart', domain: 'copart.com.br' },
+            { id: 'leilo', name: 'Leilo.com.br', domain: 'leilo.com.br' }
         ]
     });
 });
@@ -367,6 +411,19 @@ app.post('/admin/clean', requireAuth, async (req, res) => {
 });
 
 /**
+ * Admin: Forçar recarregamento de dados
+ */
+app.post('/admin/refresh-db', requireAuth, async (req, res) => {
+    try {
+        await db.reload();
+        res.json({ success: true, message: 'Banco de dados recarregado com sucesso!' });
+    } catch (e) {
+        console.error('Erro ao recarregar DB:', e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
  * Admin: Rodar Crawler Manualmente
  */
 app.post('/admin/crawl', requireAuth, (req, res) => {
@@ -394,24 +451,152 @@ app.post('/admin/crawl', requireAuth, (req, res) => {
     }
 
     // Roda em background
+    const schedulerStatus = getSchedulerStatus();
+    schedulerStatus.running = true;
+    schedulerStatus.lastRun = new Date();
+
     const child = spawn('node', [absoluteScriptPath], {
         cwd: process.cwd(),
         detached: true,
         stdio: 'inherit',
-        shell: true // Adicionado para paridade com scheduler
+        shell: true
     });
 
     child.on('error', (err) => {
         console.error(`❌ [Admin] Falha ao iniciar processo do crawler ${site}:`, err);
+        schedulerStatus.running = false;
     });
 
     child.on('exit', (code) => {
         console.log(`ℹ️ [Admin] Crawler ${site} terminou com código ${code}`);
+        schedulerStatus.running = false;
+        schedulerStatus.history.push({
+            time: new Date(),
+            type: `manual_${site}`
+        });
+        if (schedulerStatus.history.length > 10) schedulerStatus.history.shift();
     });
 
     child.unref();
 
     res.json({ success: true, message: `Crawler ${site} disparado no servidor. Acompanhe os logs para progresso.` });
+});
+
+/**
+ * Admin: Rodar TODOS Crawlers (Sequencial)
+ */
+app.post('/admin/crawl-all', requireAuth, (req, res) => {
+    // Check if valid request
+    const schedulerStatus = getSchedulerStatus();
+    if (schedulerStatus.running) {
+        return res.status(409).json({ success: false, error: 'Já existe uma coleta em andamento.' });
+    }
+
+    console.log('🚀 [Admin] Disparando coleta TOTAL!');
+
+    // We import initScheduler and re-run runSequentially?
+    // initScheduler exports getSchedulerStatus but not runSequentially directly.
+    // However, initScheduler(true) runs it immediately.
+    // But initScheduler also sets up cron jobs.
+    // Better to expose runSequentially from scheduler.js or adding a trigger function.
+    // For now, let's use a trick: Spawn a child process to run a helper script OR modify scheduler to export the runner.
+
+    // Let's modify scheduler.js to export runAllManual
+    // But since I can't easily modify exports without breaking imports...
+    // I'll call a quick script that imports and runs it?
+    // Or better: Just spawn the scheduler script in a special mode?
+    // Actually, I can just create a `run_all.js` script.
+
+    const scriptPath = path.resolve(process.cwd(), 'src/tasks/run_all.js');
+
+    if (!fs.existsSync(scriptPath)) {
+        return res.status(500).json({ success: false, error: 'Script de execução não encontrado.' });
+    }
+
+    const child = spawn('node', [scriptPath], {
+        cwd: process.cwd(),
+        detached: true,
+        stdio: 'inherit',
+        shell: true
+    });
+
+    child.unref();
+
+    res.json({ success: true, message: 'Coleta TOTAL iniciada em segundo plano.' });
+});
+
+
+/**
+ * Admin: Rodar AI Crawler
+ */
+app.post('/admin/crawl-ai', requireAuth, async (req, res) => {
+    try {
+        const { name, url } = req.body;
+        if (!name || !url) return res.status(400).json({ success: false, error: 'Dados incompletos' });
+
+        console.log(`🚀 [Admin] Disparando AI Crawler para: ${name} (${url})`);
+
+        // We run a specialized script that imports createCrawler from generic/ai_crawler
+        // Since we need to pass args, using a temp script or modifying index.js of ai_crawler to read args is best.
+        // Let's create a runner script on the fly or use a dedicated one.
+
+        // Strategy: Create a runner script that imports GenericCrawler, inits DB, runs it.
+        const runnerScript = `
+        import createCrawler from './src/crawlers/ai_crawler/index.js';
+        import connectDatabase from './src/database/db.js';
+        
+        (async () => {
+            try {
+                const db = await connectDatabase();
+                const crawler = createCrawler(db);
+                const count = await crawler.crawlGeneric('${url}', '${name}');
+                console.log(JSON.stringify({ count }));
+                process.exit(0);
+            } catch(e) {
+                console.error(e);
+                process.exit(1);
+            }
+        })();
+        `;
+
+        // Write temp runner? Or just pass as -e arg?
+        // passing as -e string might be complex with quoting.
+        // Better: write to src/tasks/run_ai.js dynamically or statically.
+
+        // Let's write a static runner file once, or rely on a new file.
+        // For simplicity in this tool call, I'll create the file 'src/tasks/run_ai_on_demand.js' in a separate call? 
+        // No, I can write inline via fs here if I import fs, but I am replacing content.
+
+        // Alternative: Use the child_process to run a script I will create next. 
+        // I will assume 'src/tasks/run_ai.js' exists (I will create it next).
+
+        const child = spawn('node', ['src/tasks/run_ai.js', url, name], {
+            cwd: process.cwd(),
+            stdio: ['ignore', 'pipe', 'pipe']
+        });
+
+        let output = '';
+        let error = '';
+
+        child.stdout.on('data', c => output += c.toString());
+        child.stderr.on('data', c => error += c.toString());
+
+        child.on('close', (code) => {
+            // Parse output to find json
+            // The script should output the count
+            const match = output.match(/\{"count":\d+\}/);
+            const count = match ? JSON.parse(match[0]).count : 0;
+
+            if (code === 0) {
+                res.json({ success: true, count, message: 'AI Crawler finalizado' });
+            } else {
+                res.status(500).json({ success: false, error: error || 'Erro desconhecido no crawler' });
+            }
+        });
+
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
 });
 
 // ============ MOCK AUTH ROUTES ============

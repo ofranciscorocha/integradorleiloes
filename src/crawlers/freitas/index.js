@@ -1,17 +1,18 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
-import https from 'https';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import dotenv from 'dotenv';
 import connectDatabase from '../../database/db.js';
+
+dotenv.config();
+puppeteer.use(StealthPlugin());
 
 let db;
 
 const run = async () => {
     try {
         const connection = await connectDatabase();
-
-        console.log('--- Iniciando Crawler Freitas Leiloeiro ---');
+        console.log('--- Iniciando Crawler Freitas Leiloeiro (Puppeteer) ---');
         await execute(connection);
-
         console.log('--- Finalizado Freitas ---');
         process.exit(0);
     } catch (error) {
@@ -20,117 +21,79 @@ const run = async () => {
     }
 };
 
-export const execute = async (database) => {
+const execute = async (database) => {
     db = database;
-    const agent = new https.Agent({
-        rejectUnauthorized: false
-    });
+    const SITE = 'freitasleiloeiro.com.br';
     const baseUrl = 'https://www.freitasleiloeiro.com.br';
 
-    let page = 1;
-    let hasNext = true;
-    let totalCapturados = 0;
+    const browser = await puppeteer.launch({
+        headless: "new",
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
 
-    // Limite de segurança 20 pgs para evitar loop infinito
-    while (hasNext && page <= 20) {
-        console.log(`Buscando página ${page}...`);
+    let totalGeral = 0;
+    try {
+        const page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
-        try {
-            const url = `${baseUrl}/Leiloes/PesquisarLotes`;
-            const { data } = await axios.get(url, {
-                params: {
-                    Categoria: 1,
-                    PageNumber: page,
-                    TopRows: 50
-                },
-                httpsAgent: agent,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                }
-            });
+        for (let p = 1; p <= 10; p++) {
+            console.log(`🔍 [${SITE}] Buscando página ${p}...`);
+            const url = `${baseUrl}/Leiloes/PesquisarLotes?Categoria=1&PageNumber=${p}`;
 
-            // Verifica se retornou HTML válido ou mensagem de fim
-            if (!data || (typeof data === 'string' && (data.includes('Nenhum lote localizado') || data.includes('Não foram localizados mais lotes')))) {
-                console.log('Fim da paginação.');
-                hasNext = false;
-                break;
-            }
+            await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+            await page.waitForSelector('.cardlote', { timeout: 20000 }).catch(() => null);
 
-            const $ = cheerio.load(data);
-            const cards = $('.cardlote');
+            const itens = await page.evaluate((base, site) => {
+                const results = [];
+                const cards = document.querySelectorAll('.cardlote');
 
-            if (cards.length === 0) {
-                console.log('Nenhum card encontrado nesta página.');
-                hasNext = false;
-                break;
-            }
+                cards.forEach(card => {
+                    const linkEl = card.querySelector('a');
+                    const titleEl = card.querySelector('.cardLote-descVeic');
+                    const imgEl = card.querySelector('.cardLote-img');
+                    const priceEl = card.querySelector('.cardLote-vlr');
 
-            const veiculos = [];
+                    if (!linkEl || !titleEl) return;
 
-            cards.each((i, el) => {
-                const $el = $(el);
-                const lote = $el.find('.cardLote-lote').text().trim();
-                const linkSuffix = $el.find('a').first().attr('href');
-                const link = linkSuffix ? baseUrl + linkSuffix : '';
-                const img = $el.find('.cardLote-img').attr('src');
-                const descricao = $el.find('.cardLote-descVeic span').text().trim();
-                const valor = $el.find('.cardLote-vlr').text().replace('R$', '').trim();
+                    const title = titleEl.innerText.trim();
+                    const link = linkEl.href;
+                    const registro = card.querySelector('.cardLote-lote')?.innerText.replace('Lote:', '').trim() || link.split('=').pop();
 
-                // Data vem quebrada em spans
-                const dia = $el.find('.cardLote-data span').first().text().trim();
-                const hora = $el.find('.cardLote-data span').last().text().trim();
-                const dataLeilao = `${dia} ${hora}`;
-
-                if (descricao) {
-                    veiculos.push({
-                        registro: lote,
-                        site: 'freitasleiloeiro.com.br',
-                        link,
-                        veiculo: descricao,
-                        fotos: img ? [img] : [],
-                        valorInicial: valor ? parseFloat(valor.replace(/\./g, '').replace(',', '.')) : 0,
-                        modalidade: 'leilao',
-                        localLeilao: 'São Paulo/SP',
-                        ano: getDataAno(descricao),
-                        previsao: { string: dataLeilao }
+                    results.push({
+                        registro,
+                        site: site,
+                        veiculo: title.toUpperCase(),
+                        link: link,
+                        fotos: imgEl && imgEl.src ? [imgEl.src] : [],
+                        valor: priceEl ? parseFloat(priceEl.innerText.replace(/[^0-9,]/g, '').replace(',', '.')) || 0 : 0,
+                        localLeilao: 'SP',
+                        modalidade: 'leilao'
                     });
-                }
+                });
+                return results;
+            }, baseUrl, SITE);
+
+            if (itens.length === 0) break;
+
+            await db.salvarLista(itens);
+            totalGeral += itens.length;
+            console.log(`   Saved ${itens.length} lots.`);
+
+            const hasNext = await page.evaluate(() => {
+                const nav = document.querySelector('.pagination');
+                return nav && !nav.innerText.includes('Próximo') ? false : true; // Simplified check
             });
-
-            console.log(`Encontrados ${veiculos.length} veículos na página ${page}`);
-
-            if (veiculos.length > 0) {
-                const resultado = await db.salvarLista(veiculos);
-                totalCapturados += veiculos.length;
-                console.log(`Salvos ${veiculos.length} veículos da página ${page}`);
-            } else {
-                hasNext = false;
-            }
-
-            page++;
-            // Delay de cortesia
-            await new Promise(r => setTimeout(r, 1000));
-
-        } catch (error) {
-            console.error(`Erro na página ${page}:`, error.message);
-            hasNext = false;
+            if (!hasNext) break;
         }
+
+    } catch (error) {
+        console.error(`❌ [${SITE}] Erro:`, error.message);
+    } finally {
+        await browser.close();
     }
-
-    console.log(`Total capturado Freitas: ${totalCapturados}`);
+    return totalGeral;
 };
 
-const getDataAno = (desc) => {
-    // Tenta extrair ano de strings como "MODELO 10/11" ou "2010/2011"
-    const regex = /(\d{2,4})\/(\d{2,4})/;
-    const match = desc.match(regex);
-    if (match) return match[0];
-    return null;
-};
-
-// Auto-run se chamado diretamente
-// Verificacao simplificada para evitar erro de path
 if (process.argv[1].includes('freitas')) {
     run();
 }

@@ -1,19 +1,22 @@
-import createCrawler from './index.js';
 import connectDatabase from '../../database/db.js';
+import createCrawler from './index.js';
 
-(async () => {
-    const db = await connectDatabase();
-    // Simula a função de salvar do db.js
-    const mockDb = {
-        salvarLista: async (lista) => {
-            console.log(`💾 Salvando ${lista.length} veículos no banco...`);
-            for (const v of lista) {
-                await db.upsert('veiculos', v, { registro: v.registro, site: v.site });
-            }
-        }
-    };
+console.log('🚀 Iniciando crawler do Parque dos Leilões...\n');
 
-    const crawler = createCrawler(mockDb);
-    await crawler.buscarTodasPaginas(2); // Testa as 2 primeiras páginas
-    process.exit(0);
-})();
+const run = async () => {
+    try {
+        const db = await connectDatabase();
+        const crawler = createCrawler(db);
+
+        const total = await crawler.buscarTodasPaginas();
+
+        console.log(`\n✅ Crawler finalizado! ${total} lotes processados.`);
+        await db.close();
+        process.exit(0);
+    } catch (error) {
+        console.error('❌ Erro ao executar crawler:', error);
+        process.exit(1);
+    }
+};
+
+run();

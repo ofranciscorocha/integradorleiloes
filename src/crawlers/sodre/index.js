@@ -79,8 +79,34 @@ export const execute = async (database) => {
         console.log(`Navigating to ${url}...`);
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
-        // Scroll to trigger search-lots API calls
-        await autoScroll(page);
+        // Scroll to trigger search-lots API calls, with multiple rounds
+        for (let round = 0; round < 5; round++) {
+            await autoScroll(page);
+
+            // Try clicking "Load More" / "Carregar mais" buttons
+            const clicked = await page.evaluate(() => {
+                const buttons = Array.from(document.querySelectorAll('button, a'));
+                for (const btn of buttons) {
+                    const text = btn.innerText.toLowerCase();
+                    if (text.includes('carregar mais') || text.includes('load more') || text.includes('ver mais')) {
+                        btn.click();
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            if (clicked) {
+                console.log(`   Clicked load more (round ${round + 1})`);
+                await new Promise(r => setTimeout(r, 3000));
+            } else {
+                // No more load buttons, we're done
+                break;
+            }
+        }
+
+        // Final wait for any pending API responses
+        await new Promise(r => setTimeout(r, 2000));
 
     } catch (e) {
         console.error('Erro Sodré:', e.message);
@@ -94,16 +120,15 @@ async function autoScroll(page) {
     await page.evaluate(async () => {
         await new Promise((resolve) => {
             var totalHeight = 0;
-            var distance = 100;
+            var distance = 300;
             var retries = 0;
-            var maxRetries = 20; // Wait longer for load
+            var maxRetries = 50;
 
             var timer = setInterval(() => {
                 var scrollHeight = document.body.scrollHeight;
                 window.scrollBy(0, distance);
                 totalHeight += distance;
 
-                // Check if we reached bottom
                 if ((window.innerHeight + window.scrollY) >= scrollHeight - 100) {
                     retries++;
                     if (retries >= maxRetries) {
@@ -111,9 +136,9 @@ async function autoScroll(page) {
                         resolve();
                     }
                 } else {
-                    retries = 0; // Reset if we are still moving
+                    retries = 0;
                 }
-            }, 100);
+            }, 200);
         });
     });
 }

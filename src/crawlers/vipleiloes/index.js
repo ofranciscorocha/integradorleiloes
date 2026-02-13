@@ -1,149 +1,188 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
 
 dotenv.config();
+puppeteer.use(StealthPlugin());
 
-const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 15000;
-const DELAY = parseInt(process.env.CRAWLER_DELAY_MS) || 5000;
+const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 45000;
 
-/**
- * Crawler do VIP Leilões
- */
 const createCrawler = (db) => {
-    const { salvarLista, list } = db;
+    const { salvarLista } = db;
     const SITE = 'vipleiloes.com.br';
+    const BASE_URL = 'https://www.vipleiloes.com.br';
 
-    /**
-     * Utilitário para delay
-     */
-    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    const parseCardText = (text) => {
+        // Card text format:
+        // "ABERTO PARA LANCES\nFPACE 380CV V6 S - 2017/2018\nJaguar\n59.580 Km\nPlaca Final 2\nValor Atual\nR$ 99.000,00\nValor inicial:\nR$ 99.000,00\nLote: 3  Local: GO\n1 Lance\nInício: 13/02/2026\n10:00\nVer mais"
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        const result = {
+            veiculo: '',
+            marca: '',
+            km: 0,
+            ano: null,
+            valor: 0,
+            valorInicial: 0,
+            localLeilao: '',
+            lote: '',
+            previsao: ''
+        };
 
-    /**
-     * Busca uma página de veículos
-     */
-    const getPagina = async (pagina) => {
-        console.log(`📄 [${SITE}] Buscando página ${pagina}...`);
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
 
+            // Line 2 is usually the vehicle model + year (e.g. "FPAGE 380CV V6 S - 2017/2018")
+            if (i === 1) {
+                const yearMatch = line.match(/(\d{4})\/(\d{4})/);
+                if (yearMatch) {
+                    result.ano = parseInt(yearMatch[2]);
+                    result.veiculo = line.replace(/\s*-\s*\d{4}\/\d{4}/, '').trim();
+                } else {
+                    result.veiculo = line;
+                }
+            }
+
+            // Line 3 is usually the brand (e.g. "Jaguar")
+            if (i === 2 && !line.includes('Km') && !line.includes('R$')) {
+                result.marca = line;
+                result.veiculo = `${result.marca} ${result.veiculo}`;
+            }
+
+            // KM line (e.g. "59.580 Km")
+            if (line.match(/[\d.]+\s*Km/i)) {
+                result.km = parseInt(line.replace(/[^\d]/g, '')) || 0;
+            }
+
+            // Valor Atual value (line after "Valor Atual")
+            if (line === 'Valor Atual' && i + 1 < lines.length) {
+                result.valor = parseFloat(lines[i + 1].replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+            }
+
+            // Valor inicial
+            if (line.startsWith('Valor inicial') && i + 1 < lines.length) {
+                result.valorInicial = parseFloat(lines[i + 1].replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+            }
+
+            // Lote and Location (e.g. "Lote: 3  Local: GO")
+            const loteMatch = line.match(/Lote:\s*(\d+)/);
+            if (loteMatch) {
+                result.lote = loteMatch[1];
+            }
+            const localMatch = line.match(/Local:\s*(\S+)/);
+            if (localMatch) {
+                result.localLeilao = localMatch[1];
+            }
+
+            // Início date (e.g. "Início: 13/02/2026")
+            const inicioMatch = line.match(/Início:\s*(\d{2}\/\d{2}\/\d{4})/);
+            if (inicioMatch) {
+                result.previsao = inicioMatch[1];
+            }
+        }
+
+        return result;
+    };
+
+    const buscarTodasPaginas = async () => {
+        console.log(`🚀 [${SITE}] Iniciando crawler (Puppeteer Mode)...`);
+
+        const browser = await puppeteer.launch({
+            headless: "new",
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+
+        const listaCompleta = [];
         try {
-            const { data } = await axios.get(
-                `https://www.vipleiloes.com.br/Portal/Veiculos/ListarVeiculos?Pagina=${pagina}&OrdenacaoVeiculo=InicioLeilao&Financiavel=False&Favoritos=False`,
-                { timeout: TIMEOUT }
-            );
+            const page = await browser.newPage();
+            page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
-            const $ = cheerio.load(data);
-            const lista = [];
+            console.log(`🔍 [${SITE}] Navegando para listagem...`);
+            await page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: TIMEOUT });
 
-            const totalText = $('div.col-md-12.tituloListagem h4').text();
-            const total = parseInt(totalText.replace(/[^\d]/g, '')) || 0;
+            // Wait for vehicle cards with the new selector
+            console.log(`⌛ [${SITE}] Aguardando cards...`);
+            await page.waitForSelector('.card-anuncio', { timeout: 20000 }).catch(() => null);
 
-            $('div.itm-card').each((index, div) => {
-                const dados = { original: {} };
-                const body = $(div).find('div.itm-body');
-                const firstline = $(body).find('div.itm-firstline p.itm-info');
-
-                dados.original.url = $(div).find('a.itm-cdlink').attr('href');
-                dados.original.registro = dados.original.url?.split('/').pop();
-
-                $(firstline).each((idx, i) => {
-                    if (idx === 0) {
-                        const loteText = $(i).text().split(':')[1];
-                        dados.lote = loteText?.trim();
-                        dados.original.lote = dados.lote;
-                    } else {
-                        const localText = $(i).text().split(':')[1];
-                        dados.local = localText?.trim();
-                        dados.original.local = dados.local;
-                    }
-                });
-
-                dados.registro = dados.original.registro;
-                dados.original.bem = $(body).find('h4.itm-name').text().replace(/\n/g, ' ').trim();
-                dados.veiculo = dados.original.bem;
-                dados.site = SITE;
-                dados.link = `https://www.vipleiloes.com.br${dados.original.url}`;
-
-                if (dados.registro && !lista.find(({ registro }) => registro === dados.registro)) {
-                    lista.push(dados);
+            // Scroll down to trigger lazy loading of all cards
+            await page.evaluate(async () => {
+                for (let i = 0; i < 10; i++) {
+                    window.scrollBy(0, 500);
+                    await new Promise(r => setTimeout(r, 300));
                 }
             });
+            await new Promise(r => setTimeout(r, 2000));
 
-            return { total, lista, pagina };
-        } catch (error) {
-            console.error(`❌ [${SITE}] Erro na página ${pagina}:`, error.message);
-            return { total: 0, lista: [], pagina };
-        }
-    };
+            // Collect items from the page
+            const itens = await page.evaluate((site) => {
+                const results = [];
+                const cards = document.querySelectorAll('.card-anuncio');
+                console.log(`DEBUG: Found ${cards.length} .card-anuncio elements`);
+                console.log(`DEBUG: HTML length: ${document.body.innerHTML.length}`);
 
-    /**
-     * Busca todas as páginas e salva
-     */
-    const buscarTodasPaginas = async (timeout = DELAY) => {
-        console.log(`\n🔍 [${SITE}] Iniciando busca...`);
+                cards.forEach(card => {
+                    const linkEl = card.querySelector('a');
+                    const imgEl = card.querySelector('img');
+                    const text = card.innerText.trim();
 
-        let paginaAtual = 1;
-        let totalProcessado = 0;
-        let continuar = true;
+                    if (!linkEl) {
+                        console.log('DEBUG: Card missing link');
+                        return;
+                    }
 
-        while (continuar) {
-            const { total, lista, pagina } = await getPagina(paginaAtual);
+                    const link = linkEl.href;
+                    // Extract slug from URL as registro (e.g. "jaguar-fpace-380cv-v6-s-96826")
+                    const slug = link.split('/').pop();
+                    // The numeric ID at the end is the unique identifier
+                    const idMatch = slug.match(/(\d+)$/);
+                    const registro = idMatch ? idMatch[1] : slug;
 
-            if (lista.length > 0) {
-                await salvarLista(lista);
-                totalProcessado += lista.length;
-                console.log(`✅ [${SITE}] Página ${pagina}: ${lista.length} veículos (${totalProcessado}/${total})`);
+                    results.push({
+                        registro,
+                        site: site,
+                        link: link,
+                        fotos: imgEl && imgEl.src ? [imgEl.src] : [],
+                        text: text
+                    });
+                });
+                return results;
+            }, SITE);
+
+            console.log(`📦 [${SITE}] ${itens.length} cards encontrados, processando...`);
+
+            for (const item of itens) {
+                const parsed = parseCardText(item.text);
+                listaCompleta.push({
+                    registro: item.registro,
+                    site: SITE,
+                    link: item.link,
+                    veiculo: (parsed.veiculo || 'VEÍCULO').toUpperCase(),
+                    fotos: item.fotos,
+                    valor: parsed.valor || parsed.valorInicial || 0,
+                    valorInicial: parsed.valorInicial || 0,
+                    km: parsed.km,
+                    ano: parsed.ano,
+                    descricao: `${parsed.veiculo} - ${parsed.ano || ''} - ${parsed.km}km`.trim(),
+                    localLeilao: parsed.localLeilao || '',
+                    previsao: parsed.previsao ? { string: parsed.previsao } : { string: '' },
+                    modalidade: 'leilao',
+                    tipo: 'veiculo'
+                });
             }
 
-            const totalPaginas = Math.ceil(total / 10);
-
-            if (paginaAtual >= totalPaginas || lista.length === 0) {
-                continuar = false;
-            } else {
-                paginaAtual++;
-                await sleep(timeout);
+            console.log(`✅ [${SITE}] ${listaCompleta.length} lotes capturados.`);
+            if (listaCompleta.length > 0) {
+                await salvarLista(listaCompleta);
             }
-        }
-
-        console.log(`✅ [${SITE}] Busca finalizada! ${totalProcessado} veículos processados.`);
-        return totalProcessado;
-    };
-
-    /**
-     * Busca detalhes de um veículo específico
-     */
-    const buscarDetalhes = async (registro) => {
-        try {
-            const { data } = await axios.get(
-                `https://www.vipleiloes.com.br/Veiculo/Detalhes/${registro}`,
-                { timeout: TIMEOUT }
-            );
-
-            const $ = cheerio.load(data);
-            const detalhes = {};
-
-            // Extrai informações da página de detalhes
-            $('div.veiculo-info p').each((idx, el) => {
-                const text = $(el).text().trim();
-                if (text.includes('Ano:')) detalhes.ano = text.split(':')[1]?.trim();
-                if (text.includes('KM:')) detalhes.km = text.split(':')[1]?.trim();
-                if (text.includes('Combustível:')) detalhes.combustivel = text.split(':')[1]?.trim();
-            });
-
-            detalhes.descricao = $('div.veiculo-descricao').text().trim();
-
-            return detalhes;
         } catch (error) {
-            console.error(`❌ [${SITE}] Erro ao buscar detalhes de ${registro}:`, error.message);
-            return null;
+            console.error(`❌ [${SITE}] Erro:`, error.message);
+        } finally {
+            await browser.close();
         }
+        return listaCompleta.length;
     };
 
-    return {
-        getPagina,
-        buscarTodasPaginas,
-        buscarDetalhes,
-        SITE
-    };
+    return { buscarTodasPaginas, SITE };
 };
 
 export default createCrawler;
