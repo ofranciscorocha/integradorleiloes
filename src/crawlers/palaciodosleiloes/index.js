@@ -49,11 +49,11 @@ const createCrawler = (db) => {
                 console.log(`   [BROWSER] ${text}`);
             });
 
-            // Block known problematic trackers only, allowing more site resources
+            // Relaxed blocking: only block images and fonts to ensure all scripts execute
             await page.setRequestInterception(true);
             page.on('request', (req) => {
-                const url = req.url();
-                if (url.includes('google-analytics') || url.includes('facebook') || url.includes('reclameaqui') || url.includes('tracker') || url.includes('doubleclick')) {
+                const type = req.resourceType();
+                if (['image', 'font', 'media'].includes(type) && !req.url().includes('lote')) {
                     req.abort();
                 } else {
                     req.continue();
@@ -102,8 +102,10 @@ const createCrawler = (db) => {
                         await page.goto(currentPageUrl, { waitUntil: WAIT_UNTIL, timeout: TIMEOUT });
 
                         // Esperar carregamento real dos cards (body do card)
-                        await page.waitForSelector('.card-body', { timeout: 20000 }).catch(() => {
-                            console.log(`⚠️ [${SITE}] Cards não renderizados para leilão ${idLeilao} após 20s.`);
+                        await page.waitForSelector('.card-body', { timeout: 30000 }).catch(async () => {
+                            console.log(`⚠️ [${SITE}] Cards não renderizados para leilão ${idLeilao} em 30s.`);
+                            const html = await page.evaluate(() => document.body.innerHTML.substring(0, 1000));
+                            console.log(`   [DEBUG] Body Preview: ${html}`);
                         });
 
                         const itens = await page.evaluate((baseUrl, currentAuctionId) => {

@@ -562,6 +562,20 @@
             window.location.href = '/login.html';
         }
 
+        // Pre-flight auth check
+        async function checkAuth() {
+            try {
+                const res = await fetch('/admin/check-auth', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.status === 401) {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = '/login.html';
+                }
+            } catch (e) { console.error('Auth check fail', e); }
+        }
+        checkAuth();
+
         function showSection(id) {
             document.querySelectorAll('section').forEach(s => s.style.display = 'none');
             document.getElementById('section-' + id).style.display = 'block';
@@ -704,6 +718,13 @@
                     const res = await fetch('/admin/logs', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
+
+                    if (res.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        window.location.href = '/login.html';
+                        return;
+                    }
+
                     const data = await res.json();
 
                     if (data.success && data.logs) {
