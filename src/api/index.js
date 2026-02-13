@@ -95,7 +95,7 @@ app.get('/a-painel-secreto', (req, res) => {
 });
 
 // Redirect amigável para o admin
-app.get('/painel', (req, res) => {
+app.get(['/painel', '/admin.html'], (req, res) => {
     res.redirect('/a-painel-secreto');
 });
 
@@ -526,21 +526,10 @@ app.post('/admin/crawl-all', requireAuth, (req, res) => {
 
     console.log('🚀 [Admin] Disparando coleta TOTAL!');
 
-    // We import initScheduler and re-run runSequentially?
-    // initScheduler exports getSchedulerStatus but not runSequentially directly.
-    // However, initScheduler(true) runs it immediately.
-    // But initScheduler also sets up cron jobs.
-    // Better to expose runSequentially from scheduler.js or adding a trigger function.
-    // For now, let's use a trick: Spawn a child process to run a helper script OR modify scheduler to export the runner.
-
-    // Let's modify scheduler.js to export runAllManual
-    // But since I can't easily modify exports without breaking imports...
-    // I'll call a quick script that imports and runs it?
-    // Or better: Just spawn the scheduler script in a special mode?
-    // Actually, I can just create a `run_all.js` script.
+    const logPath = path.resolve(process.cwd(), 'crawler.log');
+    fs.writeFileSync(logPath, `--- Coleta SEQUENCIAL Total Iniciada em ${new Date().toLocaleString()} ---\n`);
 
     const scriptPath = path.resolve(process.cwd(), 'src/tasks/run_all.js');
-
     if (!fs.existsSync(scriptPath)) {
         return res.status(500).json({ success: false, error: 'Script de execução não encontrado.' });
     }
@@ -548,11 +537,30 @@ app.post('/admin/crawl-all', requireAuth, (req, res) => {
     const child = spawn('node', [scriptPath], {
         cwd: process.cwd(),
         detached: true,
-        stdio: 'inherit',
+        stdio: ['ignore', 'pipe', 'pipe'],
         shell: true
     });
 
+    child.stdout.on('data', (data) => {
+        fs.appendFileSync(logPath, data);
+        process.stdout.write(`[CRAWL:ALL] ${data}`);
+    });
+
+    child.stderr.on('data', (data) => {
+        fs.appendFileSync(logPath, `ERROR: ${data}`);
+        process.stderr.write(`[CRAWL:ALL] ERR: ${data}`);
+    });
+
+    child.on('exit', (code) => {
+        console.log(`ℹ️ [Admin] Coleta Total terminou com código ${code}`);
+        fs.appendFileSync(logPath, `\n--- Coleta Total Finalizada (Código ${code}) ---\n`);
+        schedulerStatus.running = false;
+        schedulerStatus.history.push({ time: new Date(), type: 'manual_all' });
+        if (schedulerStatus.history.length > 10) schedulerStatus.history.shift();
+    });
+
     child.unref();
+    schedulerStatus.running = true;
 
     res.json({ success: true, message: 'Coleta TOTAL iniciada em segundo plano.' });
 });
@@ -646,7 +654,8 @@ app.post('/auth/login', (req, res) => {
 
     // Set a simple cookie (client-side capable for now) 
     // real app should use httpOnly cookies
-    res.json({ success: true, user });
+    // real app should use httpOnly cookies
+    res.json({ success: true, user, token: AUTH_TOKEN });
 });
 
 app.post('/auth/logout', (req, res) => {
