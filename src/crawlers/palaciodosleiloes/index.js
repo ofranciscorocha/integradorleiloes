@@ -5,7 +5,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 puppeteer.use(StealthPlugin());
 
-const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 45000;
+const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 60000;
+const WAIT_UNTIL = 'domcontentloaded'; // Faster than networkidle2
 
 /**
  * Trata string de data/hora para objeto com date e timestamp
@@ -42,7 +43,26 @@ const createCrawler = (db) => {
 
         try {
             const page = await browser.newPage();
-            page.on('console', msg => console.log(`   [BROWSER] ${msg.text()}`));
+            page.on('console', msg => {
+                const text = msg.text();
+                if (text.includes('pesquisa sem cache') || text.includes('Swiper')) return; // Ignore noisy site logs
+                console.log(`   [BROWSER] ${text}`);
+            });
+
+            // Block unnecessary resources to speed up and avoid timeouts
+            await page.setRequestInterception(true);
+            page.on('request', (req) => {
+                const url = req.url();
+                const type = req.resourceType();
+                if (['image', 'font', 'media'].includes(type) && !url.includes('lote')) {
+                    req.abort();
+                } else if (url.includes('google-analytics') || url.includes('facebook') || url.includes('reclameaqui') || url.includes('tracker')) {
+                    req.abort();
+                } else {
+                    req.continue();
+                }
+            });
+
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
             // 1. Ir para Home para pegar IDs dos leilões
@@ -82,7 +102,7 @@ const createCrawler = (db) => {
                         pageCount++;
                         console.log(`   📄 Processando página ${pageCount} do leilão ${idLeilao}`);
 
-                        await page.goto(currentPageUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                        await page.goto(currentPageUrl, { waitUntil: WAIT_UNTIL, timeout: TIMEOUT });
 
                         // Esperar carregamento dos cards
                         await page.waitForSelector('.col-md-3', { timeout: 10000 }).catch(() => {
