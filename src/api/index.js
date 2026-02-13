@@ -455,20 +455,30 @@ app.post('/admin/crawl', requireAuth, (req, res) => {
     schedulerStatus.running = true;
     schedulerStatus.lastRun = new Date();
 
+    const logPath = path.resolve(process.cwd(), 'crawler.log');
+    // Clear log before starting manual run to avoid old data confusion
+    fs.writeFileSync(logPath, `--- Coleta Manual: ${site} Iniciada em ${new Date().toLocaleString()} ---\n`);
+
     const child = spawn('node', [absoluteScriptPath], {
         cwd: process.cwd(),
         detached: true,
-        stdio: 'inherit',
+        stdio: ['ignore', 'pipe', 'pipe'], // Capture pipe
         shell: true
     });
 
-    child.on('error', (err) => {
-        console.error(`❌ [Admin] Falha ao iniciar processo do crawler ${site}:`, err);
-        schedulerStatus.running = false;
+    child.stdout.on('data', (data) => {
+        fs.appendFileSync(logPath, data);
+        process.stdout.write(`[CRAWL:${site}] ${data}`);
+    });
+
+    child.stderr.on('data', (data) => {
+        fs.appendFileSync(logPath, `ERROR: ${data}`);
+        process.stderr.write(`[CRAWL:${site}] ERR: ${data}`);
     });
 
     child.on('exit', (code) => {
         console.log(`ℹ️ [Admin] Crawler ${site} terminou com código ${code}`);
+        fs.appendFileSync(logPath, `\n--- Crawler ${site} Finalizado (Código ${code}) ---\n`);
         schedulerStatus.running = false;
         schedulerStatus.history.push({
             time: new Date(),
@@ -479,7 +489,28 @@ app.post('/admin/crawl', requireAuth, (req, res) => {
 
     child.unref();
 
-    res.json({ success: true, message: `Crawler ${site} disparado no servidor. Acompanhe os logs para progresso.` });
+    res.json({ success: true, message: `Crawler ${site} disparado no servidor.` });
+});
+
+/**
+ * Admin: Ler logs do Crawler em tempo real
+ */
+app.get('/admin/logs', requireAuth, (req, res) => {
+    try {
+        const logPath = path.resolve(process.cwd(), 'crawler.log');
+        if (!fs.existsSync(logPath)) {
+            return res.json({ success: true, logs: 'Aguardando início de log...' });
+        }
+
+        // Return latest 100 lines
+        const content = fs.readFileSync(logPath, 'utf8');
+        const lines = content.split('\n');
+        const tail = lines.slice(-100).join('\n');
+
+        res.json({ success: true, logs: tail });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
 });
 
 /**

@@ -233,6 +233,43 @@
             background: var(--primary);
         }
 
+        /* Console/Terminal Log */
+        .terminal-box {
+            background: #0f172a;
+            color: #d1d5db;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 1rem;
+            border-radius: 8px;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-top: 1.5rem;
+            border: 1px solid #1e293b;
+        }
+
+        .terminal-line {
+            margin-bottom: 2px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .terminal-error {
+            color: #ef4444;
+        }
+
+        .terminal-success {
+            color: #22c55e;
+        }
+
+        .terminal-info {
+            color: #3b82f6;
+        }
+
+        .terminal-warn {
+            color: #fbbf24;
+        }
+
         /* Branding Section */
         .branding-item {
             margin-bottom: 1.5rem;
@@ -434,6 +471,16 @@
                         Leilões</button>
                     <button class="btn-admin" onclick="runCrawler('leilo')"><i class="fas fa-play"></i> Leilo</button>
                 </div>
+
+                <div id="crawler-console-container" style="display: none; margin-top: 2rem;">
+                    <div class="box-header" style="margin-bottom: 0.5rem;">
+                        <h2><i class="fas fa-terminal"></i> Console de Execução (Tempo Real)</h2>
+                        <span id="console-status" class="small" style="color: #22c55e;"></span>
+                    </div>
+                    <div id="crawler-console" class="terminal-box">
+                        <div class="terminal-line terminal-info">Aguardando saída do processo...</div>
+                    </div>
+                </div>
             </div>
             <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
             <div class="box-header">
@@ -614,12 +661,16 @@
         }
 
         async function runCrawler(site) {
-            const overlay = document.getElementById('loading-overlay');
-            overlay.style.display = 'flex';
-            document.getElementById('loading-msg').innerText = `Iniciando Crawler: ${site.toUpperCase()}...`;
+            const container = document.getElementById('crawler-console-container');
+            container.style.display = 'block';
+            showSection('crawlers'); // Switch to crawlers tab to see the console
+
+            const consoleEl = document.getElementById('crawler-console');
+            consoleEl.innerHTML = '<div class="terminal-line terminal-info">🚀 Iniciando processo...</div>';
+
+            document.getElementById('console-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Crawler em execução...';
 
             try {
-                // Endpoint para disparo manual via API protegida
                 const res = await fetch('/admin/crawl', {
                     method: 'POST',
                     headers: {
@@ -632,25 +683,62 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    alert('✅ ' + data.message + '\nO processo rodará em segundo plano. Os veículos aparecerão em breve.');
+                    console.log('Crawler started successfully');
+                    startLogPolling();
                 } else {
                     alert('❌ Erro: ' + data.error);
                 }
-
-                // Recarrega stats após iniciar
-                setTimeout(loadDashboard, 2000);
             } catch (e) {
                 console.error(e);
                 alert('Erro de conexão ao tentar iniciar crawler.');
-            } finally {
-                overlay.style.display = 'none';
             }
         }
 
+        let logPollingInterval = null;
+
+        function startLogPolling() {
+            if (logPollingInterval) clearInterval(logPollingInterval);
+
+            logPollingInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/admin/logs', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+
+                    if (data.success && data.logs) {
+                        const consoleEl = document.getElementById('crawler-console');
+
+                        // Parse and highlight
+                        const lines = data.logs.split('\n').map(line => {
+                            if (line.includes('ERROR') || line.includes('Erro') || line.includes('Fail')) return `<div class="terminal-line terminal-error">${line}</div>`;
+                            if (line.includes('Success') || line.includes('Saved') || line.includes('Finalizado')) return `<div class="terminal-line terminal-success">${line}</div>`;
+                            if (line.includes('Searching') || line.includes('Buscando') || line.includes('🔍')) return `<div class="terminal-line terminal-info">${line}</div>`;
+                            return `<div class="terminal-line">${line}</div>`;
+                        }).join('');
+
+                        consoleEl.innerHTML = lines;
+                        consoleEl.scrollTop = consoleEl.scrollHeight;
+
+                        // Check if finished
+                        if (data.logs.includes('Finalizado')) {
+                            document.getElementById('console-status').innerHTML = '<i class="fas fa-check-circle"></i> Execução Concluída';
+                            setTimeout(loadDashboard, 2000);
+                            // Stop polling eventually, but maybe keep it a bit more
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error polling logs:', e);
+                }
+            }, 2000);
+        }
+
         async function runAllCrawlers() {
-            const overlay = document.getElementById('loading-overlay');
-            overlay.style.display = 'flex';
-            document.getElementById('loading-msg').innerText = 'Iniciando Sequência Global de Crawlers...';
+            const container = document.getElementById('crawler-console-container');
+            container.style.display = 'block';
+
+            document.getElementById('crawler-console').innerHTML = '<div class="terminal-line terminal-info">🚀 Iniciando sequência global...</div>';
+            document.getElementById('console-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Executando todos os crawlers...';
 
             try {
                 const res = await fetch('/admin/crawl-all', {
@@ -661,15 +749,12 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    alert('✅ ' + data.message);
+                    startLogPolling();
                 } else {
                     alert('❌ Erro: ' + data.error);
                 }
-                setTimeout(loadDashboard, 2000);
             } catch (e) {
                 alert('Erro de conexão');
-            } finally {
-                overlay.style.display = 'none';
             }
         }
 
