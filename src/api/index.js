@@ -707,9 +707,16 @@ const startServer = async () => {
         console.log(`   POST /admin/crawl    - Rodar Crawler`);
         console.log('');
 
-        // Start Scheduler safely after server is up
-        const runOnStart = process.env.RUN_CRAWLER_ON_START === 'true';
-        initScheduler(runOnStart);
+        // Start Scheduler safely after server is up with a delay
+        const runOnStart = process.env.RUN_CRAWLER_ON_START === 'true' || true; // Set to true to ensure Railway has data
+        if (runOnStart) {
+            console.log('⏳ [Scheduler] Aguardando 60s para iniciar coleta inicial...');
+            setTimeout(() => {
+                initScheduler(true);
+            }, 60000);
+        } else {
+            initScheduler(false);
+        }
     });
 };
 

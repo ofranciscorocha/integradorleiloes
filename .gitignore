@@ -12,8 +12,8 @@ sato_*.json
 # Logs e Dados locais
 .gemini/
 .agent/
-data/
-src/database/data/
+# data/
+# src/database/data/
 logs/
 
 # Branding images (se quiser que sejam mantidas apenas via upload no painel)
