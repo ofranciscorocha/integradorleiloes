@@ -97,12 +97,9 @@
 
     <!-- Hero Section -->
     <div class="hero-section">
-        <!-- Floating Stat -->
         <div class="hero-stats-floating">
-            <span class="stat-number" id="hero-total-vehicles">0000</span>
-            <span
-                style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">VEÍCULOS
-                EM LEILÃO NO BRASIL</span>
+            <span class="stat-number" id="floating-count">00000</span>
+            <span style="font-size: 0.8rem; font-weight: 600;">VEÍCULOS DISPONÍVEIS AGORA</span>
         </div>
 
         <div class="hero-content">
@@ -220,15 +217,28 @@
         <div class="results-header">
             <div class="results-count">
                 <i class="fas fa-car-side"></i> <span id="count-value">...</span> veículos encontrados
+                <button class="btn-reload-simulate" onclick="simularRecarregamento()" title="Sincronizar robôs agora">
+                    <i class="fas fa-sync-alt" id="reload-icon"></i>
+                </button>
             </div>
-            <div class="results-sort">
-                <select class="form-select" id="sort-order" onchange="buscarVeiculos(1)"
-                    style="padding: 0.5rem; font-size: 0.9rem;">
-                    <option value="recente">Mais recentes primeiro</option>
-                    <option value="preço_asc">Menor preço</option>
-                    <option value="preço_desc">Maior preço</option>
-                    <option value="ano_desc">Mais novos (Ano)</option>
-                </select>
+            <div class="results-actions">
+                <div class="view-toggle">
+                    <button class="view-btn active" id="btn-grid" onclick="setViewMode('grid')" title="Vista em Grade">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                    <button class="view-btn" id="btn-list" onclick="setViewMode('list')" title="Vista em Lista">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+                <div class="results-sort">
+                    <select class="form-select" id="sort-order" onchange="buscarVeiculos(1)"
+                        style="padding: 0.5rem; font-size: 0.9rem; min-width: 180px;">
+                        <option value="recente">Mais recentes primeiro</option>
+                        <option value="preço_asc">Menor preço</option>
+                        <option value="preço_desc">Maior preço</option>
+                        <option value="ano_desc">Mais novos (Ano)</option>
+                    </select>
+                </div>
             </div>
         </div>
 

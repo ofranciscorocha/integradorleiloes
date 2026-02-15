@@ -212,16 +212,33 @@ const fetchStats = async () => {
         const res = await fetch('/stats');
         const data = await res.json();
         if (data.success) {
-            document.getElementById('hero-total-vehicles').textContent = data.total.toString().padStart(4, '0');
+            const val = document.getElementById('floating-count') || document.getElementById('hero-total-vehicles');
+            if (val) val.textContent = data.total.toLocaleString('pt-BR').padStart(5, '0');
         }
     } catch (e) {
         console.error('Erro ao buscar stats:', e);
-        // Fallback: try to get from pagination if stats fails
-        const countValue = document.getElementById('count-value');
-        if (countValue && countValue.textContent !== '...') {
-            document.getElementById('hero-total-vehicles').textContent = countValue.textContent.padStart(4, '0');
-        }
     }
+};
+
+const loadSites = async () => {
+    try {
+        const res = await fetch('/sites');
+        const data = await res.json();
+        if (data.success && data.sites) {
+            const select = document.getElementById('site-filter');
+            if (!select) return;
+
+            // Keep the "All sites" option
+            select.innerHTML = '<option value="">Todos os Sites (Integrados)</option>';
+
+            data.sites.sort((a, b) => a.name.localeCompare(b.name)).forEach(site => {
+                const opt = document.createElement('option');
+                opt.value = site.id;
+                opt.textContent = site.name;
+                select.appendChild(opt);
+            });
+        }
+    } catch (e) { console.error('Error loading sites list:', e); }
 };
 
 const buscarVeiculos = async (page = 1) => {
@@ -445,10 +462,72 @@ const setTipoTab = (el) => {
     buscarVeiculos(1);
 };
 
+// ============ VIEW MODE & RELOAD SIMULATION ============
+
+const setViewMode = (mode) => {
+    const container = document.getElementById('veiculos-container');
+    const btnGrid = document.getElementById('btn-grid');
+    const btnList = document.getElementById('btn-list');
+
+    if (mode === 'list') {
+        container.classList.add('list-view');
+        btnList.classList.add('active');
+        btnGrid.classList.remove('active');
+    } else {
+        container.classList.remove('list-view');
+        btnGrid.classList.add('active');
+        btnList.classList.remove('active');
+    }
+    localStorage.setItem('car-leiloes-view-mode', mode);
+};
+
+const simularRecarregamento = async () => {
+    const icon = document.getElementById('reload-icon');
+    const btn = document.querySelector('.btn-reload-simulate');
+
+    if (btn.disabled) return;
+
+    // 1. Inicia animação
+    btn.disabled = true;
+    icon.classList.add('spin-animation');
+
+    // 2. Cria e mostra o Toast
+    let toast = document.querySelector('.reload-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'reload-toast';
+        document.body.appendChild(toast);
+    }
+    toast.innerHTML = `<i class="fas fa-robot"></i> <span>Sincronizando robôs e atualizando veículos...</span>`;
+    setTimeout(() => toast.classList.add('show'), 100);
+
+    // 3. Simula tempo de processamento do "robô"
+    await new Promise(r => setTimeout(r, 2500));
+
+    // 4. Executa a busca real para atualizar os dados
+    await buscarVeiculos(1);
+    await fetchStats();
+
+    // 5. Finaliza
+    toast.innerHTML = `<i class="fas fa-check-circle" style="color: #25d366;"></i> <span>Sistema atualizado com sucesso!</span>`;
+    icon.classList.remove('spin-animation');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        btn.disabled = false;
+    }, 3000);
+};
+
 // ============ INIT ============
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
+    loadSites();
+
+    // Resume view mode preference
+    const savedMode = localStorage.getItem('car-leiloes-view-mode') || 'grid';
+    setViewMode(savedMode);
+
     buscarVeiculos(1);
     fetchStats();
 
