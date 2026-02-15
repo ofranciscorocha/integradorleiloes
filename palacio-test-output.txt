@@ -1,0 +1,103 @@
+﻿=== TESTING PAL├üCIO DOS LEIL├òES ===
+
+Items found: 691
+
+
+--- Item 1 ---
+  onclick: exibir_lote(1495986,8259)
+  veiculo: HONDA/XRE 300
+  img.src: imagens_lote/500375/001_9ee1c0b4ec4113cbbbcf66e001a53ee8.webp
+  img.data-src: NO DATA-SRC
+  all_img[0]: class="i-p-l" src="imagens_lote/500375/001_9ee1c0b4ec4113cbbbcf66e001a53ee8.webp"
+  all_img[1]: class="border lc m-0 mb-1" src="images/logos/PORTO.webp"
+  link[0]: href="#" onclick="shareOnWhatsApp(1495986)"
+  generated_link: https://www.palaciodosleiloes.com.br/site/lote.php?cl=1495986&leilao=8259
+  alt_link: https://www.palaciodosleiloes.com.br/site/?cl=1495986&leilao=8259
+
+--- Item 2 ---
+  onclick: exibir_lote(1495987,8259)
+  veiculo: FIAT/ARGO TREKKING 1.3AT
+  img.src: imagens_lote/500375/012_ea19ff2117e9c8c90a94a359d6a945e6.webp
+  img.data-src: NO DATA-SRC
+  all_img[0]: class="i-p-l" src="imagens_lote/500375/012_ea19ff2117e9c8c90a94a359d6a945e6.webp"
+  all_img[1]: class="border lc m-0 mb-1" src="images/logos/PORTO.webp"
+  link[0]: href="#" onclick="shareOnWhatsApp(1495987)"
+  generated_link: https://www.palaciodosleiloes.com.br/site/lote.php?cl=1495987&leilao=8259
+  alt_link: https://www.palaciodosleiloes.com.br/site/?cl=1495987&leilao=8259
+
+--- Item 3 ---
+  onclick: exibir_lote(1495988,8259)
+  veiculo: FIAT/MOBI LIKE
+  img.src: imagens_lote/500375/012_cda327cb5423784e464f9bc54443eaf4.webp
+  img.data-src: NO DATA-SRC
+  all_img[0]: class="i-p-l" src="imagens_lote/500375/012_cda327cb5423784e464f9bc54443eaf4.webp"
+  all_img[1]: class="border lc m-0 mb-1" src="images/logos/PORTO.webp"
+  link[0]: href="#" onclick="shareOnWhatsApp(1495988)"
+  generated_link: https://www.palaciodosleiloes.com.br/site/lote.php?cl=1495988&leilao=8259
+  alt_link: https://www.palaciodosleiloes.com.br/site/?cl=1495988&leilao=8259
+
+--- Item 4 ---
+  onclick: exibir_lote(1495989,8259)
+  veiculo: I/CHEV TRACKER 12T A PR
+  img.src: imagens_lote/500375/012_dc724141f48ec411d4ca975d0c07647a.webp
+  img.data-src: NO DATA-SRC
+  all_img[0]: class="i-p-l" src="imagens_lote/500375/012_dc724141f48ec411d4ca975d0c07647a.webp"
+  all_img[1]: class="border lc m-0 mb-1" src="images/logos/PORTO.webp"
+  link[0]: href="#" onclick="shareOnWhatsApp(1495989)"
+  generated_link: https://www.palaciodosleiloes.com.br/site/lote.php?cl=1495989&leilao=8259
+  alt_link: https://www.palaciodosleiloes.com.br/site/?cl=1495989&leilao=8259
+
+--- Item 5 ---
+  onclick: exibir_lote(1495990,8259)
+  veiculo: PEUGEOT/208 ALLURE EAT6
+  img.src: imagens_lote/500375/012_aa6b7c5cdb1d6c46abad71c8ae4297bb.webp
+  img.data-src: NO DATA-SRC
+  all_img[0]: class="i-p-l" src="imagens_lote/500375/012_aa6b7c5cdb1d6c46abad71c8ae4297bb.webp"
+  all_img[1]: class="border lc m-0 mb-1" src="images/logos/PORTO.webp"
+  link[0]: href="#" onclick="shareOnWhatsApp(1495990)"
+  generated_link: https://www.palaciodosleiloes.com.br/site/lote.php?cl=1495990&leilao=8259
+  alt_link: https://www.palaciodosleiloes.com.br/site/?cl=1495990&leilao=8259
+
+
+=== RAW HTML OF FIRST CARD ===
+	
+																	
+									<div class="shadow mb-4">										
+										<div class="i-c" onclick="exibir_lote(1495986,8259)">
+											<img src="imagens_lote/500375/001_9ee1c0b4ec4113cbbbcf66e001a53ee8.webp" class="i-p-l">
+										</div>										
+										
+										<div class="card-body d-flex flex-column align-items-start p-2">
+											<div class="card-text mb-auto w-100">
+												<div class="inf p-1 bg-light"> <img src="images/logos/PORTO.webp" class="border lc m-0 mb-1" style="width:auto; height:40px; border-radius:100%;"> Porto Seguro</div>
+												<div class="quebraln mt-3 mb-0 h6"><i class="fab fa-youtube text-danger"></i> HONDA/XRE 300</div>
+												<div class="my-0 h6">2012 2012</div>
+												<div class="mt-0 small mb-2">sucata (grande monta)</div>
+												<div class="inf small">Leil´┐¢o <div class="float-right">8259</div></div>
+												<div class="inf small">Salvador <div class="float-right">20/02/26</div></div>
+												
+												
+												
+												<div class="inf small">Visualiza´┐¢´┐¢es <div class="float-right">401</div></div>
+												<div class="inf small">Lances <div class="float-right">1</div></div>			
+												
+							<div class="inf small text-center mt-1">
+								<a href="#" onclick="shareOnWhatsApp(1495986)" class="text-dark">
+									<i class="fab fa-whatsapp text-success fa-lg"></i> Compartilhar
+								</a>
+							</div>
+						
+												<div class="h3 mt-3 text-center"><i class="fas fa-gavel fa-xs t
+
+
+=== TESTING IMAGE URL ===
+URL: https://www.palaciodosleiloes.com.br/site/imagens_lote/500375/001_9ee1c0b4ec4113cbbbcf66e001a53ee8.webp
+Status: 200
+Content-Type: image/webp
+
+
+=== TESTING LINK URLS ===
+https://www.palaciodosleiloes.com.br/site/lote.php?cl=1495986&leilao=8259 => 404 (title: "404 Not Found")
+https://www.palaciodosleiloes.com.br/site/?cl=1495986&leilao=8259 => 200 (title: "Pal´┐¢cio dos Leil´┐¢es")
+https://www.palaciodosleiloes.com.br/site/index.php?cl=1495986&leilao=8259 => 200 (title: "Pal´┐¢cio dos Leil´┐¢es")
+https://www.palaciodosleiloes.com.br/?cl=1495986&leilao=8259 => 200 (title: "Pal´┐¢cio dos Leil´┐¢es")

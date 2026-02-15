@@ -231,7 +231,12 @@ const createCrawler = (db) => {
 
         const browser = await puppeteer.launch({
             headless: "new",
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080']
+            args: [
+                '--no-sandbox', '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage', '--disable-gpu',
+                '--single-process', '--no-zygote',
+                '--window-size=1280,720'
+            ]
         });
 
         const listaTotal = [];

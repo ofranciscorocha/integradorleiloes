@@ -1,0 +1,30 @@
+{
+  "total": 12,
+  "samples": [
+    {
+      "link": "https://www.vipleiloes.com.br/evento/anuncio/jaguar-fpace-380cv-v6-s-96826",
+      "img": "https://armazupvipleiloesprd.blob.core.windows.net/uploads/cc814907-7493-434e-90fb-e3a096b2d592.jpg",
+      "titulo": null,
+      "descricao": null,
+      "valor": null,
+      "text": "ABERTO PARA LANCES\nFPACE 380CV V6 S - 2017/2018\nJaguar\n59.580 Km\nPlaca Final 2\nValor Atual\nR$ 99.000,00\nValor inicial:\nR$ 99.000,00\nLote: 3  Local: GO\n1 Lance\nInício: 13/02/2026\n10:00\nVer mais"
+    },
+    {
+      "link": "https://www.vipleiloes.com.br/evento/anuncio/bmw-540i-96827",
+      "img": "https://armazupvipleiloesprd.blob.core.windows.net/uploads/c37b3597-3daa-4515-9747-7e70080b9f27.jpg",
+      "titulo": null,
+      "descricao": null,
+      "valor": null,
+      "text": "ABERTO PARA LANCES\n540I - 2017/2018\nBmw\n66.081 Km\nPlaca Final 7\nValor Atual\nR$ 108.400,00\nValor inicial:\nR$ 106.900,00\nLote: 4  Local: RJ\n2 Lances\nInício: 13/02/2026\n10:00\nVer mais"
+    },
+    {
+      "link": "https://www.vipleiloes.com.br/evento/anuncio/volvo-xc60-d5-momentum-96828",
+      "img": "https://armazupvipleiloesprd.blob.core.windows.net/uploads/bc63b8be-3776-45f3-999c-6af128c7812b.jpg",
+      "titulo": null,
+      "descricao": null,
+      "valor": null,
+      "text": "ABERTO PARA LANCES\nXC60 D5 MOMENTUM - 2018/2019\nVolvo\n117.582 Km\nPlaca Final 1\nValor Atual\nR$ 59.900,00\nValor inicial:\nR$ 59.900,00\nLote: 5  Local: RJ\n1 Lance\nInício: 13/02/2026\n10:00\nVer mais"
+    }
+  ],
+  "fullHTML": "<div class=\"card card-lel card-anuncio h-100 evento-Aberto anuncio-AbertoParaOfertas\">\n\n    <div class=\"crd-link\">\n\n\n        <div class=\"crd-overhead\">\n\n            <a class=\"crd-status\" href=\"/evento/anuncio/jaguar-fpace-380cv-v6-s-96826\">\n                <span class=\"situacao\">Aberto para lances</span>\n            </a>\n\n            <div class=\"crd-actions\">\n\n                <span class=\"crd-act crd-fav\" onclick=\"if (!window.__cfRLUnblockHandlers) return false; favoritar(this, 'ee03ece0-22d1-4f4e-8315-b3ed014593c5', 1)\" data-isfavorito=\"false\">\n                    <i class=\"fa-regular fa-heart\"></i>\n                </span>\n\n                <div class=\"crd-sharing dropdown\">\n                    <span class=\"crd-act crd-sharedrop dropdown-toggle\" href=\"#\" role=\"button\" id=\"dropdownMenuLink\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">\n                        <i class=\"fa fa-share-alt\"></i>\n                    </span>\n\n                    <ul class=\"dropdown-menu crd-shrlist\" aria-labelledby=\"dropdownMenuLink\" style=\"\">\n                        <li>\n                            <span href=\"#\" class=\"dropdown-item\" onclick=\"if (!window.__cfRLUnblockHandlers) return false; compartilhaRedeSocial('https://www.facebook.com/sharer/sharer.php?u=http://www.vipleiloes.com.br/evento/anuncio/jaguar-fpace-380cv-v6-s-96826', 'facebook')\">\n                                <i class=\"fa-brands fa-facebook\"></i>\n                            </span>\n                        </li>\n                "
+}

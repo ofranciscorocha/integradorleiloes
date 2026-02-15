@@ -6,7 +6,7 @@ dotenv.config();
 puppeteer.use(StealthPlugin());
 
 const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 60000;
-const CONCURRENCY = 2;
+const CONCURRENCY = 1; // Sequential to reduce memory usage on Railway
 
 const createCrawler = (db) => {
     const { salvarLista } = db;
@@ -20,9 +20,23 @@ const createCrawler = (db) => {
         `${BASE_URL}/leilao/pesados`,
     ];
 
+    // Block unnecessary resources to speed up page loads
+    const setupResourceBlocking = async (page) => {
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            const type = req.resourceType();
+            if (['image', 'stylesheet', 'font', 'media'].includes(type)) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
+    };
+
     const crawlAuction = async (browser, link) => {
         console.log(`📋 [${SITE}] Capturando leilão: ${link}`);
         const page = await browser.newPage();
+        await setupResourceBlocking(page);
         const results = [];
         try {
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
@@ -30,8 +44,8 @@ const createCrawler = (db) => {
             let currentUrl = link;
             let pageNum = 1;
             while (currentUrl && pageNum <= 20) {
-                await page.goto(currentUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
-                await page.waitForSelector('a[href*="/item/"]', { timeout: 15000 }).catch(() => null);
+                await page.goto(currentUrl, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+                await page.waitForSelector('a[href*="/item/"]', { timeout: 10000 }).catch(() => null);
                 await autoScroll(page);
 
                 const itens = await page.evaluate((site) => {
@@ -112,14 +126,20 @@ const createCrawler = (db) => {
 
         const browser = await puppeteer.launch({
             headless: "new",
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080']
+            args: [
+                '--no-sandbox', '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage', '--disable-gpu',
+                '--single-process', '--no-zygote',
+                '--disable-extensions', '--disable-background-networking',
+                '--window-size=1280,720'
+            ]
         });
 
         const listaTotal = [];
         const seenIds = new Set();
         try {
             const page = await browser.newPage();
-            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+            await setupResourceBlocking(page);
 
             // STAGE 1: Discover vehicle auctions ONLY from vehicle category pages
             console.log(`🔍 [${SITE}] Mapeando leilões de VEÍCULOS...`);

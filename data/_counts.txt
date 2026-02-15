@@ -1,0 +1,7 @@
+{
+  "sodresantoro.com.br": 89,
+  "rogeriomenezes.com.br": 45,
+  "freitasleiloeiro.com.br": 270,
+  "guariglialeiloes.com.br": 1,
+  "palaciodosleiloes.com.br": 839
+}

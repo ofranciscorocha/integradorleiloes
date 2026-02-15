@@ -30,8 +30,10 @@ const execute = async (database) => {
         headless: "new",
         args: [
             '--no-sandbox', '--disable-setuid-sandbox',
-            '--window-size=1920,1080', '--disable-dev-shm-usage',
-            '--disable-blink-features=AutomationControlled'
+            '--disable-dev-shm-usage', '--disable-gpu',
+            '--single-process', '--no-zygote',
+            '--disable-blink-features=AutomationControlled',
+            '--window-size=1280,720'
         ]
     });
 

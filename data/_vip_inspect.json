@@ -1,0 +1,52 @@
+{
+  "url": "https://www.vipleiloes.com.br/",
+  "title": "Leilões de Veículos e Leilões Online | Vip Leilões",
+  "navLinks": [
+    {
+      "h": "https://lp.vipleiloes.com.br/quero-vender-veiculos",
+      "t": ""
+    },
+    {
+      "h": "https://lp.vipleiloes.com.br/quero-vender-veiculos",
+      "t": ""
+    },
+    {
+      "h": "https://lp.vipleiloes.com.br/quero-vender-veiculos",
+      "t": ""
+    },
+    {
+      "h": "https://www.leilaovip.com.br/",
+      "t": "Imóveis"
+    },
+    {
+      "h": "https://www.leilaovip.com.br/",
+      "t": "Judiciais"
+    },
+    {
+      "h": "https://lp.vipleiloes.com.br/quero-vender-veiculos",
+      "t": "Quero Vender"
+    },
+    {
+      "h": "https://www.leilaovip.com.br/",
+      "t": "Imóveis"
+    },
+    {
+      "h": "https://www.leilaovip.com.br/",
+      "t": "Judiciais"
+    }
+  ],
+  "cardClasses": [
+    {
+      "classes": "card card-lel card-anuncio h-100 evento-Aberto anuncio-AbertoParaOfertas",
+      "html": "<div class=\"card card-lel card-anuncio h-100 evento-Aberto anuncio-AbertoParaOfertas\">\n\n    <div class=\"crd-link\">\n\n\n        <div class=\"crd-overhead\">\n\n            <a class=\"crd-status\" href=\"/evento/anuncio/jaguar-fpace-380cv-v6-s-96826\">\n                <span class=\"situacao\">Aberto para lances</"
+    },
+    {
+      "classes": "card card-lel card-anuncio h-100 evento-Aberto anuncio-AbertoParaOfertas",
+      "html": "<div class=\"card card-lel card-anuncio h-100 evento-Aberto anuncio-AbertoParaOfertas\">\n\n    <div class=\"crd-link\">\n\n\n        <div class=\"crd-overhead\">\n\n            <a class=\"crd-status\" href=\"/evento/anuncio/bmw-540i-96827\">\n                <span class=\"situacao\">Aberto para lances</span>\n         "
+    },
+    {
+      "classes": "card card-lel card-anuncio h-100 evento-Aberto anuncio-AbertoParaOfertas",
+      "html": "<div class=\"card card-lel card-anuncio h-100 evento-Aberto anuncio-AbertoParaOfertas\">\n\n    <div class=\"crd-link\">\n\n\n        <div class=\"crd-overhead\">\n\n            <a class=\"crd-status\" href=\"/evento/anuncio/volvo-xc60-d5-momentum-96828\" tabindex=\"-1\">\n                <span class=\"situacao\">Aberto "
+    }
+  ]
+}
