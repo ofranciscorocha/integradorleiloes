@@ -351,15 +351,15 @@ const renderVeiculos = () => {
 
 const renderCard = (veiculo, isLocked = false) => {
     const isLogged = !!currentState.user;
-    const siteNameDisplay = isLogged ? formatSiteName(veiculo.site) : '🔒 Nome Oculto';
+    const siteNameDisplay = (!isLocked) ? formatSiteName(veiculo.site) : '🔒 Nome Oculto';
 
     // Link Action: If locked, prompt login. If logged in/unlocked, go to link.
-    const linkAction = (isLogged && !isLocked)
+    const linkAction = (!isLocked)
         ? `href="${veiculo.link}" target="_blank"`
         : `href="#" onclick="event.preventDefault(); openLoginModal('signup')"`;
 
     const siteClass = veiculo.site.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-    const siteBadge = (isLogged && !isLocked)
+    const siteBadge = (!isLocked)
         ? `<div class="badge badge-site badge-${siteClass}">${formatSiteName(veiculo.site)}</div>`
         : `<div class="badge badge-restricted"><i class="fas fa-lock"></i></div>`;
 
