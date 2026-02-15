@@ -1359,3 +1359,34 @@ body {
         box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
     }
 }
+
+/* Centered Action in Results Header */
+.results-header {
+    display: flex;
+    /* Ensure flex is active */
+    justify-content: space-between;
+    align-items: center;
+}
+
+.results-center-action {
+    flex: 1;
+    /* Take up available space */
+    display: flex;
+    justify-content: center;
+    /* Center the button */
+}
+
+/* Robot Animation on Button Hover */
+.btn-pulse-trigger:hover i.fa-robot {
+    animation: robot-bounce 0.5s infinite alternate;
+}
+
+@keyframes robot-bounce {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-3px);
+    }
+}
