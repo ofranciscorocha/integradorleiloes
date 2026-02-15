@@ -1,173 +1,182 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
 
 dotenv.config();
+puppeteer.use(StealthPlugin());
 
-const tratarDataHora = (dataStr) => {
+const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 90000;
+const SITE = 'guariglialeiloes.com.br';
+const BASE_URL = 'https://www.guariglialeiloes.com.br';
+
+const trataDataHora = (dataStr) => {
     if (!dataStr) return { string: '', time: null, date: null };
-    // Example: 15/02/2026 10h00
-    const match = dataStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4}).*?(\d{1,2})h(\d{2})/);
-    if (match) {
-        let [, dia, mes, ano, hora, minuto] = match;
-        if (ano.length === 2) ano = '20' + ano;
-        const date = new Date(ano, mes - 1, dia, hora, minuto);
-        return { string: dataStr, time: date.getTime(), date };
-    }
+    try {
+        const match = dataStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4}).*?(\d{1,2})h(\d{2})/);
+        if (match) {
+            let [, dia, mes, ano, hora, minuto] = match;
+            if (ano.length === 2) ano = '20' + ano;
+            const date = new Date(ano, mes - 1, dia, hora, minuto);
+            return { string: dataStr, time: date.getTime(), date };
+        }
+    } catch (e) { }
     return { string: dataStr, time: null, date: null };
 };
 
 const createCrawler = (db) => {
     const { salvarLista } = db;
-    const SITE = 'guariglialeiloes.com.br';
-    const BASE_URL = 'https://www.guariglialeiloes.com.br';
-
-    const getLeiloesAtivos = async () => {
-        const leiloes = [];
-        try {
-            const { data } = await axios.get(BASE_URL, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                    'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache',
-                    'Sec-Ch-Ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
-                    'Sec-Ch-Ua-Mobile': '?0',
-                    'Sec-Ch-Ua-Platform': '"Windows"',
-                    'Sec-Fetch-Dest': 'document',
-                    'Sec-Fetch-Mode': 'navigate',
-                    'Sec-Fetch-Site': 'none',
-                    'Sec-Fetch-User': '?1',
-                    'Upgrade-Insecure-Requests': '1'
-                }
-            });
-            const $ = cheerio.load(data);
-
-            $('div.card-body.d-flex.flex-column').each((index, div) => {
-                const titulo = $(div).find('div.titulo-leilao').text().trim();
-                const url = $(div).find('div.descricao-leilao.my-auto a').attr('href');
-                const dataHoraRaw = $(div).find('div.descricao-leilao.my-auto a strong').text().trim();
-
-                if (url && url.includes('/leilao/')) {
-                    leiloes.push({
-                        titulo,
-                        url: url.startsWith('http') ? url : `${BASE_URL}${url}`,
-                        dataHora: tratarDataHora(dataHoraRaw)
-                    });
-                }
-            });
-        } catch (e) {
-            console.error(`❌ [${SITE}] Erro ao buscar leilões ativos:`, e.message);
-        }
-        return leiloes;
-    };
-
-    const scrapeLeilao = async (leilao) => {
-        const results = [];
-        let pagina = 1;
-        let hasMore = true;
-
-        console.log(`   🔍 [${SITE}] Processando: ${leilao.titulo}`);
-
-        while (hasMore) {
-            try {
-                const url = `${leilao.url}?page=${pagina}`;
-                const { data } = await axios.get(url, {
-                    headers: { 'User-Agent': 'Mozilla/5.0' }
-                });
-                const $ = cheerio.load(data);
-                const currentBatch = [];
-
-                $('div.lote.rounded').each((index, div) => {
-                    const divInfo = $(div).find('div.col-lg-7 div.body-lote');
-                    const divLance = $(div).find('div.col-lg-3 div.lance-lote');
-                    const divImg = $(div).find('div.col-lg-2 img, div.img-lote img, img');
-                    const urlLote = $(divInfo).find('a').attr('href');
-
-                    if (!urlLote) return;
-
-                    const textoCompleto = $(divInfo).find('p').text();
-                    const linhas = textoCompleto.split('\n').map(l => l.trim()).filter(Boolean);
-
-                    // Extrair Marca/Modelo - pegar APENAS o valor do veículo, sem o label
-                    let veiculo = 'VEÍCULO';
-                    const linhaMarca = linhas.find(l => /marca\s*\/?\s*modelo/i.test(l));
-                    if (linhaMarca) {
-                        // Remove TUDO que seja "Marca/Modelo", "Marca / Modelo", etc + ":" se existir
-                        veiculo = linhaMarca
-                            .replace(/marca\s*\/?\s*modelo\s*:?\s*/gi, '')
-                            .trim();
-                        // Se ficou vazio, pega a parte depois do ":"
-                        if (!veiculo && linhaMarca.includes(':')) {
-                            veiculo = linhaMarca.split(':').slice(1).join(':').trim();
-                        }
-                    }
-                    // Fallback: pega a primeira linha que pareça um nome de veículo
-                    if (!veiculo || veiculo === 'VEÍCULO' || veiculo.length < 2) {
-                        veiculo = linhas[0] || 'VEÍCULO';
-                        // Limpar caso a primeira linha também tenha o prefixo
-                        veiculo = veiculo.replace(/marca\s*\/?\s*modelo\s*:?\s*/gi, '').trim();
-                    }
-
-                    const ano = linhas.find(l => l.includes('Ano'))?.split(':')[1]?.trim() || '';
-                    const placa = linhas.find(l => l.includes('Placa'))?.split(':')[1]?.trim() || '';
-                    const valorStr = $(divLance).find('div.lance_atual').text().replace(/[^0-9,]/g, '').replace(',', '.');
-
-                    // Extrair foto
-                    const fotos = [];
-                    const imgSrc = divImg.first().attr('src') || divImg.first().attr('data-src');
-                    if (imgSrc) {
-                        const fotoUrl = imgSrc.startsWith('http') ? imgSrc : `${BASE_URL}${imgSrc}`;
-                        fotos.push(fotoUrl);
-                    }
-
-                    currentBatch.push({
-                        site: SITE,
-                        registro: urlLote.split('/').filter(Boolean).pop(),
-                        link: urlLote.startsWith('http') ? urlLote : `${BASE_URL}${urlLote}`,
-                        veiculo: veiculo.toUpperCase(),
-                        ano: parseInt(ano) || null,
-                        valor: parseFloat(valorStr) || 0,
-                        valorInicial: parseFloat(valorStr) || 0,
-                        previsao: leilao.dataHora,
-                        modalidade: 'leilao',
-                        tipo: 'veiculo',
-                        fotos,
-                        placa: placa || undefined
-                    });
-                });
-
-                if (currentBatch.length === 0) {
-                    hasMore = false;
-                } else {
-                    results.push(...currentBatch);
-                    await salvarLista(currentBatch);
-                    pagina++;
-                    // Basic delay
-                    await new Promise(r => setTimeout(r, 500));
-                }
-            } catch (e) {
-                console.error(`      ⚠️ Erro na página ${pagina} do leilão ${leilao.titulo}:`, e.message);
-                hasMore = false;
-            }
-        }
-        return results;
-    };
 
     const buscarTodos = async () => {
-        console.log(`🚀 [${SITE}] INICIANDO COLETA TURBO...`);
-        const leiloes = await getLeiloesAtivos();
-        console.log(`   📊 [${SITE}] Encontrados ${leiloes.length} leilões ativos.`);
+        console.log(`🚀 [${SITE}] INICIANDO COLETA VIA PUPPETEER (Bypass 403)...`);
 
-        let total = 0;
-        for (const leilao of leiloes) {
-            const itens = await scrapeLeilao(leilao);
-            total += itens.length;
+        const browser = await puppeteer.launch({
+            headless: "new",
+            protocolTimeout: 180000,
+            args: [
+                '--no-sandbox', '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage', '--disable-gpu',
+                '--window-size=1280,720'
+            ]
+        });
+
+        let totalColetado = 0;
+
+        try {
+            const page = await browser.newPage();
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+
+            // 1. Get Active Auctions
+            console.log(`   🔍 [${SITE}] Acessando home para listar leilões...`);
+            await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+            await new Promise(r => setTimeout(r, 2000));
+
+            const leiloes = await page.evaluate((baseUrl) => {
+                const found = [];
+                document.querySelectorAll('div.card-body.d-flex.flex-column').forEach(div => {
+                    const tituloEl = div.querySelector('div.titulo-leilao');
+                    const linkEl = div.querySelector('div.descricao-leilao.my-auto a');
+                    const timeEl = div.querySelector('div.descricao-leilao.my-auto a strong');
+
+                    if (linkEl && linkEl.href && linkEl.href.includes('/leilao/')) {
+                        found.push({
+                            titulo: tituloEl ? tituloEl.innerText.trim() : 'Leilão',
+                            url: linkEl.href.startsWith('http') ? linkEl.href : `${baseUrl}${linkEl.getAttribute('href')}`,
+                            dataHoraRaw: timeEl ? timeEl.innerText.trim() : ''
+                        });
+                    }
+                });
+                return found;
+            }, BASE_URL);
+
+            console.log(`   📊 [${SITE}] Encontrados ${leiloes.length} leilões ativos.`);
+
+            // 2. Scrape each auction
+            for (const leilao of leiloes) {
+                console.log(`   🔄 [${SITE}] Processando: ${leilao.titulo}`);
+                const dataHora = trataDataHora(leilao.dataHoraRaw);
+                let pagina = 1;
+                let hasMore = true;
+
+                while (hasMore && pagina <= 20) {
+                    try {
+                        const pageUrl = `${leilao.url}?page=${pagina}`;
+                        await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+                        await new Promise(r => setTimeout(r, 1000));
+
+                        const itens = await page.evaluate((site, baseUrl, dh, leilaoUrl) => {
+                            const batch = [];
+                            document.querySelectorAll('div.lote.rounded').forEach(div => {
+                                const infoDiv = div.querySelector('div.col-lg-7 div.body-lote');
+                                const lanceDiv = div.querySelector('div.col-lg-3 div.lance-lote');
+                                const imgEl = div.querySelector('div.col-lg-2 img, div.img-lote img, img');
+                                const linkEl = infoDiv ? infoDiv.querySelector('a') : null;
+
+                                if (!linkEl) return;
+
+                                const urlLote = linkEl.href.startsWith('http') ? linkEl.href : `${baseUrl}${linkEl.getAttribute('href')}`;
+                                const textoCompleto = infoDiv.innerText;
+                                const linhas = textoCompleto.split('\n').map(l => l.trim()).filter(Boolean);
+
+                                // Veiculo
+                                let veiculo = 'VEÍCULO';
+                                const linhaMarca = linhas.find(l => /marca\s*\/?\s*modelo/i.test(l));
+                                if (linhaMarca) {
+                                    veiculo = linhaMarca.replace(/marca\s*\/?\s*modelo\s*:?\s*/gi, '').trim();
+                                    if (!veiculo && linhaMarca.includes(':')) veiculo = linhaMarca.split(':').slice(1).join(':').trim();
+                                }
+                                if (!veiculo || veiculo === 'VEÍCULO' || veiculo.length < 2) {
+                                    veiculo = linhas[0] || 'VEÍCULO';
+                                    veiculo = veiculo.replace(/marca\s*\/?\s*modelo\s*:?\s*/gi, '').trim();
+                                }
+
+                                const anoLine = linhas.find(l => l.includes('Ano'));
+                                const ano = anoLine ? parseInt(anoLine.split(':')[1]) : null;
+
+                                const placaLine = linhas.find(l => l.includes('Placa'));
+                                const placa = placaLine ? placaLine.split(':')[1].trim() : undefined;
+
+                                const valorStr = lanceDiv ? lanceDiv.innerText.replace(/[^0-9,]/g, '').replace(',', '.') : '0';
+
+                                // Fotos
+                                const fotos = [];
+                                if (imgEl) {
+                                    let src = imgEl.src || imgEl.getAttribute('data-src');
+                                    if (src) {
+                                        if (!src.startsWith('http')) src = `${baseUrl}${src}`;
+                                        fotos.push(src);
+                                    }
+                                }
+
+                                batch.push({
+                                    site: site,
+                                    registro: urlLote.split('/').filter(Boolean).pop(),
+                                    link: urlLote,
+                                    veiculo: veiculo.toUpperCase(),
+                                    ano: ano,
+                                    valor: parseFloat(valorStr) || 0,
+                                    previsao: dh,
+                                    modalidade: 'leilao',
+                                    tipo: 'veiculo',
+                                    fotos: fotos,
+                                    placa: placa
+                                });
+                            });
+                            return batch;
+                        }, SITE, BASE_URL, dataHora, leilao.url);
+
+                        if (itens.length > 0) {
+                            await salvarLista(itens);
+                            totalColetado += itens.length;
+                            console.log(`      ✅ [${SITE}] Pág ${pagina}: +${itens.length} itens.`);
+
+                            // Check for next page
+                            const hasNextMock = await page.evaluate(() => {
+                                // Guariglia pagination often has "Próximo" or number links
+                                const next = Array.from(document.querySelectorAll('.pagination a')).find(a => a.innerText.includes('›') || a.innerText.includes('Próximo'));
+                                return !!next;
+                            });
+
+                            if (!hasNextMock && itens.length < 5) hasMore = false; // Heuristic
+                            pagina++;
+                        } else {
+                            hasMore = false;
+                        }
+
+                    } catch (e) {
+                        console.log(`      ⚠️ [${SITE}] Erro pág ${pagina}: ${e.message}`);
+                        hasMore = false;
+                    }
+                }
+            }
+
+        } catch (e) {
+            console.error(`❌ [${SITE}] Erro Fatal:`, e.message);
+        } finally {
+            await browser.close();
         }
 
-        console.log(`✅ [${SITE}] Finalizado! ${total} veículos coletados.`);
-        return total;
+        console.log(`✅ [${SITE}] Finalizado! ${totalColetado} veículos coletados.`);
+        return totalColetado;
     };
 
     return { buscarTodos, SITE };

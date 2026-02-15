@@ -52,14 +52,27 @@ export const execute = async (database) => {
         let pageLoaded = false;
         for (let attempt = 1; attempt <= 3; attempt++) {
             try {
-                await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+                // Use networkidle2 to ensure challenge assets load
+                await page.goto(targetUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
 
-                // Wait for a real element to confirm challenge pass
+                // Wait for a real element to confirm challenge pass - INCREASED TIMEOUT
                 try {
-                    await page.waitForSelector('footer, #header, .header, nav', { timeout: 15000 });
+                    console.log(`   ⏳ [${SITE}] Aguardando desafio WAF (até 60s)...`);
+                    await page.waitForSelector('footer, #header, .header, nav, a[href*="/conta/login"]', { timeout: 60000 });
                     console.log(`   ✅ [${SITE}] Desafio WAF superado e página carregada.`);
                 } catch (e) {
-                    console.log(`   ⚠️ [${SITE}] Timeout esperando elemento da home. Possível challenge loop.`);
+                    console.log(`   ⚠️ [${SITE}] Timeout esperando elemento da home. Tentando clicar em checkbox...`);
+                    // Try to click challenge checkbox if present
+                    try {
+                        const frames = page.frames();
+                        for (const frame of frames) {
+                            const checkbox = await frame.$('.ctp-checkbox-label, input[type="checkbox"], #challenge-stage');
+                            if (checkbox) {
+                                await checkbox.click();
+                                await new Promise(r => setTimeout(r, 5000));
+                            }
+                        }
+                    } catch (err) { }
                 }
 
                 await new Promise(r => setTimeout(r, 3000));

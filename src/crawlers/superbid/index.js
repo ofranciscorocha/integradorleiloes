@@ -17,7 +17,7 @@ const createCrawler = (db) => {
 
         const browser = await puppeteer.launch({
             headless: "new",
-            protocolTimeout: 120000,
+            protocolTimeout: 240000,
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080', '--disable-dev-shm-usage']
         });
 
@@ -88,60 +88,65 @@ const createCrawler = (db) => {
                         await new Promise(r => setTimeout(r, 1000));
                     }
 
-                    // Extract from DOM
-                    const items = await page.evaluate((site) => {
-                        const results = [];
-                        const seen = new Set();
-                        // Generic card selectors for Superbid
-                        const cards = document.querySelectorAll('.card, [class*="lot"], [class*="item"], [class*="product"], [class*="Card"], [class*="Lot"]');
+                    // Extract from DOM with safety timeout
+                    let items = [];
+                    try {
+                        items = await page.evaluate((site) => {
+                            const results = [];
+                            const seen = new Set();
+                            // Limit to first 300 cards to prevent timeout on huge pages
+                            const cards = Array.from(document.querySelectorAll('.card, [class*="lot"], [class*="item"], [class*="product"]')).slice(0, 300);
 
-                        cards.forEach(card => {
-                            try {
-                                const linkEl = card.querySelector('a[href*="/leilao/"], a[href*="/exchange/"], a[href*="/lot/"], a[href]');
-                                if (!linkEl) return;
+                            cards.forEach(card => {
+                                try {
+                                    const linkEl = card.querySelector('a[href*="/leilao/"], a[href*="/exchange/"], a[href*="/lot/"], a[href]');
+                                    if (!linkEl) return;
 
-                                const link = linkEl.href;
-                                if (seen.has(link)) return;
-                                seen.add(link);
+                                    const link = linkEl.href;
+                                    if (seen.has(link)) return;
+                                    seen.add(link);
 
-                                const text = card.innerText || '';
-                                if (text.length < 15) return;
+                                    const text = card.innerText || '';
+                                    if (text.length < 15) return;
 
-                                // Must have vehicle-like content
-                                const textUpper = text.toUpperCase();
-                                const brands = ['HONDA', 'TOYOTA', 'FIAT', 'VOLKSWAGEN', 'CHEVROLET', 'FORD', 'YAMAHA', 'HYUNDAI', 'RENAULT', 'JEEP', 'BMW', 'MERCEDES', 'NISSAN', 'MITSUBISHI', 'KIA', 'PEUGEOT', 'CITROEN', 'AUDI', 'VOLVO', 'PORSCHE', 'SUZUKI', 'KAWASAKI', 'HARLEY', 'LAND ROVER', 'IVECO', 'SCANIA', 'MAN', 'DAF'];
-                                const vehicleTerms = ['CARRO', 'MOTO', 'CAMINHÃO', 'CAMINHAO', 'VEÍCULO', 'VEICULO', 'AUTOMÓVEL', 'AUTOMOVEL', 'PICKUP', 'VAN', 'ÔNIBUS', 'ONIBUS', 'MOTOCICLETA'];
-                                const hasBrand = brands.some(b => textUpper.includes(b));
-                                const hasVehicleTerm = vehicleTerms.some(v => textUpper.includes(v));
-                                const hasYear = /20[0-2]\d/.test(text) || /19[89]\d/.test(text);
+                                    // Must have vehicle-like content
+                                    const textUpper = text.toUpperCase();
+                                    const brands = ['HONDA', 'TOYOTA', 'FIAT', 'VOLKSWAGEN', 'CHEVROLET', 'FORD', 'YAMAHA', 'HYUNDAI', 'RENAULT', 'JEEP', 'BMW', 'MERCEDES', 'NISSAN', 'MITSUBISHI', 'KIA', 'PEUGEOT', 'CITROEN', 'AUDI', 'VOLVO', 'PORSCHE', 'SUZUKI', 'KAWASAKI', 'HARLEY', 'LAND ROVER', 'IVECO', 'SCANIA', 'MAN', 'DAF'];
+                                    const vehicleTerms = ['CARRO', 'MOTO', 'CAMINHÃO', 'CAMINHAO', 'VEÍCULO', 'VEICULO', 'AUTOMÓVEL', 'AUTOMOVEL', 'PICKUP', 'VAN', 'ÔNIBUS', 'ONIBUS', 'MOTOCICLETA'];
+                                    const hasBrand = brands.some(b => textUpper.includes(b));
+                                    const hasVehicleTerm = vehicleTerms.some(v => textUpper.includes(v));
+                                    const hasYear = /20[0-2]\d/.test(text) || /19[89]\d/.test(text);
 
-                                if (!hasBrand && !hasVehicleTerm && !hasYear) return;
+                                    if (!hasBrand && !hasVehicleTerm && !hasYear) return;
 
-                                // Blacklist
-                                const blacklist = ['IMOVEL', 'IMOVEIS', 'APARTAMENTO', 'TERRENO', 'CASA', 'FAZENDA', 'GALPAO', 'ESCRITORIO', 'MOVEIS', 'ELETRO', 'NOTEBOOK', 'CELULAR'];
-                                if (blacklist.some(b => textUpper.includes(b))) return;
+                                    // Blacklist
+                                    const blacklist = ['IMOVEL', 'IMOVEIS', 'APARTAMENTO', 'TERRENO', 'CASA', 'FAZENDA', 'GALPAO', 'ESCRITORIO', 'MOVEIS', 'ELETRO', 'NOTEBOOK', 'CELULAR'];
+                                    if (blacklist.some(b => textUpper.includes(b))) return;
 
-                                const imgEl = card.querySelector('img');
-                                const priceMatch = text.match(/R\$\s?[\d.,]+/);
-                                const yearMatch = text.match(/(20[0-2]\d|19[89]\d)/);
-                                const title = text.split('\n').filter(l => l.trim().length > 5)[0] || 'Veículo Superbid';
+                                    const imgEl = card.querySelector('img');
+                                    const priceMatch = text.match(/R\$\s?[\d.,]+/);
+                                    const yearMatch = text.match(/(20[0-2]\d|19[89]\d)/);
+                                    const title = text.split('\n').filter(l => l.trim().length > 5)[0] || 'Veículo Superbid';
 
-                                results.push({
-                                    registro: link.split('/').pop().split('?')[0] || Date.now().toString(36),
-                                    site: site,
-                                    link: link,
-                                    veiculo: title.trim().toUpperCase().substring(0, 120),
-                                    fotos: imgEl && imgEl.src && !imgEl.src.includes('placeholder') ? [imgEl.src] : [],
-                                    valor: priceMatch ? parseFloat(priceMatch[0].replace('R$', '').replace(/\./g, '').replace(',', '.').trim()) || 0 : 0,
-                                    ano: yearMatch ? parseInt(yearMatch[1]) : null,
-                                    localLeilao: 'Brasil',
-                                    modalidade: 'leilao',
-                                    tipo: 'veiculo'
-                                });
-                            } catch (e) { }
-                        });
-                        return results;
-                    }, SITE);
+                                    results.push({
+                                        registro: link.split('/').pop().split('?')[0] || Date.now().toString(36),
+                                        site: site,
+                                        link: link,
+                                        veiculo: title.trim().toUpperCase().substring(0, 120),
+                                        fotos: imgEl && imgEl.src && !imgEl.src.includes('placeholder') ? [imgEl.src] : [],
+                                        valor: priceMatch ? parseFloat(priceMatch[0].replace('R$', '').replace(/\./g, '').replace(',', '.').trim()) || 0 : 0,
+                                        ano: yearMatch ? parseInt(yearMatch[1]) : null,
+                                        localLeilao: 'Brasil',
+                                        modalidade: 'leilao',
+                                        tipo: 'veiculo'
+                                    });
+                                } catch (e) { }
+                            });
+                            return results;
+                        }, SITE);
+                    } catch (e) {
+                        console.log(`   ⚠️ [${SITE}] Timeout ou erro na extração DOM: ${e.message}`);
+                    }
 
                     if (items.length > 0) {
                         // Deduplicate against existing

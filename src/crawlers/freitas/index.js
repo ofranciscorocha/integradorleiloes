@@ -115,15 +115,28 @@ const createCrawler = (db) => {
 
             // Extract details
             const data = await page.evaluate((siteDomain) => {
-                const titleEl = document.querySelector('h1, .titulo-lote, .lote-titulo, .cardLote-descVeic'); // Fallback selectors
-                // Try simpler selection first
-                const title = (document.querySelector('.lote-header h1') || document.querySelector('h1') || {}).innerText?.trim();
+                const titleEl = document.querySelector('h1, .titulo-lote, .lote-titulo, .cardLote-descVeic');
+                // Enhanced title fallback
+                let title = (document.querySelector('.lote-header h1') || document.querySelector('h1') || {}).innerText?.trim();
+
+                if (!title || title.includes(': em leilão')) {
+                    // Try to get text from h1 rejecting the status part
+                    const h1 = document.querySelector('h1');
+                    if (h1) {
+                        // Clone to remove children if needed, or just regex
+                        title = h1.innerText.replace(/: em leilão/gi, '').trim();
+                    }
+                }
+
+                if (!title || title.length < 3) {
+                    title = document.title.split('-')[0].trim();
+                }
 
                 if (!title) return null;
 
                 // Photos from carousel
                 let photos = [];
-                const imgEls = document.querySelectorAll('.carousel-inner img, #galeria img, .slick-slide:not(.slick-cloned) img');
+                const imgEls = document.querySelectorAll('.carousel-inner img, #galeria img, .slick-slide:not(.slick-cloned) img, .lote-imagens img');
                 imgEls.forEach(img => {
                     const src = img.src || img.getAttribute('data-src');
                     if (src && !src.includes('logo_indisponivel') && !src.includes('LogosClientes')) {
@@ -132,7 +145,7 @@ const createCrawler = (db) => {
                 });
 
                 // Price
-                const priceEl = document.querySelector('.lote-valor-atual, .valor-lote');
+                const priceEl = document.querySelector('.lote-valor-atual, .valor-lote, #lanceAtual');
                 let valor = 0;
                 if (priceEl) {
                     const priceText = priceEl.innerText.replace(/[^0-9,.]/g, '');
@@ -153,7 +166,7 @@ const createCrawler = (db) => {
                     fotos: photos,
                     valor,
                     ano: yearMatch ? parseInt(yearMatch[1]) : null,
-                    localLeilao: 'Freitas Leiloeiro', // Simplifying location for now
+                    localLeilao: 'Freitas Leiloeiro',
                     modalidade: 'leilao',
                     tipo: 'veiculo'
                 };

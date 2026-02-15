@@ -101,8 +101,8 @@ const createCrawler = (db) => {
 
             // Establish session
             console.log(`   🔍 [${SITE}] Estabelecendo sessão...`);
-            await page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: TIMEOUT });
-            await new Promise(r => setTimeout(r, 2000));
+            await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+            await new Promise(r => setTimeout(r, 3000));
 
             // Categories: 3=Automóveis, 4=Caminhões, 5=Motos, 37=Utilitários
             const categorias = [3, 4, 5, 37];
@@ -118,9 +118,11 @@ const createCrawler = (db) => {
                     console.log(`   📄 [${SITE}] Cat ${cat}, pág ${pagina}...`);
 
                     try {
-                        await page.goto(url, { waitUntil: 'networkidle2', timeout: TIMEOUT });
-                        await page.waitForSelector('div.itm-card', { timeout: 15000 }).catch(() => null);
-                        await new Promise(r => setTimeout(r, 2000));
+                        // Use domcontentloaded for speed, networkidle2 is too slow on Vip
+                        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+                        await new Promise(r => setTimeout(r, 4000)); // Manual wait for React hydration
+
+                        await page.waitForSelector('div.itm-card', { timeout: 10000 }).catch(() => null);
 
                         const items = await extractFromPage(page);
 
@@ -143,7 +145,7 @@ const createCrawler = (db) => {
                             console.log(`   ✅ [${SITE}] +${newItems.length} veículos. Total: ${totalCapturados}`);
                         }
 
-                        // Check total pages
+                        // Check "Próxima" button or total pages logic
                         const totalText = await page.evaluate(() => {
                             const h4 = document.querySelector('div.col-md-12.tituloListagem h4');
                             return h4 ? h4.textContent.replace(/[^\d]/g, '') : '0';
