@@ -100,17 +100,29 @@ export const execute = async (database) => {
                 try {
                     const newLots = await page.evaluate(async (searchConfig, from) => {
                         try {
+                            const headers = {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json, text/plain, */*',
+                                'Origin': 'https://www.sodresantoro.com.br',
+                                'Referer': 'https://www.sodresantoro.com.br/veiculos/lotes?page=1',
+                                'User-Agent': navigator.userAgent,
+                                'Sec-Fetch-Dest': 'empty',
+                                'Sec-Fetch-Mode': 'cors',
+                                'Sec-Fetch-Site': 'same-origin',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            };
+
                             const response = await fetch('https://www.sodresantoro.com.br/api/search-lots', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: headers,
                                 body: JSON.stringify({
                                     indices: searchConfig.indices,
                                     query: searchConfig.query,
                                     from: from,
                                     size: 96,
                                     sort: [
-                                        { lot_status_id_order: { order: "asc" } },
-                                        { lot_visits: { order: "desc" } }
+                                        { "lot_status_id_order": { "order": "asc" } },
+                                        { "lot_visits": { "order": "desc" } }
                                     ]
                                 })
                             });

@@ -39,12 +39,18 @@ const createCrawler = (db) => {
 
             // STEP 1: Get auction agenda via API
             console.log(`   📋 [${SITE}] Buscando agenda de leilões via API...`);
-            const agenda = await page.evaluate(async (baseUrl) => {
+            const agenda = await page.evaluate(async (apiBase) => {
                 try {
-                    const resp = await fetch(`${baseUrl}/api/v2/leilao/agenda`);
+                    const headers = {
+                        'Accept': 'application/json, text/plain, */*',
+                        'Origin': 'https://www.pestanaleiloes.com.br',
+                        'Referer': 'https://www.pestanaleiloes.com.br/',
+                        'User-Agent': navigator.userAgent
+                    };
+                    const resp = await fetch(`${apiBase}/api/v2/leilao/agenda`, { headers });
                     return await resp.json();
                 } catch (e) { return []; }
-            }, BASE_URL);
+            }, API_BASE);
 
             // Get all auction IDs from agenda
             const allAuctionIds = [];
@@ -66,20 +72,27 @@ const createCrawler = (db) => {
                     console.log(`   🔄 [${SITE}] Processando leilão ${auctionId}...`);
 
                     // Try to get auction details and lots
-                    const auctionData = await page.evaluate(async (baseUrl, aId) => {
+                    const auctionData = await page.evaluate(async (apiBase, aId) => {
                         try {
+                            const headers = {
+                                'Accept': 'application/json, text/plain, */*',
+                                'Origin': 'https://www.pestanaleiloes.com.br',
+                                'Referer': 'https://www.pestanaleiloes.com.br/',
+                                'User-Agent': navigator.userAgent
+                            };
+
                             // Get auction details
-                            const detailResp = await fetch(`${baseUrl}/api/v2/leilao/${aId}`);
+                            const detailResp = await fetch(`${apiBase}/api/v2/leilao/${aId}`, { headers });
                             const detail = detailResp.ok ? await detailResp.json() : null;
 
                             // Get lots for this auction
-                            const lotesResp = await fetch(`${baseUrl}/api/v2/leilao/${aId}/lotes`);
+                            const lotesResp = await fetch(`${apiBase}/api/v2/leilao/${aId}/lotes`, { headers });
                             const lotes = lotesResp.ok ? await lotesResp.json() : [];
 
                             // Also try alternate endpoint
                             let lotes2 = [];
                             try {
-                                const resp2 = await fetch(`${baseUrl}/api/v2/lote?leilaoId=${aId}&pageSize=200&page=1`);
+                                const resp2 = await fetch(`${apiBase}/api/v2/lote?leilaoId=${aId}&pageSize=200&page=1`, { headers });
                                 if (resp2.ok) {
                                     const data2 = await resp2.json();
                                     lotes2 = Array.isArray(data2) ? data2 : (data2.data || data2.items || data2.content || []);
@@ -88,7 +101,7 @@ const createCrawler = (db) => {
 
                             return { detail, lotes: Array.isArray(lotes) ? lotes : (lotes.data || lotes.items || lotes.content || []), lotes2 };
                         } catch (e) { return { error: e.message }; }
-                    }, BASE_URL, auctionId);
+                    }, API_BASE, auctionId);
 
                     if (auctionData.error) {
                         console.log(`      ⚠️ [${SITE}] Erro leilão ${auctionId}: ${auctionData.error}`);
@@ -132,18 +145,25 @@ const createCrawler = (db) => {
                 console.log(`   🔄 [${SITE}] Tentando busca direta de lotes via API...`);
 
                 for (let pageNum = 1; pageNum <= 50; pageNum++) {
-                    const lotes = await page.evaluate(async (baseUrl, p) => {
+                    const lotes = await page.evaluate(async (apiBase, p) => {
                         try {
+                            const headers = {
+                                'Accept': 'application/json, text/plain, */*',
+                                'Origin': 'https://www.pestanaleiloes.com.br',
+                                'Referer': 'https://www.pestanaleiloes.com.br/',
+                                'User-Agent': navigator.userAgent
+                            };
+
                             // Try various endpoints for lot search
                             const endpoints = [
-                                `${baseUrl}/api/v2/lote?tipoBemId=421&pageSize=50&page=${p}`,
-                                `${baseUrl}/api/v2/lote/pesquisa?tipoBemId=421&pageSize=50&page=${p}`,
-                                `${baseUrl}/api/v2/lote?page=${p}&pageSize=50`
+                                `${apiBase}/api/v2/lote?tipoBemId=421&pageSize=50&page=${p}`,
+                                `${apiBase}/api/v2/lote/pesquisa?tipoBemId=421&pageSize=50&page=${p}`,
+                                `${apiBase}/api/v2/lote?page=${p}&pageSize=50`
                             ];
 
                             for (const url of endpoints) {
                                 try {
-                                    const resp = await fetch(url);
+                                    const resp = await fetch(url, { headers });
                                     if (resp.ok) {
                                         const data = await resp.json();
                                         const items = Array.isArray(data) ? data : (data.data || data.items || data.content || data.lotes || []);
@@ -153,7 +173,7 @@ const createCrawler = (db) => {
                             }
                             return [];
                         } catch (e) { return []; }
-                    }, BASE_URL, pageNum);
+                    }, API_BASE, pageNum);
 
                     if (!lotes || lotes.length === 0) break;
 
