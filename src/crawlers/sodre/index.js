@@ -185,7 +185,9 @@ function processResults(results, SITE) {
             tipo: 'veiculo'
         };
     }).filter(v => {
-        // RELAXED FILTER - Accept vehicles even without photos
+        // ENFORCE PHOTO FILTER: Only items with photos
+        if (!v.fotos || v.fotos.length === 0) return false;
+
         const text = (v.veiculo + ' ' + (v.ano || '')).toUpperCase();
         const blacklist = [
             'MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'TELEVISAO', 'CELULAR',

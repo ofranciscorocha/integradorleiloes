@@ -212,6 +212,9 @@ app.get('/veiculos', async (req, res) => {
 
         const query = {};
 
+        // REQUIREMENT: Only show lots with photos
+        query["fotos.0"] = { $exists: true };
+
         // Search text (veiculo and descricao)
         if (search && search.trim() !== '') {
             query.$or = [
@@ -324,6 +327,20 @@ app.get('/veiculos/:registro', async (req, res) => {
  */
 app.get('/stats', async (req, res) => {
     try {
+        const { crawlerScripts } = await import('../tasks/scheduler.js');
+        const porSite = {};
+
+        for (const s of crawlerScripts) {
+            const count = await db.count({
+                colecao: 'veiculos',
+                filtro: { site: { $regex: s.id, $options: 'i' } }
+            });
+            porSite[s.id] = {
+                name: s.name,
+                count: count
+            };
+        }
+
         const stats = {
             total: await db.count({ colecao: 'veiculos' }),
             stats: {
@@ -331,29 +348,9 @@ app.get('/stats', async (req, res) => {
                     colecao: 'veiculos',
                     filtro: { criadoEm: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
                 }),
-                visitantes: 1240 + Math.floor(Math.random() * 50), // Mock por enquanto
-                cadastros: await db.count({ colecao: 'alerts' }) + 450, // Mock base + reais
-                porSite: {
-                    'Palácio dos Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'palaciodosleiloes.com.br' } }),
-                    'VIP Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'vipleiloes.com.br' } }),
-                    'Guariglia Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'guariglialeiloes.com.br' } }),
-                    'Freitas Leiloeiro': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'freitas' } } }),
-                    'Sodré Santoro': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'sodre' } } }),
-                    'Parque dos Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'parquedosleiloes.com.br' } }),
-                    'Rogério Menezes': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'rogerio' } } }),
-                    'Copart': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'copart' } } }),
-                    'Leilo.com.br': await db.count({ colecao: 'veiculos', filtro: { site: { $regex: 'leilo.com.br' } } }),
-                    'Milan Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'milanleiloes.com.br' } }),
-                    'Sumaré Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'sumareleiloes.com.br' } }),
-                    'Sato Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'satoleiloes.com.br' } }),
-                    'Daniel Garcia': await db.count({ colecao: 'veiculos', filtro: { site: 'danielgarcialeiloes.com.br' } }),
-                    'João Emílio': await db.count({ colecao: 'veiculos', filtro: { site: 'joaoemilio.com.br' } }),
-                    'MGL Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'mgl.com.br' } }),
-                    'Claudio Kuss': await db.count({ colecao: 'veiculos', filtro: { site: 'claudiokussleiloes.com.br' } }),
-                    'Pestana Leilões': await db.count({ colecao: 'veiculos', filtro: { site: 'pestanaleiloes.com.br' } }),
-                    'Pátio Rocha': await db.count({ colecao: 'veiculos', filtro: { site: 'patiorocha.com.br' } }),
-                    'Superbid': await db.count({ colecao: 'veiculos', filtro: { site: 'superbid.net' } })
-                },
+                visitantes: 1240 + Math.floor(Math.random() * 50),
+                cadastros: await db.count({ colecao: 'alerts' }) + 450,
+                porSite,
                 scheduler: getSchedulerStatus()
             }
         };
@@ -389,7 +386,6 @@ app.get('/sites', (req, res) => {
             { id: 'mgl', name: 'MGL Leilões', domain: 'mgl.com.br' },
             { id: 'claudiokuss', name: 'Claudio Kuss', domain: 'claudiokussleiloes.com.br' },
             { id: 'pestana', name: 'Pestana Leilões', domain: 'pestanaleiloes.com.br' },
-            { id: 'patiorocha', name: 'Pátio Rocha', domain: 'patiorocha.com.br' },
             { id: 'superbid', name: 'Superbid', domain: 'superbid.net' }
         ]
     });
@@ -401,7 +397,7 @@ app.get('/sites', (req, res) => {
 app.post('/admin/login', (req, res) => {
     const { user, pass } = req.body;
     // Hardcoded credentials as requested
-    if (user === 'admin' && pass === 'admin') {
+    if (user === 'admin' && (pass === 'admin' || pass === 'Rf159357$')) {
         res.json({ success: true, token: AUTH_TOKEN });
     } else {
         res.status(401).json({ success: false, error: 'Usuário ou senha incorretos' });
@@ -445,70 +441,20 @@ app.post('/admin/refresh-db', requireAuth, async (req, res) => {
 /**
  * Admin: Rodar Crawler Manualmente
  */
-app.post('/admin/crawl', requireAuth, (req, res) => {
-    const { site } = req.body;
-    let scriptPath = '';
+app.post('/admin/crawl', requireAuth, async (req, res) => {
+    try {
+        const { site } = req.body;
+        const { triggerManualRun } = await import('../tasks/scheduler.js');
 
-    // Mapeamento simples
-    if (site === 'freitas') scriptPath = 'src/crawlers/freitas/run.js';
-    else if (site === 'palacio') scriptPath = 'src/crawlers/palaciodosleiloes/run.js';
-    else if (site === 'copart') scriptPath = 'src/crawlers/copart/run.js';
-    else if (site === 'sodre') scriptPath = 'src/crawlers/sodre/run.js';
-    else if (site === 'vip') scriptPath = 'src/crawlers/vipleiloes/run.js';
-    else if (site === 'parque') scriptPath = 'src/crawlers/parque/run.js';
-    else if (site === 'rogeriomenezes') scriptPath = 'src/crawlers/rogeriomenezes/run.js';
-    else if (site === 'guariglia') scriptPath = 'src/crawlers/guariglialeiloes/run.js';
-
-    if (!scriptPath) return res.status(400).json({ success: false, error: 'Site desconhecido ou inativo' });
-
-    const absoluteScriptPath = path.resolve(process.cwd(), scriptPath);
-    console.log(`🚀 [Admin] Iniciando crawler manual: ${site} | Script: ${absoluteScriptPath}`);
-
-    if (!fs.existsSync(absoluteScriptPath)) {
-        console.error(`❌ [Admin] Script não encontrado: ${absoluteScriptPath}`);
-        return res.status(500).json({ success: false, error: 'Arquivo do crawler não encontrado no servidor' });
+        const success = triggerManualRun(site);
+        if (success) {
+            res.json({ success: true, message: `Crawler ${site} disparado no servidor.` });
+        } else {
+            res.status(400).json({ success: false, error: 'Crawler não encontrado ou inativo.' });
+        }
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
     }
-
-    // Roda em background
-    const schedulerStatus = getSchedulerStatus();
-    schedulerStatus.running = true;
-    schedulerStatus.lastRun = new Date();
-
-    const logPath = path.resolve(process.cwd(), 'crawler.log');
-    // Clear log before starting manual run to avoid old data confusion
-    fs.writeFileSync(logPath, `--- Coleta Manual: ${site} Iniciada em ${new Date().toLocaleString()} ---\n`);
-
-    const child = spawn('node', [absoluteScriptPath], {
-        cwd: process.cwd(),
-        detached: true,
-        stdio: ['ignore', 'pipe', 'pipe'], // Capture pipe
-        shell: true
-    });
-
-    child.stdout.on('data', (data) => {
-        fs.appendFileSync(logPath, data);
-        process.stdout.write(`[CRAWL:${site}] ${data}`);
-    });
-
-    child.stderr.on('data', (data) => {
-        fs.appendFileSync(logPath, `ERROR: ${data}`);
-        process.stderr.write(`[CRAWL:${site}] ERR: ${data}`);
-    });
-
-    child.on('exit', (code) => {
-        console.log(`ℹ️ [Admin] Crawler ${site} terminou com código ${code}`);
-        fs.appendFileSync(logPath, `\n--- Crawler ${site} Finalizado (Código ${code}) ---\n`);
-        schedulerStatus.running = false;
-        schedulerStatus.history.push({
-            time: new Date(),
-            type: `manual_${site}`
-        });
-        if (schedulerStatus.history.length > 10) schedulerStatus.history.shift();
-    });
-
-    child.unref();
-
-    res.json({ success: true, message: `Crawler ${site} disparado no servidor.` });
 });
 
 /**
@@ -535,52 +481,34 @@ app.get('/admin/logs', requireAuth, (req, res) => {
 /**
  * Admin: Rodar TODOS Crawlers (Sequencial)
  */
-app.post('/admin/crawl-all', requireAuth, (req, res) => {
-    // Check if valid request
-    const schedulerStatus = getSchedulerStatus();
-    if (schedulerStatus.running) {
-        return res.status(409).json({ success: false, error: 'Já existe uma coleta em andamento.' });
+app.post('/admin/crawl-all', requireAuth, async (req, res) => {
+    try {
+        const { getSchedulerStatus } = await import('../tasks/scheduler.js');
+        const schedulerStatus = getSchedulerStatus();
+
+        if (schedulerStatus.running) {
+            return res.status(409).json({ success: false, error: 'Já existe uma coleta em andamento.' });
+        }
+
+        console.log('🚀 [Admin] Disparando coleta TOTAL!');
+        const logPath = path.resolve(process.cwd(), 'crawler.log');
+        fs.writeFileSync(logPath, `--- Coleta SEQUENCIAL Total Iniciada em ${new Date().toLocaleString()} ---\n`);
+
+        const scriptPath = path.resolve(process.cwd(), 'src/tasks/run_all.js');
+        const child = spawn('node', [scriptPath], {
+            cwd: process.cwd(),
+            detached: true,
+            stdio: ['ignore', 'pipe', 'pipe'],
+            shell: true
+        });
+
+        child.unref();
+        schedulerStatus.running = true;
+
+        res.json({ success: true, message: 'Coleta TOTAL iniciada em segundo plano.' });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
     }
-
-    console.log('🚀 [Admin] Disparando coleta TOTAL!');
-
-    const logPath = path.resolve(process.cwd(), 'crawler.log');
-    fs.writeFileSync(logPath, `--- Coleta SEQUENCIAL Total Iniciada em ${new Date().toLocaleString()} ---\n`);
-
-    const scriptPath = path.resolve(process.cwd(), 'src/tasks/run_all.js');
-    if (!fs.existsSync(scriptPath)) {
-        return res.status(500).json({ success: false, error: 'Script de execução não encontrado.' });
-    }
-
-    const child = spawn('node', [scriptPath], {
-        cwd: process.cwd(),
-        detached: true,
-        stdio: ['ignore', 'pipe', 'pipe'],
-        shell: true
-    });
-
-    child.stdout.on('data', (data) => {
-        fs.appendFileSync(logPath, data);
-        process.stdout.write(`[CRAWL:ALL] ${data}`);
-    });
-
-    child.stderr.on('data', (data) => {
-        fs.appendFileSync(logPath, `ERROR: ${data}`);
-        process.stderr.write(`[CRAWL:ALL] ERR: ${data}`);
-    });
-
-    child.on('exit', (code) => {
-        console.log(`ℹ️ [Admin] Coleta Total terminou com código ${code}`);
-        fs.appendFileSync(logPath, `\n--- Coleta Total Finalizada (Código ${code}) ---\n`);
-        schedulerStatus.running = false;
-        schedulerStatus.history.push({ time: new Date(), type: 'manual_all' });
-        if (schedulerStatus.history.length > 10) schedulerStatus.history.shift();
-    });
-
-    child.unref();
-    schedulerStatus.running = true;
-
-    res.json({ success: true, message: 'Coleta TOTAL iniciada em segundo plano.' });
 });
 
 

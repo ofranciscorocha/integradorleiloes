@@ -14,10 +14,45 @@ const CONCURRENCY = 4; // Number of parallel crawlers
 const schedulerStatus = {
     running: false,
     lastRun: null,
-    history: []
+    history: [],
+    crawlers: {} // Track status by name
 };
 
 export const getSchedulerStatus = () => schedulerStatus;
+
+// Priority Ordered List of all available crawlers
+const crawlerScripts = [
+    { id: 'copart', path: path.join(__dirname, '../crawlers/copart/run.js'), name: 'Copart' },
+    { id: 'sodre', path: path.join(__dirname, '../crawlers/sodre/run.js'), name: 'Sodré Santoro' },
+    { id: 'vip', path: path.join(__dirname, '../crawlers/vipleiloes/run.js'), name: 'Vip Leilões' },
+    { id: 'palacio', path: path.join(__dirname, '../crawlers/palaciodosleiloes/run.js'), name: 'Palácio dos Leilões' },
+    { id: 'freitas', path: path.join(__dirname, '../crawlers/freitas/run.js'), name: 'Freitas Leiloeiro' },
+    { id: 'rogeriomenezes', path: path.join(__dirname, '../crawlers/rogeriomenezes/run.js'), name: 'Rogério Menezes' },
+    { id: 'loop', path: path.join(__dirname, '../crawlers/loopleiloes/run.js'), name: 'Loop Leilões' },
+    { id: 'mgl', path: path.join(__dirname, '../crawlers/mgl/run.js'), name: 'MGL' },
+    { id: 'patiorocha', path: path.join(__dirname, '../crawlers/patiorocha/run.js'), name: 'Pátio Rocha' },
+    { id: 'superbid', path: path.join(__dirname, '../crawlers/superbid/run.js'), name: 'Superbid' },
+    { id: 'guariglia', path: path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), name: 'Guariglia Leilões' },
+    { id: 'parque', path: path.join(__dirname, '../crawlers/parque/run.js'), name: 'Parque dos Leilões' },
+    { id: 'leilo', path: path.join(__dirname, '../crawlers/leilo/run.js'), name: 'Leilo' },
+    { id: 'milan', path: path.join(__dirname, '../crawlers/milan/run.js'), name: 'Milan Leilões' },
+    { id: 'sumare', path: path.join(__dirname, '../crawlers/sumareleiloes/run.js'), name: 'Sumaré Leilões' },
+    { id: 'sato', path: path.join(__dirname, '../crawlers/satoleiloes/run.js'), name: 'Sato Leilões' },
+    { id: 'danielgarcia', path: path.join(__dirname, '../crawlers/danielgarcialeiloes/run.js'), name: 'Daniel Garcia' },
+    { id: 'joaoemilio', path: path.join(__dirname, '../crawlers/joaoemilio/run.js'), name: 'João Emílio' },
+    { id: 'claudiokuss', path: path.join(__dirname, '../crawlers/claudiokussleiloes/run.js'), name: 'Claudio Kuss' },
+    { id: 'pestana', path: path.join(__dirname, '../crawlers/pestanaleiloes/run.js'), name: 'Pestana Leilões' }
+];
+
+// Initialize crawler status map
+crawlerScripts.forEach(c => {
+    schedulerStatus.crawlers[c.id] = {
+        name: c.name,
+        status: 'idle',
+        lastRun: null,
+        lastCode: null
+    };
+});
 
 // Helper to log to file
 const logToFile = (message) => {
@@ -29,9 +64,12 @@ const logToFile = (message) => {
     } catch (e) { console.error('Error writing log:', e); }
 };
 
-const runCrawler = (scriptPath, name) => {
+const runCrawler = (crawler) => {
+    const { id, path: scriptPath, name } = crawler;
     return new Promise((resolve, reject) => {
         logToFile(`Starting ${name}`);
+        schedulerStatus.crawlers[id].status = 'running';
+        schedulerStatus.crawlers[id].lastRun = new Date();
 
         const child = spawn('node', [scriptPath], {
             stdio: 'pipe',
@@ -55,12 +93,17 @@ const runCrawler = (scriptPath, name) => {
         child.on('close', (code) => {
             logToFile(`${name} finished with code ${code}`);
             schedulerStatus.history.push({ name, code, time: new Date() });
-            if (schedulerStatus.history.length > 20) schedulerStatus.history.shift();
+            if (schedulerStatus.history.length > 30) schedulerStatus.history.shift();
+
+            schedulerStatus.crawlers[id].status = code === 0 ? 'idle' : 'error';
+            schedulerStatus.crawlers[id].lastCode = code;
+
             resolve(code);
         });
 
         child.on('error', (err) => {
             logToFile(`${name} failed to start: ${err.message}`);
+            schedulerStatus.crawlers[id].status = 'error';
             resolve(1);
         });
     });
@@ -77,7 +120,7 @@ const runPool = async (scripts, concurrency) => {
     while (queue.length > 0 || active.size > 0) {
         while (queue.length > 0 && active.size < concurrency) {
             const script = queue.shift();
-            const promise = runCrawler(script.path, script.name).then(() => {
+            const promise = runCrawler(script).then(() => {
                 active.delete(promise);
             });
             active.add(promise);
@@ -88,44 +131,33 @@ const runPool = async (scripts, concurrency) => {
         }
     }
     schedulerStatus.running = false;
-    logToFile('✅ All crawlers finished.');
+    logToFile('✅ All scheduled crawlers finished.');
 };
 
 const initScheduler = async (runImmediate = false) => {
-    // Priority Ordered List
-    const crawlerScripts = [
-        { path: path.join(__dirname, '../crawlers/copart/run.js'), name: 'Copart' }, // Slowest, Start First
-        { path: path.join(__dirname, '../crawlers/sodre/run.js'), name: 'Sodré Santoro' },
-        { path: path.join(__dirname, '../crawlers/vipleiloes/run.js'), name: 'Vip Leilões' },
-        { path: path.join(__dirname, '../crawlers/palaciodosleiloes/run.js'), name: 'Palácio dos Leilões' },
-        { path: path.join(__dirname, '../crawlers/freitas/run.js'), name: 'Freitas Leiloeiro' },
-        { path: path.join(__dirname, '../crawlers/rogeriomenezes/run.js'), name: 'Rogério Menezes' },
-        { path: path.join(__dirname, '../crawlers/loopleiloes/run.js'), name: 'Loop Leilões' },
-        { path: path.join(__dirname, '../crawlers/mgl/run.js'), name: 'MGL' },
-        { path: path.join(__dirname, '../crawlers/patiorocha/run.js'), name: 'Pátio Rocha' },
-        { path: path.join(__dirname, '../crawlers/superbid/run.js'), name: 'Superbid' },
-        { path: path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), name: 'Guariglia Leilões' },
-        { path: path.join(__dirname, '../crawlers/parque/run.js'), name: 'Parque dos Leilões' },
-        { path: path.join(__dirname, '../crawlers/leilo/run.js'), name: 'Leilo' }
-    ];
-
     if (runImmediate) {
         console.log('🚀 [Scheduler] Iniciando coleta TOTAL (Modo POOL Dynamic)...');
-        await runPool(crawlerScripts, CONCURRENCY);
+        // Run in background
+        runPool(crawlerScripts, CONCURRENCY).catch(console.error);
     }
 
-    // Schedule: 08:00 and 18:00
-    cron.schedule('0 8 * * *', async () => {
-        console.log('⏰ [Scheduler] Running Morning Cycle (08:00)');
+    // Schedule: every 12 hours
+    cron.schedule('0 */12 * * *', async () => {
+        logToFile('⏰ [Scheduler] Running Automatic Cycle');
         await runPool(crawlerScripts, CONCURRENCY);
     });
 
-    cron.schedule('0 18 * * *', async () => {
-        console.log('⏰ [Scheduler] Running Evening Cycle (18:00)');
-        await runPool(crawlerScripts, CONCURRENCY);
-    });
+    console.log('📅 [Scheduler] Daily Cycles: Every 12h');
+};
 
-    console.log('📅 [Scheduler] Daily Cycles: 08:00 & 18:00');
+export const triggerManualRun = (siteId) => {
+    const crawler = crawlerScripts.find(c => c.id === siteId);
+    if (!crawler) return null;
+
+    // We don't await this, it runs in background
+    runCrawler(crawler).catch(err => logToFile(`Manual run error for ${siteId}: ${err.message}`));
+    return true;
 };
 
 export default initScheduler;
+export { crawlerScripts };

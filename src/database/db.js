@@ -95,6 +95,8 @@ export const matchesFilter = (item, filtro) => {
             if (val.$lte !== undefined && (itemVal === undefined || itemVal > checkVal(val.$lte))) return false;
             if (val.$gt !== undefined && (itemVal === undefined || itemVal <= checkVal(val.$gt))) return false;
             if (val.$lt !== undefined && (itemVal === undefined || itemVal >= checkVal(val.$lt))) return false;
+        } else if (key === 'fotos.0' && val && val.$exists) {
+            if (!item.fotos || !item.fotos[0]) return false;
         } else if (val !== undefined && val !== '' && item[key] != val) {
             return false;
         }
@@ -108,7 +110,9 @@ const connectDatabase = async () => {
     if (mongoUri) {
         try {
             console.log('🔌 Tentando conectar ao MongoDB...');
-            const client = new MongoClient(mongoUri);
+            const client = new MongoClient(mongoUri, {
+                serverSelectionTimeoutMS: 2000 // 2 seconds timeout
+            });
             await client.connect();
             const db = client.db();
             console.log('✅ MongoDB conectado com sucesso!');
@@ -216,6 +220,12 @@ const connectDatabase = async () => {
             const paginate = async ({ colecao = 'veiculos', filtro = {}, page = 1, limit = 20, sort = { criadoEm: -1 } }) => {
                 const col = db.collection(colecao);
                 const query = filtro || {};
+
+                // FORCE: Always filter out items without photos if requested or as a global rule if preferred
+                // For now, let's make it easy to toggle or always-on for the listing
+                if (!query.fotos && !query["fotos.0"]) {
+                    query["fotos.0"] = { $exists: true };
+                }
 
                 const total = await col.countDocuments(query);
                 const totalPages = Math.ceil(total / limit);

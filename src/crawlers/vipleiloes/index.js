@@ -12,157 +12,171 @@ const createCrawler = (db) => {
     const SITE = 'vipleiloes.com.br';
     const BASE_URL = 'https://www.vipleiloes.com.br';
 
+    const extractFromPage = async (page) => {
+        return await page.evaluate((site, base) => {
+            const items = [];
+            // VIP uses .itm-card for vehicle cards
+            const cards = document.querySelectorAll('div.itm-card');
+
+            cards.forEach(card => {
+                try {
+                    const linkEl = card.querySelector('a.itm-cdlink');
+                    if (!linkEl) return;
+
+                    const linkUrl = linkEl.getAttribute('href') || '';
+                    const registro = linkUrl.split('/').pop();
+
+                    const body = card.querySelector('div.itm-body');
+                    const firstline = body ? body.querySelectorAll('div.itm-firstline p.itm-info') : [];
+
+                    let lote = '', local = '';
+                    firstline.forEach(p => {
+                        const text = p.textContent;
+                        if (text.includes('Lote:')) lote = text.split(':')[1]?.trim() || '';
+                        if (text.includes('Local:')) local = text.split(':')[1]?.trim() || '';
+                    });
+
+                    const nameEl = body ? body.querySelector('h4.itm-name') : null;
+                    const veiculo = nameEl ? nameEl.textContent.replace(/\n/g, ' ').trim().toUpperCase() : '';
+
+                    const priceEl = card.querySelector('.itm-price-val');
+                    const precoText = priceEl ? priceEl.textContent.replace(/[^0-9,]/g, '').replace(',', '.') : '0';
+
+                    // Image - try multiple approaches
+                    let imgUrl = '';
+                    const imgEl = card.querySelector('.itm-img, img');
+                    if (imgEl) {
+                        imgUrl = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || imgEl.getAttribute('data-lazy') || '';
+                    }
+                    // Also check background-image
+                    if (!imgUrl) {
+                        const bgEl = card.querySelector('[style*="background-image"]');
+                        if (bgEl) {
+                            const match = bgEl.getAttribute('style')?.match(/url\(['"]?([^'")]+)['"]?\)/);
+                            if (match) imgUrl = match[1];
+                        }
+                    }
+
+                    if (imgUrl && !imgUrl.startsWith('http')) {
+                        imgUrl = `${base}${imgUrl}`;
+                    }
+
+                    const fotos = imgUrl && !imgUrl.includes('placeholder') && !imgUrl.includes('no-image')
+                        ? [imgUrl] : [];
+
+                    items.push({
+                        site,
+                        registro,
+                        link: linkUrl.startsWith('http') ? linkUrl : `${base}${linkUrl}`,
+                        veiculo: veiculo || 'VEÍCULO VIP',
+                        fotos,
+                        valor: parseFloat(precoText) || 0,
+                        localLeilao: local || 'Brasil',
+                        lote,
+                        modalidade: 'leilao',
+                        tipo: 'veiculo'
+                    });
+                } catch (e) { }
+            });
+
+            return items;
+        }, SITE, BASE_URL);
+    };
+
     const buscarTodos = async () => {
-        console.log(`🚀 [${SITE}] SUPERCRAWLER: Iniciando captura via Infinite Scroll DOM...`);
+        console.log(`🚀 [${SITE}] SUPERCRAWLER: Iniciando captura 100% Puppeteer...`);
 
         const browser = await puppeteer.launch({
             headless: "new",
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080', '--disable-dev-shm-usage']
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080']
         });
 
-        let capturados = 0;
+        let totalCapturados = 0;
+        const seenIds = new Set();
 
         try {
             const page = await browser.newPage();
-            await page.setViewport({ width: 1920, height: 1080 });
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+            await page.setViewport({ width: 1920, height: 1080 });
 
             // Establish session
             console.log(`   🔍 [${SITE}] Estabelecendo sessão...`);
-            await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+            await page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: TIMEOUT });
             await new Promise(r => setTimeout(r, 2000));
 
-            const seenIds = new Set();
-            const categories = [
-                'Seminovos', 'Usados', 'Motos', 'Sinistrados', 'Pesados', 'Diversos'
-            ];
+            // Categories: 3=Automóveis, 4=Caminhões, 5=Motos, 37=Utilitários
+            const categorias = [3, 4, 5, 37];
 
-            let totalInfinities = 0;
+            for (const cat of categorias) {
+                let pagina = 1;
+                let hasMore = true;
 
-            for (const cat of categories) {
-                const targetUrl = `${BASE_URL}/pesquisa?classificacao=${cat}`;
-                console.log(`   🔍 [${SITE}] Capturando categoria: ${cat}...`);
+                console.log(`\n📂 [${SITE}] Categoria ${cat}...`);
 
-                try {
-                    await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+                while (hasMore && pagina <= 50) {
+                    const url = `${BASE_URL}/pesquisa?Pagina=${pagina}&Categorias=${cat}&OrdenacaoVeiculo=InicioLeilao`;
+                    console.log(`   📄 [${SITE}] Cat ${cat}, pág ${pagina}...`);
 
-                    // Wait for any listing result or a short timeout
-                    await page.waitForSelector('a[href*="/evento/anuncio/"]', { timeout: 10000 }).catch(() => null);
+                    try {
+                        await page.goto(url, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                        await page.waitForSelector('div.itm-card', { timeout: 15000 }).catch(() => null);
+                        await new Promise(r => setTimeout(r, 2000));
 
-                    // Infinite Scroll
-                    let lastCount = 0;
-                    for (let i = 0; i < 30; i++) {
-                        const currentCount = await page.evaluate(() => {
-                            window.scrollBy(0, 1000);
-                            return document.querySelectorAll('a[href*="/evento/anuncio/"], [class*="card-anuncio"], .card, [class*="lote-item"]').length;
-                        });
+                        const items = await extractFromPage(page);
 
-                        if (currentCount > lastCount) {
-                            lastCount = currentCount;
-                        } else if (i > 5) {
-                            break;
+                        if (items.length === 0) {
+                            console.log(`   🔸 [${SITE}] Cat ${cat} sem resultados na pág ${pagina}. Fim.`);
+                            hasMore = false;
+                            continue;
                         }
 
-                        await new Promise(r => setTimeout(r, 1500));
-
-                        // Try clicking "Ver mais"
-                        await page.evaluate(() => {
-                            const btns = Array.from(document.querySelectorAll('button, a.btn'));
-                            const loadMore = btns.find(b => {
-                                const t = b.innerText || '';
-                                return t.toLowerCase().includes('ver mais') || t.toLowerCase().includes('carregar mais');
-                            });
-                            if (loadMore) { loadMore.click(); return true; }
-                            return false;
+                        // Deduplicate
+                        const newItems = items.filter(item => {
+                            if (seenIds.has(item.registro)) return false;
+                            seenIds.add(item.registro);
+                            return true;
                         });
+
+                        if (newItems.length > 0) {
+                            await salvarLista(newItems);
+                            totalCapturados += newItems.length;
+                            console.log(`   ✅ [${SITE}] +${newItems.length} veículos. Total: ${totalCapturados}`);
+                        }
+
+                        // Check total pages
+                        const totalText = await page.evaluate(() => {
+                            const h4 = document.querySelector('div.col-md-12.tituloListagem h4');
+                            return h4 ? h4.textContent.replace(/[^\d]/g, '') : '0';
+                        });
+                        const total = parseInt(totalText) || 0;
+                        const totalPaginas = Math.ceil(total / 12);
+
+                        if (pagina >= totalPaginas) {
+                            hasMore = false;
+                        } else {
+                            pagina++;
+                            await new Promise(r => setTimeout(r, 500));
+                        }
+
+                    } catch (e) {
+                        console.log(`   ⚠️ [${SITE}] Erro cat ${cat} pág ${pagina}: ${e.message}`);
+                        hasMore = false;
                     }
-
-                    // Scrape
-                    const items = await page.evaluate((site, category) => {
-                        const results = [];
-                        const cards = document.querySelectorAll('a[href*="/evento/anuncio/"], [class*="card-anuncio"], .card');
-                        const seenInPage = new Set();
-
-                        cards.forEach(card => {
-                            const linkEl = (card.tagName === 'A') ? card : card.querySelector('a[href*="/evento/anuncio/"]');
-                            if (!linkEl) return;
-
-                            const link = linkEl.href;
-                            if (seenInPage.has(link)) return;
-                            seenInPage.add(link);
-
-                            const text = card.innerText || '';
-                            const id = link.split('/').pop().split('-').pop();
-
-                            results.push({
-                                registro: id,
-                                site: site,
-                                link: link,
-                                veiculo: text.split('\n')[0].toUpperCase().trim(),
-                                categoria: category,
-                                raw: text
-                            });
-                        });
-                        return results;
-                    }, SITE, cat);
-
-                    const uniqueItems = items.filter(it => !seenIds.has(it.link));
-                    uniqueItems.forEach(it => seenIds.add(it.link));
-
-                    if (uniqueItems.length > 0) {
-                        const batch = uniqueItems.map(it => {
-                            const { raw, ...base } = it;
-                            const priceMatch = raw.match(/R\$\s?[\d.,]+/);
-                            const yearMatch = raw.match(/(\d{4})\/(\d{4})/) || raw.match(/(20[0-2]\d|19[89]\d)/);
-
-                            return {
-                                ...base,
-                                veiculo: (base.veiculo || 'VEÍCULO VIP').substring(0, 150),
-                                valor: priceMatch ? parseFloat(priceMatch[0].replace('R$', '').replace(/\./g, '').replace(',', '.').trim()) : 0,
-                                ano: yearMatch ? (yearMatch[1].length === 4 ? yearMatch[1] : yearMatch[0]) : null,
-                                modalidade: 'leilao',
-                                tipo: 'veiculo'
-                            };
-                        });
-
-                        await db.salvarLista(batch);
-                        totalInfinities += batch.length;
-                        console.log(`     ✅ [${SITE}] ${cat}: +${batch.length} veículos. Total: ${totalInfinities}`);
-                    }
-                } catch (catErr) {
-                    console.error(`     ⚠️ [${SITE}] Erro na categoria ${cat}:`, catErr.message);
                 }
             }
-            capturados = totalInfinities;
 
-        } catch (error) {
-            console.error(`❌ [${SITE}] Erro Fatal:`, error.message);
+            console.log(`✅ [${SITE}] Finalizado! ${totalCapturados} veículos coletados.`);
+            return totalCapturados;
+
+        } catch (e) {
+            console.error(`❌ [${SITE}] Erro:`, e.message);
+            return 0;
         } finally {
             await browser.close();
         }
-
-        console.log(`✅ [${SITE}] Finalizado! ${capturados} veículos coletados.`);
-        return capturados;
     };
 
     return { buscarTodos, SITE };
 };
-
-// Auto-execute if run directly
-if (process.argv[1] && process.argv[1].includes('vipleiloes')) {
-    (async () => {
-        try {
-            const module = await import('../../database/db.js');
-            const connectDatabase = module.default;
-            const db = await connectDatabase();
-            const crawler = createCrawler(db);
-            await crawler.buscarTodos();
-            process.exit(0);
-        } catch (err) {
-            console.error('Core Error:', err);
-            process.exit(1);
-        }
-    })();
-}
 
 export default createCrawler;

@@ -13,6 +13,13 @@ const createCrawler = (db) => {
     const SITE = 'leilo.com.br';
     const BASE_URL = 'https://www.leilo.com.br';
 
+    // Vehicle-only category URLs (NOT generic /leilao which includes imóveis and equipamentos)
+    const VEHICLE_CATEGORIES = [
+        `${BASE_URL}/leilao/carros`,
+        `${BASE_URL}/leilao/moto`,
+        `${BASE_URL}/leilao/pesados`,
+    ];
+
     const crawlAuction = async (browser, link) => {
         console.log(`📋 [${SITE}] Capturando leilão: ${link}`);
         const page = await browser.newPage();
@@ -22,7 +29,7 @@ const createCrawler = (db) => {
 
             let currentUrl = link;
             let pageNum = 1;
-            while (currentUrl && pageNum <= 10) {
+            while (currentUrl && pageNum <= 20) {
                 await page.goto(currentUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
                 await page.waitForSelector('a[href*="/item/"]', { timeout: 15000 }).catch(() => null);
                 await autoScroll(page);
@@ -45,14 +52,26 @@ const createCrawler = (db) => {
                         const url = linkEl.href;
                         const registro = url.split('/item/')[1]?.split('/')[0] || url.split('/').pop();
 
+                        // Extract image - handle lazy loading
+                        let imgSrc = '';
+                        if (imgEl) {
+                            imgSrc = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') ||
+                                imgEl.getAttribute('data-lazy') || imgEl.getAttribute('data-original') || '';
+                            if (imgSrc.includes('data:image') || imgSrc.includes('placeholder')) imgSrc = '';
+                        }
+
+                        // Try to extract year from title
+                        const yearMatch = title.match(/\b(19[89]\d|20[0-2]\d)\b/);
+
                         found.push({
                             registro,
                             site: site,
                             veiculo: title.toUpperCase(),
                             link: url,
-                            fotos: imgEl && imgEl.src ? [imgEl.src] : [],
+                            fotos: imgSrc ? [imgSrc] : [],
                             valor: priceEl ? parseFloat(priceEl.innerText.replace(/[^0-9,]/g, '').replace(',', '.')) || 0 : 0,
-                            localLeilao: 'BR',
+                            localLeilao: 'Brasil',
+                            ano: yearMatch ? parseInt(yearMatch[1]) : null,
                             modalidade: 'leilao',
                             tipo: 'veiculo'
                         });
@@ -61,13 +80,9 @@ const createCrawler = (db) => {
                 }, SITE);
 
                 if (itens.length > 0) {
-                    const filtered = itens.filter(item => {
-                        const text = item.veiculo.toUpperCase();
-                        const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'PEÇAS', 'IMOVEL', 'TERRENO'];
-                        return !blacklist.some(b => text.includes(b));
-                    });
+                    const filtered = filterVehicles(itens);
                     results.push(...filtered);
-                    console.log(`   ✅ [${SITE}] Página ${pageNum}: ${itens.length} detectados, ${filtered.length} filtrados.`);
+                    console.log(`   ✅ [${SITE}] Página ${pageNum}: ${itens.length} detectados, ${filtered.length} veículos válidos.`);
                 }
 
                 const nextLink = await page.evaluate(() => {
@@ -93,7 +108,7 @@ const createCrawler = (db) => {
     };
 
     const buscarTodos = async () => {
-        console.log(`🚀 [${SITE}] HIGH-YIELD: Iniciando captura via Iterador de Leilões...`);
+        console.log(`🚀 [${SITE}] Iniciando captura - APENAS VEÍCULOS...`);
 
         const browser = await puppeteer.launch({
             headless: "new",
@@ -101,43 +116,75 @@ const createCrawler = (db) => {
         });
 
         const listaTotal = [];
+        const seenIds = new Set();
         try {
             const page = await browser.newPage();
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
-            console.log(`🔍 [${SITE}] Mapeando leilões ativos via Entry Points...`);
+            // STAGE 1: Discover vehicle auctions ONLY from vehicle category pages
+            console.log(`🔍 [${SITE}] Mapeando leilões de VEÍCULOS...`);
             const auctionLinks = new Set();
-            const discoveryUrls = [`${BASE_URL}/leilao`, `${BASE_URL}/agenda`, `${BASE_URL}/veiculos`];
 
-            for (const dUrl of discoveryUrls) {
+            for (const catUrl of VEHICLE_CATEGORIES) {
                 try {
-                    console.log(`   🧭 [${SITE}] Verificando: ${dUrl}`);
-                    await page.goto(dUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                    console.log(`   🧭 [${SITE}] Categoria: ${catUrl}`);
+                    await page.goto(catUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                    await autoScroll(page);
+
                     const found = await page.evaluate(() => {
                         const links = [];
                         document.querySelectorAll('a[href*="/leilao/"]').forEach(a => {
-                            if (!a.href.includes('/agenda') && !a.href.includes('/realizados')) {
-                                links.push(a.href);
+                            const href = a.href;
+                            // Accept auction detail links, skip category/nav links
+                            if (href.includes('/item/') || href.includes('/agenda') || href.includes('/realizados')) return;
+                            if (href.match(/\/leilao\/\d+/) || href.match(/\/leilao\/[a-z]+-\d+/)) {
+                                links.push(href);
                             }
                         });
                         return links;
                     });
                     found.forEach(l => auctionLinks.add(l));
-                } catch (e) { }
+                    console.log(`   📊 [${SITE}] ${found.length} links nesta categoria`);
+                } catch (e) {
+                    console.log(`   ⚠️ [${SITE}] Erro em ${catUrl}: ${e.message}`);
+                }
             }
 
-            const linksArray = [...auctionLinks];
-            console.log(`✅ [${SITE}] ${linksArray.length} leilões encontrados. Processando com pool...`);
+            // Also try the /veiculos page as additional source
+            try {
+                await page.goto(`${BASE_URL}/veiculos`, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                const extraLinks = await page.evaluate(() => {
+                    const links = [];
+                    document.querySelectorAll('a[href*="/leilao/"]').forEach(a => {
+                        if (!a.href.includes('/agenda') && !a.href.includes('/realizados') && !a.href.includes('/item/')) {
+                            links.push(a.href);
+                        }
+                    });
+                    return links;
+                });
+                extraLinks.forEach(l => auctionLinks.add(l));
+            } catch (e) { }
 
+            const linksArray = [...auctionLinks];
+            console.log(`✅ [${SITE}] ${linksArray.length} leilões de veículos encontrados. Processando...`);
+
+            await page.close();
+
+            // STAGE 2: Crawl each auction
             for (let i = 0; i < linksArray.length; i += CONCURRENCY) {
                 const chunk = linksArray.slice(i, i + CONCURRENCY);
                 const results = await Promise.all(chunk.map(link => crawlAuction(browser, link)));
-                const flattened = results.flat();
+                const flattened = results.flat().filter(v => {
+                    if (seenIds.has(v.registro)) return false;
+                    seenIds.add(v.registro);
+                    return true;
+                });
 
                 if (flattened.length > 0) {
                     await salvarLista(flattened);
                     listaTotal.push(...flattened);
                 }
+                console.log(`   🔸 [${SITE}] Lote ${Math.floor(i / CONCURRENCY) + 1}/${Math.ceil(linksArray.length / CONCURRENCY)}. Total: ${listaTotal.length} veículos.`);
             }
 
         } catch (e) {
@@ -151,6 +198,40 @@ const createCrawler = (db) => {
 
     return { buscarTodos, SITE };
 };
+
+/**
+ * Filter to only real vehicles - following Sodré Santoro reference pattern
+ */
+function filterVehicles(items) {
+    return items.filter(v => {
+        const text = v.veiculo.toUpperCase();
+
+        const blacklist = [
+            'MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'TELEVISAO', 'CELULAR',
+            'CADEIRA', 'MESA', 'ARMARIO', 'GELADEIRA', 'FOGAO', 'MACBOOK', 'IPHONE', 'NOTEBOOK',
+            'MONITOR', 'BEBEDOURO', 'SOFA', 'ROUPAS', 'CALCADOS', 'BOLSAS', 'BRINQUEDOS',
+            'IMOVEL', 'IMOVEIS', 'CASA', 'APARTAMENTO', 'TERRENO', 'SITIO', 'FAZENDA', 'GALPAO',
+            'MATERIAL', 'FERRAGENS', 'SUCATA DE BENS', 'ESCRITORIO', 'EQUIPAMENTO', 'PEÇAS',
+            'LOTE DE', 'MADEIRA', 'QUADRO', 'ESTANTE'
+        ];
+
+        const brands = [
+            'HONDA', 'TOYOTA', 'FIAT', 'VOLKSWAGEN', 'VW', 'CHEVROLET', 'GM', 'FORD', 'YAMAHA',
+            'KAWASAKI', 'SUZUKI', 'HYUNDAI', 'RENAULT', 'JEEP', 'BMW', 'MERCEDES', 'NISSAN',
+            'MITSUBISHI', 'KIA', 'PEUGEOT', 'CITROEN', 'AUDI', 'VOLVO', 'PORSCHE', 'CHERY',
+            'IVECO', 'SCANIA', 'MAN', 'DAF', 'HARLEY', 'DUCATI', 'TRIUMPH', 'CAOA', 'BYD',
+            'GWM', 'JAC', 'LIFAN', 'LAND ROVER', 'RANGE ROVER', 'DAFRA', 'SHINERAY', 'HAOJUE'
+        ];
+
+        const isBlacklisted = blacklist.some(b => text.includes(b));
+        const hasBrand = brands.some(b => text.includes(b));
+
+        // If blacklisted and no vehicle brand → reject
+        if (isBlacklisted && !hasBrand) return false;
+
+        return true;
+    });
+}
 
 async function autoScroll(page) {
     await page.evaluate(async () => {

@@ -6,6 +6,8 @@ import createVipCrawler from '../crawlers/vipleiloes/index.js';
 import createGuarigliaCrawler from '../crawlers/guariglialeiloes/index.js';
 import createRogerioMenezesCrawler from '../crawlers/rogeriomenezes/index.js';
 import createLeiloCrawler from '../crawlers/leilo/index.js';
+import createMglCrawler from '../crawlers/mgl/index.js';
+import createPestanaCrawler from '../crawlers/pestanaleiloes/index.js';
 import { execute as executeFreitas } from '../crawlers/freitas/index.js';
 import { execute as executeSodre } from '../crawlers/sodre/index.js';
 import copart from '../crawlers/copart/index.js';
@@ -17,12 +19,8 @@ console.log('🚀 Iniciando agendador de crawlers...\n');
 
 const DELAY = parseInt(process.env.CRAWLER_DELAY_MS) || 5000;
 
-let db = null;
-let palacio = null;
-let vip = null;
-let guariglia = null;
-let rogerioMenezes = null;
-let leilo = null;
+let palacio, vip, guariglia, rogerioMenezes, leilo, mgl, pestana, copart;
+let db;
 
 const init = async () => {
     db = await connectDatabase();
@@ -31,141 +29,133 @@ const init = async () => {
     guariglia = createGuarigliaCrawler(db);
     rogerioMenezes = createRogerioMenezesCrawler(db);
     leilo = createLeiloCrawler(db);
+    mgl = createMglCrawler(db);
+    pestana = createPestanaCrawler(db);
+    copart = createCopart(db);
 
     console.log('✅ Todos os crawlers inicializados!\n');
 };
 
-// ========== SCHEDULES ==========
-
-/**
- * Palácio dos Leilões - Busca de novos lotes
- * Executa 2x ao dia: 7h e 19h
- */
-const schedulePalacio = () => {
-    cron.schedule('0 7,19 * * *', async () => {
-        console.log(`\n⏰ [${new Date().toLocaleString()}] Executando: Palácio dos Leilões`);
-        try {
-            await palacio.buscarESalvar();
-        } catch (error) {
-            console.error('❌ Erro no crawler Palácio:', error.message);
-        }
-    }, {
-        scheduled: true,
-        timezone: "America/Sao_Paulo"
-    });
-
-    console.log('📅 Palácio dos Leilões: Agendado para 7h e 19h');
+const schedulePestana = () => {
+    cron.schedule('0 12,0 * * *', async () => {
+        console.log(`\n⏰ Executando: Pestana Leilões`);
+        try { await pestana.buscarTodos(); } catch (e) { console.error('Erro Pestana:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 Pestana Leilões: Agendado para 12h e 0h');
 };
 
-/**
- * VIP Leilões - Busca de novos lotes
- * Executa 2x ao dia: 8h e 20h
- */
-const scheduleVip = () => {
-    cron.schedule('0 8,20 * * *', async () => {
-        console.log(`\n⏰ [${new Date().toLocaleString()}] Executando: VIP Leilões`);
-        try {
-            await vip.buscarTodasPaginas(DELAY);
-        } catch (error) {
-            console.error('❌ Erro no crawler VIP:', error.message);
-        }
-    }, {
-        scheduled: true,
-        timezone: "America/Sao_Paulo"
-    });
-
-    console.log('📅 VIP Leilões: Agendado para 8h e 20h');
+const scheduleMgl = () => {
+    cron.schedule('30 12,0 * * *', async () => {
+        console.log(`\n⏰ Executando: MGL Leilões`);
+        try { await mgl.buscarTodos(); } catch (e) { console.error('Erro MGL:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 MGL Leilões: Agendado para 12:30 e 0:30');
 };
 
-/**
- * Guariglia Leilões - Busca de novos lotes
- * Executa 2x ao dia: 9h e 21h
- */
-const scheduleGuariglia = () => {
-    cron.schedule('0 9,21 * * *', async () => {
-        console.log(`\n⏰ [${new Date().toLocaleString()}] Executando: Guariglia Leilões`);
-        try {
-            await guariglia.buscarTodos();
-        } catch (error) {
-            console.error('❌ Erro no crawler Guariglia:', error.message);
-        }
-    }, {
-        scheduled: true,
-        timezone: "America/Sao_Paulo"
-    });
-
-    console.log('📅 Guariglia Leilões: Agendado para 9h e 21h');
+const scheduleCopart = () => {
+    cron.schedule('0 1,13 * * *', async () => {
+        console.log(`\n⏰ Executando: Copart`);
+        try { await copart.buscarTodos(); } catch (e) { console.error('Erro Copart:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 Copart: Agendado para 1h e 13h');
 };
 
 const scheduleFreitas = () => {
-    cron.schedule('0 10,22 * * *', async () => {
+    cron.schedule('45 12,0 * * *', async () => {
         console.log(`\n⏰ Executando: Freitas Leiloeiro`);
         try { await executeFreitas(db); } catch (e) { console.error('Erro Freitas:', e.message); }
     }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 Freitas Leiloeiro: Agendado para 12:45 e 0:45');
 };
 
 const scheduleSodre = () => {
-    cron.schedule('30 10,22 * * *', async () => {
+    cron.schedule('15 11,23 * * *', async () => {
         console.log(`\n⏰ Executando: Sodré Santoro`);
         try { await executeSodre(db); } catch (e) { console.error('Erro Sodré:', e.message); }
     }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 Sodré Santoro: Agendado para 11:15 e 23:15');
+};
+
+const scheduleVip = () => {
+    cron.schedule('0 */4 * * *', async () => {
+        console.log(`\n⏰ Executando: VIP Leilões`);
+        try { await vip.buscarTodasPaginas(DELAY); } catch (e) { console.error('Erro VIP:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 VIP Leilões: Agendado a cada 4 horas');
+};
+
+const schedulePalacio = () => {
+    cron.schedule('30 */4 * * *', async () => {
+        console.log(`\n⏰ Executando: Palácio dos Leilões`);
+        try { await palacio.buscarESalvar(); } catch (e) { console.error('Erro Palácio:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 Palácio dos Leilões: Agendado a cada 4 horas');
+};
+
+const scheduleGuariglia = () => {
+    cron.schedule('0 2,14 * * *', async () => {
+        console.log(`\n⏰ Executando: Guariglia Leilões`);
+        try { await guariglia.buscarTodos(); } catch (e) { console.error('Erro Guariglia:', e.message); }
+    }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 Guariglia Leilões: Agendado para 2h e 14h');
 };
 
 const scheduleRogerioMenezes = () => {
-    cron.schedule('0 11,23 * * *', async () => {
+    cron.schedule('30 2,14 * * *', async () => {
         console.log(`\n⏰ Executando: Rogério Menezes`);
         try { await rogerioMenezes.buscarTodos(); } catch (e) { console.error('Erro Rogério Menezes:', e.message); }
     }, { scheduled: true, timezone: "America/Sao_Paulo" });
-    console.log('📅 Rogério Menezes: Agendado para 11h e 23h');
+    console.log('📅 Rogério Menezes: Agendado para 2:30 e 14:30');
 };
 
 const scheduleLeilo = () => {
-    cron.schedule('30 11,23 * * *', async () => {
+    cron.schedule('0 3,15 * * *', async () => {
         console.log(`\n⏰ Executando: Leilo`);
         try { await leilo.buscarTodos(); } catch (e) { console.error('Erro Leilo:', e.message); }
     }, { scheduled: true, timezone: "America/Sao_Paulo" });
-    console.log('📅 Leilo: Agendado para 11:30 e 23:30');
+    console.log('📅 Leilo: Agendado para 3h e 15h');
 };
 
 const scheduleCleanup = () => {
-    // Roda todo dia à meia noite
-    cron.schedule('0 0 * * *', async () => {
-        console.log(`\n🧹 Executando Limpeza Diária`);
-        try { await cleanExpired(); } catch (e) { console.error('Erro Limpeza:', e.message); }
+    cron.schedule('0 4 * * *', async () => {
+        console.log(`\n⏰ Executando: Limpeza de itens expirados`);
+        try { await cleanExpired(db); } catch (e) { console.error('Erro Limpeza:', e.message); }
     }, { scheduled: true, timezone: "America/Sao_Paulo" });
+    console.log('📅 Limpeza: Agendada para 4h');
 };
 
-// ========== MANUAL EXECUTION ==========
-
-/**
- * Executa todos os crawlers uma vez
- */
 const executarTodos = async () => {
     console.log('\n🔄 Executando todos os crawlers...\n');
 
     console.log('1️⃣ Palácio dos Leilões');
-    await palacio.buscarESalvar();
+    try { await palacio.buscarESalvar(); } catch (e) { console.error('Erro Palácio:', e.message); }
 
     console.log('\n2️⃣ VIP Leilões');
-    await vip.buscarTodasPaginas(DELAY);
+    try { await vip.buscarTodasPaginas(DELAY); } catch (e) { console.error('Erro VIP:', e.message); }
 
     console.log('\n3️⃣ Guariglia Leilões');
-    await guariglia.buscarTodos();
+    try { await guariglia.buscarTodos(); } catch (e) { console.error('Erro Guariglia:', e.message); }
 
     console.log('\n4️⃣ Freitas Leiloeiro');
-    await executeFreitas(db);
+    try { await executeFreitas(db); } catch (e) { console.error('Erro Freitas:', e.message); }
 
     console.log('\n5️⃣ Rogério Menezes');
-    await rogerioMenezes.buscarTodos();
+    try { await rogerioMenezes.buscarTodos(); } catch (e) { console.error('Erro Rogério Menezes:', e.message); }
 
     console.log('\n6️⃣ Leilo');
-    await leilo.buscarTodos();
+    try { await leilo.buscarTodos(); } catch (e) { console.error('Erro Leilo:', e.message); }
 
-    console.log('\n7️⃣ Sodré Santoro (Iniciando Turbo API)');
-    await executeSodre(db);
+    console.log('\n7️⃣ Sodré Santoro');
+    try { await executeSodre(db); } catch (e) { console.error('Erro Sodré:', e.message); }
 
-    console.log('\n8️⃣ Copart (Paginação profunda)');
-    await copart.buscarListaPrincipal();
+    console.log('\n8️⃣ MGL Leilões');
+    try { await mgl.buscarTodos(); } catch (e) { console.error('Erro MGL:', e.message); }
+
+    console.log('\n9️⃣ Pestana Leilões');
+    try { await pestana.buscarTodos(); } catch (e) { console.error('Erro Pestana:', e.message); }
+
+    console.log('\n🔟 Copart');
+    try { await copart.buscarTodos(); } catch (e) { console.error('Erro Copart:', e.message); }
 
     console.log('\n✅ Todos os crawlers executados!');
 };
@@ -173,14 +163,12 @@ const executarTodos = async () => {
 const start = async () => {
     await init();
 
-    // Se receber argumento --run, executa todos os crawlers e sai
     if (process.argv.includes('--run')) {
         await executarTodos();
-        await db.close();
+        console.log('Finalizado.');
         process.exit(0);
     }
 
-    // Caso contrário, inicia agendamentos
     schedulePalacio();
     scheduleVip();
     scheduleGuariglia();
@@ -188,6 +176,9 @@ const start = async () => {
     scheduleSodre();
     scheduleRogerioMenezes();
     scheduleLeilo();
+    scheduleMgl();
+    schedulePestana();
+    scheduleCopart();
     scheduleCleanup();
 
     console.log('\n✅ Agendador iniciado! Aguardando horários programados...');
