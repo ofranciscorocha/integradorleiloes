@@ -99,6 +99,62 @@ app.get(['/painel', '/admin.html'], (req, res) => {
     res.redirect('/a-painel-secreto');
 });
 
+// ==========================================
+// AUTH ROUTES (User System)
+// ==========================================
+
+app.post('/auth/register', async (req, res) => {
+    try {
+        const db = await connectDatabase();
+        const { nome, email, senha, telefone } = req.body;
+
+        if (!email || !senha) return res.status(400).json({ success: false, error: 'Email e senha obrigatórios' });
+
+        const existing = await db.get({ colecao: 'users', registro: email, site: 'local' });
+        if (existing) return res.status(400).json({ success: false, error: 'Email já cadastrado' });
+
+        const userId = await db.insert({
+            colecao: 'users',
+            dados: {
+                registro: email, // Unique key
+                site: 'local',   // Scope
+                nome,
+                email,
+                senha, // Em produção, usar bcrypt. Aqui store plain/mock para MVP rápido.
+                telefone,
+                plano: 'free',
+                criadoEm: new Date()
+            }
+        });
+
+        res.json({ success: true, user: { nome, email, plano: 'free' } });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+app.post('/auth/login', async (req, res) => {
+    try {
+        const db = await connectDatabase();
+        const { email, senha } = req.body;
+
+        const user = await db.get({ colecao: 'users', registro: email, site: 'local' });
+
+        // Mock Admin Bypass for testing
+        if (email === 'admin' && senha === 'Rf159357$') {
+            return res.json({ success: true, user: { nome: 'Admin', email, plano: 'admin' } });
+        }
+
+        if (!user || user.senha !== senha) {
+            return res.status(401).json({ success: false, error: 'Credenciais inválidas' });
+        }
+
+        res.json({ success: true, user: { nome: user.nome, email: user.email, plano: user.plano || 'free' } });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
 // Database connection
 let db = null;
 

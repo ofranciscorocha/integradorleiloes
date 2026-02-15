@@ -1243,3 +1243,54 @@ body {
     font-weight: 600;
     font-size: 0.9rem;
 }
+
+/* ================= LOCKED CONTENT (FREEMIUM) ================= */
+.vehicle-card.locked-card {
+    pointer-events: none;
+    /* Disable hovering effects on card itself? maybe not, we want the button to click */
+}
+
+.vehicle-card.locked-card .card-content {
+    background: #f9fafb;
+    pointer-events: auto;
+}
+
+.blurred-img {
+    filter: blur(8px);
+    transform: scale(1.1);
+    /* Prevent white edges from blur */
+    pointer-events: none;
+}
+
+.locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+}
+
+.locked-overlay i {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.locked-overlay p {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 12px;
+    border-radius: 20px;
+}

@@ -143,35 +143,67 @@ const saveUser = (user) => {
     buscarVeiculos(1);
 };
 
-const handleLogin = (e) => {
+const handleLogin = async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const originalText = btn.innerText;
+    btn.innerText = 'Entrando...';
+    btn.disabled = true;
+
     const email = e.target.email?.value || e.target.querySelector('input[type="email"]').value;
     const pass = e.target.senha?.value || e.target.querySelector('input[type="password"]').value;
 
-    if (email === 'admin' && pass === 'Rf159357$') {
-        window.location.href = '/admin.html';
-        return;
-    }
+    try {
+        const res = await fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, senha: pass })
+        });
+        const data = await res.json();
 
-    saveUser({
-        nome: email.split('@')[0],
-        email: email,
-        avatar: `https://ui-avatars.com/api/?name=${email}&background=random`
-    });
+        if (data.success) {
+            saveUser(data.user);
+        } else {
+            alert('Erro: ' + data.error);
+        }
+    } catch (err) {
+        alert('Erro de conexão ao tentar login.');
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
 };
 
-const handleSignup = (e) => {
+const handleSignup = async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const originalText = btn.innerText;
+    btn.innerText = 'Cadastrando...';
+    btn.disabled = true;
+
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
 
-    saveUser({
-        nome: data.nome,
-        email: data.email,
-        details: data,
-        avatar: `https://ui-avatars.com/api/?name=${data.nome}&background=random`
-    });
-    alert('Cadastro realizado com sucesso! Bem-vindo ao CARS LEILÕES.');
+    try {
+        const res = await fetch('/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            alert('Conta criada com sucesso!');
+            saveUser(result.user);
+        } else {
+            alert('Erro: ' + result.error);
+        }
+    } catch (err) {
+        alert('Erro de conexão ao tentar cadastro.');
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
 };
 
 const loginWithGoogle = () => {
@@ -300,27 +332,40 @@ const renderVeiculos = () => {
         container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 4rem;">Nenhum veículo encontrado com os filtros selecionados.</div>';
         return;
     }
-    // Removido o filtro de fotos para mostrar todos os veículos
+
+    // FREEMIUM LOGIC: Limit 10 items per site for non-logged users
+    const siteCounts = {};
+    const MAX_FREE_PER_SITE = 10;
+    const isLogged = !!currentState.user;
+
     container.innerHTML = currentState.veiculos
-        .map(v => renderCard(v))
+        .map(v => {
+            if (!siteCounts[v.site]) siteCounts[v.site] = 0;
+            siteCounts[v.site]++;
+
+            const isLocked = !isLogged && siteCounts[v.site] > MAX_FREE_PER_SITE;
+            return renderCard(v, isLocked);
+        })
         .join('');
 };
 
-const renderCard = (veiculo) => {
+const renderCard = (veiculo, isLocked = false) => {
     const isLogged = !!currentState.user;
     const siteNameDisplay = isLogged ? formatSiteName(veiculo.site) : '🔒 Nome Oculto';
-    const linkAction = isLogged ? `href="${veiculo.link}" target="_blank"` : `href="#" onclick="event.preventDefault(); openLoginModal('signup')"`;
 
-    // Only show badge if logged in or obscure it slightly? 
-    // User asked for "nome do leiloeiro que precisa cadastro", so we hide/protect it.
+    // Link Action: If locked, prompt login. If logged in/unlocked, go to link.
+    const linkAction = (isLogged && !isLocked)
+        ? `href="${veiculo.link}" target="_blank"`
+        : `href="#" onclick="event.preventDefault(); openLoginModal('signup')"`;
+
     const siteClass = veiculo.site.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-    const siteBadge = isLogged
+    const siteBadge = (isLogged && !isLocked)
         ? `<div class="badge badge-site badge-${siteClass}">${formatSiteName(veiculo.site)}</div>`
         : `<div class="badge badge-restricted"><i class="fas fa-lock"></i></div>`;
 
-    const valorStr = veiculo.valor ? parseFloat(veiculo.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'Consulte';
+    let valorStr = veiculo.valor ? parseFloat(veiculo.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'Consulte';
+    if (isLocked) valorStr = 'R$ *******';
 
-    // Date Logic
     let dataLeilao = '---';
     if (veiculo.previsao && veiculo.previsao.string) {
         dataLeilao = veiculo.previsao.string;
@@ -333,11 +378,10 @@ const renderCard = (veiculo) => {
     const condicao = veiculo.condicao || 'Geral';
     const condicaoClass = condicao.toLowerCase().replace(/[^a-z0-9]/gi, '-');
 
-    // Photo with Proxy fallback
+    // Photo logic
     let photoUrl = 'https://placehold.co/400x300?text=Sem+Foto';
     if (veiculo.fotos && veiculo.fotos.length > 0) {
         const rawUrl = veiculo.fotos[0];
-        // Don't proxy if it's already a local path or a placeholder
         if (rawUrl.startsWith('http') && !rawUrl.includes('placehold.co')) {
             photoUrl = `/proxy-img?url=${encodeURIComponent(rawUrl)}`;
         } else {
@@ -345,16 +389,23 @@ const renderCard = (veiculo) => {
         }
     }
 
+    // Locked UI Classes
+    const blurClass = isLocked ? 'blurred-img' : '';
+    const lockOverlay = isLocked
+        ? `<div class="locked-overlay"><i class="fas fa-lock fa-3x"></i><p>Exclusivo Membros</p></div>`
+        : '';
+
     return `
-    <div class="vehicle-card">
+    <div class="vehicle-card ${isLocked ? 'locked-card' : ''}">
         <div class="card-image">
-            <img src="${photoUrl}" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=Erro+na+Imagem'">
+            <img src="${photoUrl}" class="${blurClass}" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=Erro+na+Imagem'">
+            ${lockOverlay}
             <div class="card-badges">
                 ${siteBadge}
             </div>
         </div>
         <div class="card-content">
-            <a ${linkAction} class="card-title" title="${veiculo.veiculo}">${veiculo.veiculo}</a>
+            <a ${linkAction} class="card-title" title="${veiculo.veiculo}">${isLocked ? 'Veículo Exclusivo (Cadastre-se)' : veiculo.veiculo}</a>
             
             <div class="card-details">
                 <div class="detail-row">
@@ -385,7 +436,7 @@ const renderCard = (veiculo) => {
                     <div class="price-tag">${valorStr}</div>
                 </div>
                 <a ${linkAction} class="btn-card">
-                    ${isLogged ? 'VER LOTE' : 'CADASTRE-SE'}
+                    ${(isLogged && !isLocked) ? 'VER LOTE' : 'DESBLOQUEAR'}
                 </a>
             </div>
         </div>
