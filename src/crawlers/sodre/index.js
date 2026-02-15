@@ -45,13 +45,23 @@ export const execute = async (database) => {
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
         // Navigate with retry logic for Railway resilience
-        const targetUrl = 'https://www.sodresantoro.com.br/veiculos/lotes?sort=lot_visits_desc';
+        // Go to Home first to establish session/pass challenge
+        const targetUrl = 'https://www.sodresantoro.com.br/';
         console.log(`   🔍 [${SITE}] Estabelecendo sessão...`);
 
         let pageLoaded = false;
         for (let attempt = 1; attempt <= 3; attempt++) {
             try {
                 await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+
+                // Wait for a real element to confirm challenge pass
+                try {
+                    await page.waitForSelector('footer, #header, .header, nav', { timeout: 15000 });
+                    console.log(`   ✅ [${SITE}] Desafio WAF superado e página carregada.`);
+                } catch (e) {
+                    console.log(`   ⚠️ [${SITE}] Timeout esperando elemento da home. Possível challenge loop.`);
+                }
+
                 await new Promise(r => setTimeout(r, 3000));
                 pageLoaded = true;
                 console.log(`   ✅ [${SITE}] Sessão estabelecida (tentativa ${attempt})`);

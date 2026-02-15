@@ -17,7 +17,7 @@ const createCrawler = (db) => {
 
         const browser = await puppeteer.launch({
             headless: 'new',
-            protocolTimeout: 120000,
+            protocolTimeout: 180000,
             args: [
                 '--no-sandbox', '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage', '--disable-gpu',
@@ -47,7 +47,16 @@ const createCrawler = (db) => {
                         'Referer': 'https://www.pestanaleiloes.com.br/',
                         'User-Agent': navigator.userAgent
                     };
-                    const resp = await fetch(`${apiBase}/api/v2/leilao/agenda`, { headers });
+
+                    const fetchWithTimeout = (url, opts = {}) => {
+                        const controller = new AbortController();
+                        const id = setTimeout(() => controller.abort(), 30000);
+                        return fetch(url, { ...opts, signal: controller.signal })
+                            .then(r => { clearTimeout(id); return r; })
+                            .catch(e => { clearTimeout(id); throw e; });
+                    };
+
+                    const resp = await fetchWithTimeout(`${apiBase}/api/v2/leilao/agenda`, { headers });
                     return await resp.json();
                 } catch (e) { return []; }
             }, API_BASE);
@@ -81,18 +90,26 @@ const createCrawler = (db) => {
                                 'User-Agent': navigator.userAgent
                             };
 
+                            const fetchWithTimeout = (url, opts = {}) => {
+                                const controller = new AbortController();
+                                const id = setTimeout(() => controller.abort(), 30000);
+                                return fetch(url, { ...opts, signal: controller.signal })
+                                    .then(r => { clearTimeout(id); return r; })
+                                    .catch(e => { clearTimeout(id); throw e; });
+                            };
+
                             // Get auction details
-                            const detailResp = await fetch(`${apiBase}/api/v2/leilao/${aId}`, { headers });
+                            const detailResp = await fetchWithTimeout(`${apiBase}/api/v2/leilao/${aId}`, { headers });
                             const detail = detailResp.ok ? await detailResp.json() : null;
 
                             // Get lots for this auction
-                            const lotesResp = await fetch(`${apiBase}/api/v2/leilao/${aId}/lotes`, { headers });
+                            const lotesResp = await fetchWithTimeout(`${apiBase}/api/v2/leilao/${aId}/lotes`, { headers });
                             const lotes = lotesResp.ok ? await lotesResp.json() : [];
 
                             // Also try alternate endpoint
                             let lotes2 = [];
                             try {
-                                const resp2 = await fetch(`${apiBase}/api/v2/lote?leilaoId=${aId}&pageSize=200&page=1`, { headers });
+                                const resp2 = await fetchWithTimeout(`${apiBase}/api/v2/lote?leilaoId=${aId}&pageSize=200&page=1`, { headers });
                                 if (resp2.ok) {
                                     const data2 = await resp2.json();
                                     lotes2 = Array.isArray(data2) ? data2 : (data2.data || data2.items || data2.content || []);
@@ -154,6 +171,14 @@ const createCrawler = (db) => {
                                 'User-Agent': navigator.userAgent
                             };
 
+                            const fetchWithTimeout = (url, opts = {}) => {
+                                const controller = new AbortController();
+                                const id = setTimeout(() => controller.abort(), 30000);
+                                return fetch(url, { ...opts, signal: controller.signal })
+                                    .then(r => { clearTimeout(id); return r; })
+                                    .catch(e => { clearTimeout(id); throw e; });
+                            };
+
                             // Try various endpoints for lot search
                             const endpoints = [
                                 `${apiBase}/api/v2/lote?tipoBemId=421&pageSize=50&page=${p}`,
@@ -163,7 +188,7 @@ const createCrawler = (db) => {
 
                             for (const url of endpoints) {
                                 try {
-                                    const resp = await fetch(url, { headers });
+                                    const resp = await fetchWithTimeout(url, { headers });
                                     if (resp.ok) {
                                         const data = await resp.json();
                                         const items = Array.isArray(data) ? data : (data.data || data.items || data.content || data.lotes || []);

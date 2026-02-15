@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 puppeteer.use(StealthPlugin());
 
-const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 60000;
+const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 90000; // Increased to 1.5m
 const CONCURRENCY = 1; // Sequential to reduce memory usage on Railway
 
 const createCrawler = (db) => {
@@ -148,7 +148,12 @@ const createCrawler = (db) => {
             for (const catUrl of VEHICLE_CATEGORIES) {
                 try {
                     console.log(`   🧭 [${SITE}] Categoria: ${catUrl}`);
-                    await page.goto(catUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                    try {
+                        await page.goto(catUrl, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+                    } catch (err) {
+                        console.log(`   ⚠️ [${SITE}] Timeout inicial em ${catUrl}, tentando reload...`);
+                        await page.reload({ waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+                    }
                     await autoScroll(page);
 
                     const found = await page.evaluate(() => {
