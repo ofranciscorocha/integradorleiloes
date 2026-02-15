@@ -257,12 +257,30 @@ const connectDatabase = async () => {
                 if (data.length > 0) await db.collection(colecao).insertMany(data);
             };
 
-            const close = async () => await client.close();
             const reload = async () => true;
 
-            return {
+            const dbInterface = {
                 buscarLista, close, count, deleteItems, get, insert, list, paginate, salvarLista, update, overwrite, getAlerts, saveAlert, reload
             };
+
+            // Migration: Fix Palacio Links
+            (async () => {
+                try {
+                    const SITE = 'palaciodosleiloes.com.br';
+                    const items = await buscarLista({ colecao: 'veiculos' });
+                    for (const v of items) {
+                        if (v.site === SITE && v.link && v.link.includes('site/?cl=')) {
+                            const [leilaoId, registroLote] = v.registro.split('_');
+                            if (leilaoId && registroLote) {
+                                const newLink = `https://www.palaciodosleiloes.com.br/site/lote.php?id_lote=${registroLote}&id_leilao=${leilaoId}`;
+                                await update({ colecao: 'veiculos', registro: v.registro, site: SITE, set: { link: newLink } });
+                            }
+                        }
+                    }
+                } catch (e) { console.error('Migration error:', e); }
+            })();
+
+            return dbInterface;
 
         } catch (e) {
             console.error('❌ Erro ao conectar ao MongoDB, caindo para modo JSON:', e.message);

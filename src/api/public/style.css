@@ -1319,16 +1319,17 @@ body {
     /* Darker Purple Gradient */
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 50px;
-    font-weight: 800;
-    font-size: 0.9rem;
+    font-weight: 700;
+    font-size: 0.85rem;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(107, 33, 168, 0.4);
+    box-shadow: 0 4px 12px rgba(107, 33, 168, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateY(-2px);
-    letter-spacing: 0.5px;
-    margin-left: 1rem;
+    transform: translateY(-1px);
+    letter-spacing: 0.3px;
+    margin: 0.5rem auto;
+    /* Centered margin */
     text-transform: uppercase;
     animation: pulse-glow 2s infinite;
 }
@@ -1389,5 +1390,108 @@ body {
 
     to {
         transform: translateY(-3px);
+    }
+}
+
+/* ================= RESPONSIVE ADJUSTMENTS ================= */
+
+@media (max-width: 1200px) {
+    .vehicles-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .vehicles-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .results-header {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+
+    .results-center-action {
+        order: 0 !important;
+        margin: 0.2rem 0 !important;
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+
+    .results-actions {
+        width: 100% !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+        flex-wrap: wrap !important;
+    }
+
+    .results-count {
+        font-size: 0.85rem !important;
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 0.25rem !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .vehicles-grid {
+        grid-template-columns: 1fr 1fr;
+        /* Force 2 per row even on very small screens if user asks */
+        gap: 0.75rem;
+    }
+
+    .main-wrapper {
+        padding: 1.5rem 0.5rem;
+    }
+
+    .card-content {
+        padding: 0.75rem;
+    }
+
+    .card-title {
+        font-size: 0.95rem;
+    }
+
+    .price-tag {
+        font-size: 1rem;
+    }
+
+    .btn-card {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.7rem;
+    }
+
+    .btn-pulse-trigger {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+    }
+
+    .btn-pulse-trigger i {
+        font-size: 1rem;
+    }
+
+    /* Adjust badges for tight space */
+    .badge {
+        font-size: 0.65rem;
+        padding: 1px 4px;
+    }
+}
+
+/* Ensure view toggle is always functional on mobile */
+@media (max-width: 768px) {
+    .view-toggle {
+        display: flex !important;
+    }
+
+    /* When in list view on mobile, back to 1 column */
+    .vehicles-grid.list-view {
+        grid-template-columns: 1fr;
     }
 }
