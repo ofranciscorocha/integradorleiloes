@@ -341,6 +341,12 @@ const renderVeiculos = () => {
     // POPULAR BRANDS
     const popularBrands = ['FIAT', 'CHEVROLET', 'BMW', 'MERCEDES', 'AUDI', 'VOLKSWAGEN', 'VW', 'VOLVO', 'TOYOTA', 'HYUNDAI', 'HONDA', 'FORD', 'JEEP'];
 
+    // Helper to get a stable unique key for each vehicle
+    const getVehicleKey = (v) => {
+        const reg = typeof v.registro === 'object' ? JSON.stringify(v.registro) : String(v.registro || '');
+        return `${v.site}_${reg}`;
+    };
+
     // PRE-CALCULATE UNLOCKS (Page 1 only for non-logged)
     const unlockedIds = new Set();
     if (!isLogged && isPageOne) {
@@ -361,7 +367,7 @@ const renderVeiculos = () => {
             });
 
             // Unlock top 5
-            sortedItems.slice(0, MAX_FREE_PER_SITE).forEach(v => unlockedIds.add(v._id));
+            sortedItems.slice(0, MAX_FREE_PER_SITE).forEach(v => unlockedIds.add(getVehicleKey(v)));
         });
     }
 
@@ -372,7 +378,7 @@ const renderVeiculos = () => {
                 if (!isPageOne) {
                     isLocked = true;
                 } else {
-                    isLocked = !unlockedIds.has(v._id);
+                    isLocked = !unlockedIds.has(getVehicleKey(v));
                 }
             }
             return renderCard(v, isLocked);
