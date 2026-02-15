@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LOG_FILE = path.join(__dirname, '../../crawler.log');
 
-const CONCURRENCY = 4; // Number of parallel crawlers
+const CONCURRENCY = 1; // Sequential to prevent JSON file race conditions
 
 // Status Tracking
 const schedulerStatus = {

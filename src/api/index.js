@@ -656,13 +656,16 @@ const startServer = async () => {
         console.log('');
 
         // Start Scheduler safely after server is up with a delay
-        const runOnStart = process.env.RUN_CRAWLER_ON_START === 'true' || true; // Set to true to ensure Railway has data
+        // IMPORTANT: Only auto-run crawlers if explicitly enabled via env var.
+        // On Railway, Puppeteer crawlers fail and corrupt the JSON data file.
+        const runOnStart = process.env.RUN_CRAWLER_ON_START === 'true';
         if (runOnStart) {
             console.log('⏳ [Scheduler] Aguardando 60s para iniciar coleta inicial...');
             setTimeout(() => {
                 initScheduler(true);
             }, 60000);
         } else {
+            console.log('ℹ️ [Scheduler] Auto-start desativado. Defina RUN_CRAWLER_ON_START=true para ativar.');
             initScheduler(false);
         }
     });
