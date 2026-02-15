@@ -22,26 +22,22 @@ export const getSchedulerStatus = () => schedulerStatus;
 
 // Priority Ordered List of all available crawlers
 const crawlerScripts = [
-    { id: 'copart', path: path.join(__dirname, '../crawlers/copart/run.js'), name: 'Copart' },
-    { id: 'sodre', path: path.join(__dirname, '../crawlers/sodre/run.js'), name: 'Sodré Santoro' },
-    { id: 'vip', path: path.join(__dirname, '../crawlers/vipleiloes/run.js'), name: 'Vip Leilões' },
-    { id: 'palacio', path: path.join(__dirname, '../crawlers/palaciodosleiloes/run.js'), name: 'Palácio dos Leilões' },
-    { id: 'freitas', path: path.join(__dirname, '../crawlers/freitas/run.js'), name: 'Freitas Leiloeiro' },
-    { id: 'rogeriomenezes', path: path.join(__dirname, '../crawlers/rogeriomenezes/run.js'), name: 'Rogério Menezes' },
-    { id: 'loop', path: path.join(__dirname, '../crawlers/loopleiloes/run.js'), name: 'Loop Leilões' },
-    { id: 'mgl', path: path.join(__dirname, '../crawlers/mgl/run.js'), name: 'MGL' },
-    { id: 'patiorocha', path: path.join(__dirname, '../crawlers/patiorocha/run.js'), name: 'Pátio Rocha' },
-    { id: 'superbid', path: path.join(__dirname, '../crawlers/superbid/run.js'), name: 'Superbid' },
-    { id: 'guariglia', path: path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), name: 'Guariglia Leilões' },
-    { id: 'parque', path: path.join(__dirname, '../crawlers/parque/run.js'), name: 'Parque dos Leilões' },
-    { id: 'leilo', path: path.join(__dirname, '../crawlers/leilo/run.js'), name: 'Leilo' },
-    { id: 'milan', path: path.join(__dirname, '../crawlers/milan/run.js'), name: 'Milan Leilões' },
-    { id: 'sumare', path: path.join(__dirname, '../crawlers/sumareleiloes/run.js'), name: 'Sumaré Leilões' },
-    { id: 'sato', path: path.join(__dirname, '../crawlers/satoleiloes/run.js'), name: 'Sato Leilões' },
-    { id: 'danielgarcia', path: path.join(__dirname, '../crawlers/danielgarcialeiloes/run.js'), name: 'Daniel Garcia' },
-    { id: 'joaoemilio', path: path.join(__dirname, '../crawlers/joaoemilio/run.js'), name: 'João Emílio' },
-    { id: 'claudiokuss', path: path.join(__dirname, '../crawlers/claudiokussleiloes/run.js'), name: 'Claudio Kuss' },
-    { id: 'pestana', path: path.join(__dirname, '../crawlers/pestanaleiloes/run.js'), name: 'Pestana Leilões' }
+    { id: 'copart', site: 'copart.com.br', path: path.join(__dirname, '../crawlers/copart/run.js'), name: 'Copart' },
+    { id: 'sodre', site: 'sodresantoro.com.br', path: path.join(__dirname, '../crawlers/sodre/run.js'), name: 'Sodré Santoro' },
+    { id: 'vip', site: 'vipleiloes.com.br', path: path.join(__dirname, '../crawlers/vipleiloes/run.js'), name: 'Vip Leilões' },
+    { id: 'palacio', site: 'palaciodosleiloes.com.br', path: path.join(__dirname, '../crawlers/palaciodosleiloes/run.js'), name: 'Palácio dos Leilões' },
+    { id: 'freitas', site: 'freitasleiloeiro.com.br', path: path.join(__dirname, '../crawlers/freitas/run.js'), name: 'Freitas Leiloeiro' },
+    { id: 'rogeriomenezes', site: 'rogeriomenezes.com.br', path: path.join(__dirname, '../crawlers/rogeriomenezes/run.js'), name: 'Rogério Menezes' },
+    { id: 'loop', site: 'loopleiloes.com.br', path: path.join(__dirname, '../crawlers/loopleiloes/run.js'), name: 'Loop Leilões' },
+    { id: 'mgl', site: 'mglleiloes.com.br', path: path.join(__dirname, '../crawlers/mgl/run.js'), name: 'MGL' },
+    { id: 'patiorocha', site: 'patiorochaleiloes.com.br', path: path.join(__dirname, '../crawlers/patiorocha/run.js'), name: 'Pátio Rocha' },
+    { id: 'superbid', site: 'superbid.net', path: path.join(__dirname, '../crawlers/superbid/run.js'), name: 'Superbid' },
+    { id: 'guariglia', site: 'guariglialeiloes.com.br', path: path.join(__dirname, '../crawlers/guariglialeiloes/run.js'), name: 'Guariglia Leilões' },
+    { id: 'parque', site: 'parquedosleiloes.com.br', path: path.join(__dirname, '../crawlers/parque/run.js'), name: 'Parque dos Leilões' },
+    { id: 'leilo', site: 'leilo.com.br', path: path.join(__dirname, '../crawlers/leilo/run.js'), name: 'Leilo' },
+    { id: 'pestana', site: 'pestanaleiloes.com.br', path: path.join(__dirname, '../crawlers/pestanaleiloes/run.js'), name: 'Pestana Leilões' },
+    // NOTE: The following crawlers are not yet implemented (no run.js exists):
+    // milan, sumareleiloes, satoleiloes, danielgarcialeiloes, joaoemilio, claudiokussleiloes
 ];
 
 // Initialize crawler status map

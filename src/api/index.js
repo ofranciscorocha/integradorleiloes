@@ -333,7 +333,7 @@ app.get('/stats', async (req, res) => {
         for (const s of crawlerScripts) {
             const count = await db.count({
                 colecao: 'veiculos',
-                filtro: { site: { $regex: s.id, $options: 'i' } }
+                filtro: { site: s.site }
             });
             porSite[s.id] = {
                 name: s.name,
