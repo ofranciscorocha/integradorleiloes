@@ -6,6 +6,8 @@ import connectDatabase from '../../database/db.js';
 dotenv.config();
 puppeteer.use(StealthPlugin());
 
+const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 60000;
+
 let db;
 
 export const execute = async (database) => {
@@ -15,10 +17,12 @@ export const execute = async (database) => {
 
     const browser = await puppeteer.launch({
         headless: "new",
+        protocolTimeout: 120000,
         args: [
             '--no-sandbox', '--disable-setuid-sandbox',
             '--disable-dev-shm-usage', '--disable-gpu',
             '--single-process', '--no-zygote',
+            '--disable-extensions', '--disable-background-networking',
             '--window-size=1280,720'
         ]
     });
@@ -26,31 +30,40 @@ export const execute = async (database) => {
     let capturados = 0;
     try {
         const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
-        // Capture initial API responses from page load
-        const initialCapture = [];
-        page.on('response', async response => {
-            const url = response.url();
-            if (url.includes('api/search-lots')) {
-                try {
-                    const data = await response.json();
-                    if (data && data.results && Array.isArray(data.results)) {
-                        const veiculos = processResults(data.results, SITE);
-                        if (veiculos.length > 0) {
-                            await db.salvarLista(veiculos);
-                            capturados += veiculos.length;
-                            console.log(`   🔸 [${SITE}] Capturados ${veiculos.length} itens do chunk API inicial. Total: ${capturados}`);
-                        }
-                    }
-                } catch (e) { }
+        // Block heavy resources to speed up page load and save memory
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            const type = req.resourceType();
+            if (['image', 'stylesheet', 'font', 'media'].includes(type)) {
+                req.abort();
+            } else {
+                req.continue();
             }
         });
 
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+
+        // Navigate with retry logic for Railway resilience
         const targetUrl = 'https://www.sodresantoro.com.br/veiculos/lotes?sort=lot_visits_desc';
         console.log(`   🔍 [${SITE}] Estabelecendo sessão...`);
-        await page.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 90000 });
-        await new Promise(r => setTimeout(r, 3000));
+
+        let pageLoaded = false;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
+                await new Promise(r => setTimeout(r, 3000));
+                pageLoaded = true;
+                console.log(`   ✅ [${SITE}] Sessão estabelecida (tentativa ${attempt})`);
+                break;
+            } catch (e) {
+                console.log(`   ⚠️ [${SITE}] Tentativa ${attempt}/3 falhou: ${e.message}`);
+                if (attempt === 3) throw e;
+                await new Promise(r => setTimeout(r, 5000));
+            }
+        }
+
+        if (!pageLoaded) throw new Error('Não foi possível carregar a página');
 
         // TURBO PAGINATION: Multiple index combinations to catch ALL vehicles
         const searchConfigs = [
@@ -81,6 +94,7 @@ export const execute = async (database) => {
         for (const config of searchConfigs) {
             console.log(`   📋 [${SITE}] Índice: ${config.label}`);
             let configCapturados = 0;
+            let consecutiveErrors = 0;
 
             for (let offset = 0; offset < 20000; offset += 96) {
                 try {
@@ -102,8 +116,17 @@ export const execute = async (database) => {
                             });
                             const data = await response.json();
                             return { results: data.results || [], total: data.total || 0 };
-                        } catch (e) { return { results: [], total: 0 }; }
+                        } catch (e) { return { results: [], total: 0, error: e.message }; }
                     }, config, offset);
+
+                    if (newLots.error) {
+                        console.log(`   ⚠️ [${SITE}] API error: ${newLots.error}`);
+                        consecutiveErrors++;
+                        if (consecutiveErrors >= 3) break;
+                        continue;
+                    }
+
+                    consecutiveErrors = 0;
 
                     if (newLots.results.length === 0) {
                         console.log(`   🔸 [${SITE}] ${config.label} - Fim no offset ${offset}`);
@@ -133,6 +156,11 @@ export const execute = async (database) => {
                     await new Promise(r => setTimeout(r, 400));
                 } catch (e) {
                     console.log(`   ⚠️ [${SITE}] Erro offset ${offset}: ${e.message}`);
+                    consecutiveErrors++;
+                    if (consecutiveErrors >= 3) {
+                        console.log(`   ❌ [${SITE}] ${config.label} - 3 erros consecutivos, pulando.`);
+                        break;
+                    }
                 }
             }
 
