@@ -550,13 +550,23 @@ const setViewMode = (mode) => {
 
 const simularRecarregamento = async () => {
     const icon = document.getElementById('reload-icon');
-    const btn = document.querySelector('.btn-reload-simulate');
+    // Updated selector to match new class
+    const btn = document.querySelector('.btn-pulse-trigger');
 
-    if (btn.disabled) return;
+    if (btn && btn.disabled) return;
 
     // 1. Inicia animação
-    btn.disabled = true;
-    icon.classList.add('spin-animation');
+    if (btn) {
+        btn.disabled = true;
+        const originalText = btn.querySelector('span').innerText;
+        btn.querySelector('span').innerText = 'BUSCANDO...';
+    }
+
+    // Robot spin animation
+    if (icon) {
+        icon.classList.remove('fa-robot');
+        icon.classList.add('fa-sync', 'fa-spin');
+    }
 
     // 2. Cria e mostra o Toast
     let toast = document.querySelector('.reload-toast');
@@ -565,23 +575,31 @@ const simularRecarregamento = async () => {
         toast.className = 'reload-toast';
         document.body.appendChild(toast);
     }
-    toast.innerHTML = `<i class="fas fa-robot"></i> <span>Sincronizando robôs e atualizando veículos...</span>`;
+    toast.innerHTML = `<i class="fas fa-robot"></i> <span>Robô buscando novas ofertas...</span>`;
     setTimeout(() => toast.classList.add('show'), 100);
 
-    // 3. Simula tempo de processamento do "robô"
-    await new Promise(r => setTimeout(r, 2500));
+    // 3. Simula tempo de processamento do "robô" (1.5s)
+    await new Promise(r => setTimeout(r, 1500));
 
     // 4. Executa a busca real para atualizar os dados
     await buscarVeiculos(1);
     await fetchStats();
 
     // 5. Finaliza
-    toast.innerHTML = `<i class="fas fa-check-circle" style="color: #25d366;"></i> <span>Sistema atualizado com sucesso!</span>`;
-    icon.classList.remove('spin-animation');
+    toast.innerHTML = `<i class="fas fa-check-circle" style="color: #25d366;"></i> <span>Novos veículos encontrados!</span>`;
+
+    // Restore icon and text
+    if (icon) {
+        icon.classList.remove('fa-sync', 'fa-spin');
+        icon.classList.add('fa-robot');
+    }
+    if (btn) {
+        btn.querySelector('span').innerText = 'BUSCAR NOVOS VEÍCULOS';
+    }
 
     setTimeout(() => {
         toast.classList.remove('show');
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
     }, 3000);
 };
 
