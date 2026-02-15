@@ -491,15 +491,22 @@ body {
 .btn-card {
     background: var(--gradient-main);
     color: white;
-    font-weight: 600;
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
+    font-weight: 700;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
     text-decoration: none;
     font-size: 0.85rem;
     transition: all 0.2s;
     border: none;
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
     cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-card:hover {
@@ -554,9 +561,31 @@ body {
 /* ================= FOOTER ================= */
 .site-footer {
     background-color: var(--primary-dark);
-    color: #9ca3af;
-    padding: 4rem 1rem 1rem 1rem;
-    font-size: 0.9rem;
+    color: #e5e7eb;
+    padding: 4rem 1rem 2rem 1rem;
+    font-size: 0.95rem;
+}
+
+.social-links {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    align-items: center;
+}
+
+.social-icon {
+    color: white !important;
+    font-size: 1.8rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.social-icon:hover {
+    color: var(--primary-blue) !important;
+    transform: translateY(-3px) scale(1.1);
 }
 
 /* ================= RELOAD BUTTON & VIEW TOGGLE ================= */
@@ -1067,12 +1096,15 @@ body {
 }
 
 /* ================= PAGINATION ================= */
-#pagination {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 2rem;
-    flex-wrap: wrap;
+#pagination,
+#pagination-bottom {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    margin: 2rem 0 !important;
+    flex-wrap: wrap !important;
+    width: 100%;
 }
 
 .page-btn {

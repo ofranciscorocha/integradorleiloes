@@ -334,32 +334,47 @@ const renderVeiculos = () => {
     }
 
     // FREEMIUM LOGIC: Limit 5 items per site for non-logged users.
-    // AND lock ALL items if page > 1 (prevent bypassing limit by pagination).
-    const siteCounts = {};
     const MAX_FREE_PER_SITE = 5;
     const isLogged = !!currentState.user;
     const isPageOne = currentState.currentPage === 1;
 
+    // POPULAR BRANDS
+    const popularBrands = ['FIAT', 'CHEVROLET', 'BMW', 'MERCEDES', 'AUDI', 'VOLKSWAGEN', 'VW', 'VOLVO', 'TOYOTA', 'HYUNDAI', 'HONDA', 'FORD', 'JEEP'];
+
+    // PRE-CALCULATE UNLOCKS (Page 1 only for non-logged)
+    const unlockedIds = new Set();
+    if (!isLogged && isPageOne) {
+        // Group by site
+        const sites = [...new Set(currentState.veiculos.map(v => v.site))];
+        sites.forEach(siteId => {
+            const siteItems = currentState.veiculos.filter(v => v.site === siteId);
+            // Sort by popularity then index
+            const sortedItems = [...siteItems].sort((a, b) => {
+                const aName = (a.veiculo || '').toUpperCase();
+                const bName = (b.veiculo || '').toUpperCase();
+                const aPop = popularBrands.some(brand => aName.includes(brand));
+                const bPop = popularBrands.some(brand => bName.includes(brand));
+
+                if (aPop && !bPop) return -1;
+                if (!aPop && bPop) return 1;
+                return 0; // maintain relative order
+            });
+
+            // Unlock top 5
+            sortedItems.slice(0, MAX_FREE_PER_SITE).forEach(v => unlockedIds.add(v._id));
+        });
+    }
+
     container.innerHTML = currentState.veiculos
         .map(v => {
-            if (!siteCounts[v.site]) siteCounts[v.site] = 0;
-            siteCounts[v.site]++;
-
-            let isLocked = !isLogged;
-            if (isLocked) {
-                // If not logged in:
-                // 1. If Page > 1 -> ALWAYS LOCKED
-                // 2. If Page 1 -> Lock only if count > 10
+            let isLocked = false;
+            if (!isLogged) {
                 if (!isPageOne) {
                     isLocked = true;
                 } else {
-                    isLocked = siteCounts[v.site] > MAX_FREE_PER_SITE;
+                    isLocked = !unlockedIds.has(v._id);
                 }
-            } else {
-                // Logged in -> Never locked
-                isLocked = false;
             }
-
             return renderCard(v, isLocked);
         })
         .join('');
