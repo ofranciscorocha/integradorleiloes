@@ -349,7 +349,8 @@ app.get('/veiculos', async (req, res) => {
         console.log(`🔎 [API] Filtrando: Search="${search || ''}", Site="${site || ''}", UF="${uf || ''}", Condicao="${condicao || ''}", Ano=${anoMin || ''}-${anoMax || ''}`);
 
         // Sort Mapping (handle accented chars from frontend)
-        let sortObj = { criadoEm: -1 };
+        // Default: User requested "prioritize newest year" for the unlocked items.
+        let sortObj = { ano: -1, criadoEm: -1 };
         const sortNorm = sort.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         if (sortNorm === 'preco_asc') sortObj = { valor: 1 };
         if (sortNorm === 'preco_desc') sortObj = { valor: -1 };
