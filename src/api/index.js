@@ -283,7 +283,26 @@ app.get('/veiculos', async (req, res) => {
 
         // Filter by site
         if (site && site.trim() !== '') {
-            query.site = { $regex: site, $options: 'i' };
+            const s = site.toLowerCase();
+            if (s === 'rogeriomenezes') query.site = { $regex: 'Rogério|Rogerio', $options: 'i' };
+            else if (s === 'sodre') query.site = { $regex: 'Sodré|Sodre', $options: 'i' };
+            else if (s === 'palacio') query.site = { $regex: 'Palácio|Palacio', $options: 'i' };
+            else if (s === 'guariglia') query.site = { $regex: 'Guariglia', $options: 'i' };
+            else if (s === 'vip') query.site = { $regex: 'VIP', $options: 'i' };
+            else if (s === 'freitas') query.site = { $regex: 'Freitas', $options: 'i' };
+            else if (s === 'copart') query.site = { $regex: 'Copart', $options: 'i' };
+            else if (s === 'joaoemilio') query.site = { $regex: 'João|Joao', $options: 'i' };
+            else if (s === 'milan') query.site = { $regex: 'Milan', $options: 'i' };
+            else if (s === 'parque') query.site = { $regex: 'Parque', $options: 'i' };
+            else if (s === 'leilo') query.site = { $regex: 'Leilo', $options: 'i' };
+            else if (s === 'sumare') query.site = { $regex: 'Sumaré|Sumare', $options: 'i' };
+            else if (s === 'sato') query.site = { $regex: 'Sato', $options: 'i' };
+            else if (s === 'pestana') query.site = { $regex: 'Pestana', $options: 'i' };
+            else if (s === 'mgl') query.site = { $regex: 'MGL', $options: 'i' };
+            else if (s === 'claudiokuss') query.site = { $regex: 'Claudio|Kuss', $options: 'i' };
+            else if (s === 'danielgarcia') query.site = { $regex: 'Daniel|Garcia', $options: 'i' };
+            else if (s === 'superbid') query.site = { $regex: 'Superbid', $options: 'i' };
+            else query.site = { $regex: site, $options: 'i' };
         }
 
         // Filter by year
