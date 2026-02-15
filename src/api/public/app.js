@@ -336,14 +336,21 @@ const renderVeiculos = () => {
     // FREEMIUM LOGIC: Limit 5 items per site for non-logged users.
     const MAX_FREE_PER_SITE = 5;
     const isLogged = !!currentState.user;
-    const isPageOne = currentState.currentPage === 1;
+    // Use pagination status if available, fallback to current state
+    const isPageOne = (currentState.pagination && currentState.pagination.page === 1) || currentState.currentPage === 1;
 
-    // POPULAR BRANDS
-    const popularBrands = ['FIAT', 'CHEVROLET', 'BMW', 'MERCEDES', 'AUDI', 'VOLKSWAGEN', 'VW', 'VOLVO', 'TOYOTA', 'HYUNDAI', 'HONDA', 'FORD', 'JEEP'];
+    // POPULAR BRANDS (Expanded)
+    const popularBrands = [
+        'FIAT', 'CHEVROLET', 'CHEV', 'BMW', 'MERCEDES', 'AUDI',
+        'VOLKSWAGEN', 'VW', 'VOLVO', 'TOYOTA', 'HYUNDAI', 'HONDA',
+        'FORD', 'JEEP', 'RENAULT', 'NISSAN', 'MITSUBISHI', 'PEUGEOT',
+        'CITROEN', 'CHERY', 'CAOA', 'LAND ROVER', 'PORSCHE'
+    ];
 
     // Helper to get a stable unique key for each vehicle
     const getVehicleKey = (v) => {
-        const reg = typeof v.registro === 'object' ? JSON.stringify(v.registro) : String(v.registro || '');
+        if (!v) return '';
+        const reg = (v.registro && typeof v.registro === 'object') ? JSON.stringify(v.registro) : String(v.registro || '');
         return `${v.site}_${reg}`;
     };
 
@@ -354,20 +361,24 @@ const renderVeiculos = () => {
         const sites = [...new Set(currentState.veiculos.map(v => v.site))];
         sites.forEach(siteId => {
             const siteItems = currentState.veiculos.filter(v => v.site === siteId);
-            // Sort by popularity then index
+
+            // Sort by popularity then original index
             const sortedItems = [...siteItems].sort((a, b) => {
                 const aName = (a.veiculo || '').toUpperCase();
                 const bName = (b.veiculo || '').toUpperCase();
+
                 const aPop = popularBrands.some(brand => aName.includes(brand));
                 const bPop = popularBrands.some(brand => bName.includes(brand));
 
                 if (aPop && !bPop) return -1;
                 if (!aPop && bPop) return 1;
-                return 0; // maintain relative order
+                return 0;
             });
 
-            // Unlock top 5
-            sortedItems.slice(0, MAX_FREE_PER_SITE).forEach(v => unlockedIds.add(getVehicleKey(v)));
+            // Unlock top 5 for this site
+            sortedItems.slice(0, MAX_FREE_PER_SITE).forEach(item => {
+                unlockedIds.add(getVehicleKey(item));
+            });
         });
     }
 
