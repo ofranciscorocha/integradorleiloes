@@ -435,8 +435,8 @@ const renderCard = (veiculo, isLocked = false) => {
                     <span class="price-label">Lance Atual</span>
                     <div class="price-tag">${valorStr}</div>
                 </div>
-                <a ${linkAction} class="btn-card">
-                    ${(isLogged && !isLocked) ? 'VER LOTE' : 'DESBLOQUEAR'}
+                <a ${linkAction} class="btn-card ${(!isLocked) ? 'btn-success' : ''}">
+                    ${(!isLocked) ? 'VER LOTE' : 'DESBLOQUEAR'}
                 </a>
             </div>
         </div>
