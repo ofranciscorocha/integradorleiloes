@@ -712,7 +712,7 @@
                 const data = await res.json();
                 if (data.success) {
                     renderStats(data);
-                    renderCrawlers(data.stats.scheduler || {});
+                    renderCrawlers(data.stats.scheduler || {}, data.stats.porSite || {});
                     renderChart(data.stats.porSite || {});
                     renderDistribution(data.stats.porSite || {});
                 }
@@ -724,7 +724,7 @@
             document.getElementById('kpi-daily').innerText = '+' + (data.stats.novosHoje || 0);
         }
 
-        function renderCrawlers(scheduler) {
+        function renderCrawlers(scheduler, sites) {
             const container = document.getElementById('crawler-list');
             const crawlers = scheduler.crawlers || {};
 
@@ -738,8 +738,23 @@
                 const statusLabel = isRunning ? 'Executando...' : (info.status === 'error' ? 'Falhou' : 'Aguardando');
                 const dotClass = `status-${info.status}`;
 
+                // DATA COUNT LOGIC
+                // sites key depends on how api returns it. usually matches ID or Name.
+                // based on previous code, sites uses ID? check `renderDistribution`.
+                // Need to match `id` to `sites` keys.
+                // Let's iterate sites to find a match or use direct look up if keys match.
+                // Assuming keys in `sites` are like 'sodre', 'copart' etc which match `id` here.
+                const siteData = sites[id] || { count: 0 };
+                const count = siteData.count || 0;
+
+                // "Button turns green" logic
+                const hasItems = count > 10;
+                const btnStyle = isRunning
+                    ? ''
+                    : (hasItems ? 'background: var(--accent); color: white; border: none; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);' : '');
+
                 return `
-                    <div class="crawler-card">
+                    <div class="crawler-card" style="${hasItems ? 'border-color: rgba(34, 197, 94, 0.3);' : ''}">
                         <div class="crawler-header">
                             <span class="crawler-name">${info.name}</span>
                             <div style="font-size: 0.75rem; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px;">
@@ -748,11 +763,12 @@
                         </div>
                         <div class="crawler-info">
                             <p style="margin-bottom: 5px;"><i class="far fa-clock"></i> Último: ${info.lastRun ? new Date(info.lastRun).toLocaleTimeString() : 'Nunca run'}</p>
+                            <p style="margin-bottom: 5px;"><i class="fas fa-car"></i> Veículos: <b style="color: ${hasItems ? 'var(--accent)' : 'inherit'}">${count}</b></p>
                             <p><i class="fas fa-tag"></i> ID: <b>${id}</b></p>
                         </div>
-                        <button class="btn btn-outline" style="width: 100%; border-radius: 10px; font-size: 0.8rem;" onclick="runCrawler('${id}')" ${isRunning ? 'disabled' : ''}>
+                        <button class="btn btn-outline" style="width: 100%; border-radius: 10px; font-size: 0.8rem; ${btnStyle}" onclick="runCrawler('${id}')" ${isRunning ? 'disabled' : ''}>
                             <i class="fas ${isRunning ? 'fa-spinner fa-spin' : 'fa-play'}"></i> 
-                            ${isRunning ? 'Coletando...' : 'Rodar Agora'}
+                            ${isRunning ? 'Coletando...' : (hasItems ? 'Atualizar Base' : 'Rodar Agora')}
                         </button>
                     </div>
                 `;

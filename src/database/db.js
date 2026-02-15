@@ -443,6 +443,13 @@ const connectDatabase = async () => {
 
         writeData(colecao, items);
         console.log(`\n📊 Resumo JSON: ${inseridos} inseridos, ${atualizados} atualizados, ${semAlteracao} sem alteração`);
+
+        if (lista.length > 0) {
+            const currentSite = lista[0].site;
+            const totalSite = items.filter(i => i.site === currentSite).length;
+            console.log(`📈 [${currentSite || 'Geral'}] Total de veículos no banco: ${totalSite}`);
+        }
+
         return { inseridos, atualizados, semAlteracao };
     };
 
