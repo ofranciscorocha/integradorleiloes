@@ -333,11 +333,13 @@ const renderVeiculos = () => {
         return;
     }
 
-    // FREEMIUM LOGIC: Limit 5 items per site for non-logged users.
-    const MAX_FREE_PER_SITE = 5;
+    // FREEMIUM LOGIC: Limit 8 items per site for non-logged users.
+    // Increased from 5 to 8 to avoid "too many blocked" on homepage.
+    const MAX_FREE_PER_SITE = 8;
     const isLogged = !!currentState.user;
-    // Use pagination status if available, fallback to current state
-    const isPageOne = (currentState.pagination && currentState.pagination.page === 1) || currentState.currentPage === 1;
+
+    // Page 1 check: Be more permissive if currentPage is undefined or 1
+    const isPageOne = !currentState.currentPage || currentState.currentPage === 1 || (currentState.pagination && currentState.pagination.page === 1);
 
     // POPULAR BRANDS (Expanded)
     const popularBrands = [
@@ -349,9 +351,14 @@ const renderVeiculos = () => {
 
     // Helper to get a stable unique key for each vehicle
     const getVehicleKey = (v) => {
-        if (!v) return '';
-        const reg = (v.registro && typeof v.registro === 'object') ? JSON.stringify(v.registro) : String(v.registro || '');
-        return `${v.site}_${reg}`;
+        if (!v) return 'null';
+        let regStr = '';
+        if (v.registro && typeof v.registro === 'object') {
+            regStr = `${v.registro.leilao || ''}_${v.registro.lote || ''}`;
+        } else {
+            regStr = String(v.registro || '');
+        }
+        return `${v.site}_${regStr}`;
     };
 
     // PRE-CALCULATE UNLOCKS (Page 1 only for non-logged)
@@ -375,11 +382,14 @@ const renderVeiculos = () => {
                 return 0;
             });
 
-            // Unlock top 5 for this site
+            // Unlock top 8 for this site
             sortedItems.slice(0, MAX_FREE_PER_SITE).forEach(item => {
                 unlockedIds.add(getVehicleKey(item));
             });
         });
+
+        // SAFETY: Always unlock the first 3 items of any page 1 search
+        currentState.veiculos.slice(0, 3).forEach(v => unlockedIds.add(getVehicleKey(v)));
     }
 
     container.innerHTML = currentState.veiculos
