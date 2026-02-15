@@ -1,5 +1,5 @@
-# Use uma imagem base do Node que já tenha o básico do Linux
-FROM node:18-slim
+# Use Node 20 (Node 18 lacks File global needed by undici/axios)
+FROM node:20-slim
 
 # Instale as dependências necessárias para o Chrome rodar no Linux (headless)
 RUN apt-get update && apt-get install -y \
