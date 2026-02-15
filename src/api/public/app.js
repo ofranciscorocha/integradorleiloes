@@ -333,17 +333,33 @@ const renderVeiculos = () => {
         return;
     }
 
-    // FREEMIUM LOGIC: Limit 10 items per site for non-logged users
+    // FREEMIUM LOGIC: Limit 10 items per site for non-logged users.
+    // AND lock ALL items if page > 1 (prevent bypassing limit by pagination).
     const siteCounts = {};
     const MAX_FREE_PER_SITE = 10;
     const isLogged = !!currentState.user;
+    const isPageOne = currentState.currentPage === 1;
 
     container.innerHTML = currentState.veiculos
         .map(v => {
             if (!siteCounts[v.site]) siteCounts[v.site] = 0;
             siteCounts[v.site]++;
 
-            const isLocked = !isLogged && siteCounts[v.site] > MAX_FREE_PER_SITE;
+            let isLocked = !isLogged;
+            if (isLocked) {
+                // If not logged in:
+                // 1. If Page > 1 -> ALWAYS LOCKED
+                // 2. If Page 1 -> Lock only if count > 10
+                if (!isPageOne) {
+                    isLocked = true;
+                } else {
+                    isLocked = siteCounts[v.site] > MAX_FREE_PER_SITE;
+                }
+            } else {
+                // Logged in -> Never locked
+                isLocked = false;
+            }
+
             return renderCard(v, isLocked);
         })
         .join('');
