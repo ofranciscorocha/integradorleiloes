@@ -770,7 +770,7 @@
 
             container.innerHTML = Object.entries(crawlers).map(([id, info]) => {
                 const isRunning = info.status === 'running';
-                const isError = info.status === 'error';
+                let isError = info.status === 'error';
 
                 // DATA COUNT
                 const siteData = sites[id] || { count: 0 };
@@ -794,6 +794,12 @@
                     statusLabel = 'Online';
                     dotClass = 'status-online'; // Green
                     cardClass = 'card-success';
+                } else if (info.lastRun && count === 0) {
+                    statusLabel = 'Sem Dados';
+                    dotClass = 'status-error'; // Red
+                    cardClass = 'card-error';
+                    // Force button to red "Check"
+                    isError = true;
                 }
 
                 // BUTTON LOGIC
