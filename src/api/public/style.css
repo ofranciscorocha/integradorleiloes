@@ -1313,9 +1313,10 @@ body {
 .btn-pulse-trigger {
     display: flex;
     align-items: center;
+    /**/
     gap: 0.5rem;
-    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
-    /* Indigo/Purple Modern Gradient */
+    background: linear-gradient(135deg, #6b21a8 0%, #4c1d95 100%);
+    /* Darker Purple Gradient */
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -1323,7 +1324,7 @@ body {
     font-weight: 800;
     font-size: 0.9rem;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 4px 15px rgba(107, 33, 168, 0.4);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateY(-2px);
     letter-spacing: 0.5px;
@@ -1337,8 +1338,8 @@ body {
 }
 
 .btn-pulse-trigger:hover {
-    background: linear-gradient(135deg, #4338ca 0%, #7e22ce 100%);
-    box-shadow: 0 10px 25px -5px rgba(126, 34, 206, 0.6);
+    background: linear-gradient(135deg, #7e22ce 0%, #581c87 100%);
+    box-shadow: 0 10px 25px -5px rgba(88, 28, 135, 0.6);
     transform: translateY(-4px) scale(1.05);
 }
 
