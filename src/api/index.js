@@ -210,6 +210,8 @@ app.get('/veiculos', async (req, res) => {
             sort = 'recente'
         } = req.query;
 
+        console.log(`[API] /veiculos request: page=${page}, limit=${limit}, site=${site}, search=${search}`);
+
         const query = {};
 
         // REQUIREMENT: Only show lots with photos
@@ -278,19 +280,27 @@ app.get('/veiculos', async (req, res) => {
         if (sortNorm === 'preco_desc') sortObj = { valor: -1 };
         if (sortNorm === 'ano_desc') sortObj = { ano: -1 };
 
-        const result = await db.paginate({
+        const { items, pagination } = await db.paginate({
             colecao: 'veiculos',
             filtro: query,
             page: parseInt(page),
             limit: parseInt(limit),
             sort: sortObj,
-            interleave: (sort === 'recente' || !sort),
-            shuffle: (sort === 'recente' || !sort)
+            interleave: true // Enable interleaving by default for better variety
         });
 
-        console.log(`🔍 [API] /veiculos: Encontrados ${result.items.length} itens de ${result.pagination.total} total (Pag ${page})`);
+        console.log(`[API] /veiculos: ${items.length} itens retornados. Query:`, JSON.stringify(query));
 
-        res.json({ success: true, ...result });
+        res.json({
+            success: true,
+            items: items,
+            pagination: pagination,
+            // Keep these for backward compatibility if needed, or remove if unused. 
+            // But app.js strictly uses data.items and data.pagination.
+            total: pagination.total,
+            page: pagination.page,
+            totalPages: pagination.totalPages
+        });
     } catch (error) {
         console.error('Erro em /veiculos:', error);
         res.status(500).json({ success: false, error: error.message });
