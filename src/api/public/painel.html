@@ -768,49 +768,58 @@
                 return;
             }
 
-            container.innerHTML = Object.entries(crawlers).map(([id, info]) => {
-                const isRunning = info.status === 'running';
-                let isError = info.status === 'error';
-
-                // DATA COUNT
+            // 1. Calculate status and priority for all items first
+            const items = Object.entries(crawlers).map(([id, info]) => {
                 const siteData = sites[id] || { count: 0 };
                 const count = siteData.count || 0;
+                const isRunning = info.status === 'running';
                 const hasItems = count > 10;
+                let isError = info.status === 'error';
 
-                // STATUS ANIMATION LOGIC
+                // Critical: Explicitly flag zero items as error
+                if (info.lastRun && count === 0) isError = true;
+
+                let priority = 0; // Higher is better (top)
                 let statusLabel = 'Aguardando';
                 let dotClass = 'status-idle';
                 let cardClass = '';
 
-                if (isRunning) {
+                // User Request: "Green (Success) goes up"
+                if (hasItems && !isRunning && !isError) {
+                    priority = 10; // Top priority
+                    statusLabel = 'Online';
+                    dotClass = 'status-online';
+                    cardClass = 'card-success';
+                } else if (isRunning) {
+                    priority = 8; // Running is important
                     statusLabel = 'Coletando...';
-                    dotClass = 'status-running'; // Yellow pulse
+                    dotClass = 'status-running';
                     cardClass = 'card-running';
                 } else if (isError) {
-                    statusLabel = 'Falhou';
-                    dotClass = 'status-error'; // Red
+                    priority = 5; // Errors
+                    statusLabel = (count === 0 && info.lastRun) ? 'Sem Dados' : 'Falhou';
+                    dotClass = 'status-error';
                     cardClass = 'card-error';
-                } else if (hasItems) {
-                    statusLabel = 'Online';
-                    dotClass = 'status-online'; // Green
-                    cardClass = 'card-success';
-                } else if (info.lastRun && count === 0) {
-                    statusLabel = 'Sem Dados';
-                    dotClass = 'status-error'; // Red
-                    cardClass = 'card-error';
-                    // Force button to red "Check"
-                    isError = true;
+                } else {
+                    priority = 1; // Idle
                 }
 
-                // BUTTON LOGIC
+                return { id, info, count, isRunning, hasItems, isError, priority, statusLabel, dotClass, cardClass };
+            });
+
+            // 2. Sort by priority DESC
+            items.sort((a, b) => b.priority - a.priority);
+
+            // 3. Render sorted
+            container.innerHTML = items.map(item => {
+                const { id, info, count, isRunning, hasItems, isError, statusLabel, dotClass, cardClass } = item;
+
                 const btnStyle = isRunning
                     ? ''
                     : (hasItems ? 'background: var(--accent); color: white; border: none; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);' : (isError ? 'border-color: var(--danger); color: var(--danger);' : ''));
 
                 const btnText = isRunning ? 'Coletando...' : (hasItems ? 'Atualizar Base' : (isError ? 'Tentar Novamente' : 'Rodar Agora'));
                 const btnIcon = isRunning ? 'fa-spinner fa-spin' : (isError ? 'fa-redo' : 'fa-play');
-
-
 
                 return `
                     <div class="crawler-card ${cardClass}" style="transition: all 0.3s;">
