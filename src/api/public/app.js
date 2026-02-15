@@ -333,10 +333,10 @@ const renderVeiculos = () => {
         return;
     }
 
-    // FREEMIUM LOGIC: Limit 10 items per site for non-logged users.
+    // FREEMIUM LOGIC: Limit 5 items per site for non-logged users.
     // AND lock ALL items if page > 1 (prevent bypassing limit by pagination).
     const siteCounts = {};
-    const MAX_FREE_PER_SITE = 10;
+    const MAX_FREE_PER_SITE = 5;
     const isLogged = !!currentState.user;
     const isPageOne = currentState.currentPage === 1;
 
