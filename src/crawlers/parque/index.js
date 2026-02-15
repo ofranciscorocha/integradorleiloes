@@ -81,7 +81,11 @@ const createCrawler = (db) => {
                 // Standard Fuzzy Filter
                 const filtered = itens.filter(item => {
                     const text = (item.veiculo + ' ' + item.descricao).toUpperCase();
-                    const blacklist = ['MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'LOTE DE PEÇAS', 'IMOVEL', 'EQUIPAMENTO'];
+                    const blacklist = [
+                        'MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'LOTE DE PEÇAS',
+                        'IMOVEL', 'EQUIPAMENTO', 'APARTAMENTO', 'APTO', 'CASA', 'TERRENO',
+                        'SALA', 'VAGA', 'GARAGEM', 'LOTEAMENTO', 'CHACARA', 'FAZENDA', 'SITIO'
+                    ];
                     return !blacklist.some(b => text.includes(b));
                 });
 

@@ -120,7 +120,7 @@ const createCrawler = (db) => {
                                     if (!hasBrand && !hasVehicleTerm && !hasYear) return;
 
                                     // Blacklist
-                                    const blacklist = ['IMOVEL', 'IMOVEIS', 'APARTAMENTO', 'TERRENO', 'CASA', 'FAZENDA', 'GALPAO', 'ESCRITORIO', 'MOVEIS', 'ELETRO', 'NOTEBOOK', 'CELULAR'];
+                                    const blacklist = ['IMOVEL', 'IMOVEIS', 'APARTAMENTO', 'APTO', 'TERRENO', 'CASA', 'FAZENDA', 'GALPAO', 'ESCRITORIO', 'MOVEIS', 'ELETRO', 'NOTEBOOK', 'CELULAR', 'VAGA', 'GARAGEM'];
                                     if (blacklist.some(b => textUpper.includes(b))) return;
 
                                     const imgEl = card.querySelector('img');
