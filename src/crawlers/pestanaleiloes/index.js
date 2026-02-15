@@ -17,7 +17,12 @@ const createCrawler = (db) => {
 
         const browser = await puppeteer.launch({
             headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+            protocolTimeout: 120000,
+            args: [
+                '--no-sandbox', '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage', '--disable-gpu',
+                '--window-size=1280,720'
+            ]
         });
 
         let totalVeiculos = 0;
@@ -29,7 +34,7 @@ const createCrawler = (db) => {
 
             // Navigate to site to establish session
             console.log(`   🔍 [${SITE}] Estabelecendo sessão...`);
-            await page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: 90000 });
+            await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
             await new Promise(r => setTimeout(r, 3000));
 
             // STEP 1: Get auction agenda via API

@@ -28,10 +28,10 @@ const execute = async (database) => {
 
     const browser = await puppeteer.launch({
         headless: "new",
+        protocolTimeout: 120000,
         args: [
             '--no-sandbox', '--disable-setuid-sandbox',
             '--disable-dev-shm-usage', '--disable-gpu',
-            '--single-process', '--no-zygote',
             '--disable-blink-features=AutomationControlled',
             '--window-size=1280,720'
         ]
@@ -501,9 +501,7 @@ const createCrawler = (db) => {
     return { buscarTodos, SITE };
 };
 
-if (process.argv[1]?.includes('copart')) {
-    run();
-}
+// run() removed to prevent double execution
 
 export { execute };
 export default createCrawler;

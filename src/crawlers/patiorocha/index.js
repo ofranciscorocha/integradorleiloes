@@ -15,6 +15,7 @@ export const execute = async (database) => {
 
     const browser = await puppeteer.launch({
         headless: "new",
+        protocolTimeout: 120000,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -22,9 +23,7 @@ export const execute = async (database) => {
             '--disable-dev-shm-usage',
             '--disable-accelerated-2d-canvas',
             '--disable-gpu',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process'
+            '--no-first-run'
         ]
     });
 
@@ -137,14 +136,6 @@ async function autoScroll(page) {
         });
     });
     await new Promise(r => setTimeout(r, 2000));
-}
-
-if (process.argv[1].includes('patiorocha')) {
-    (async () => {
-        const db = await connectDatabase();
-        await execute(db);
-        process.exit(0);
-    })();
 }
 
 export default { execute };

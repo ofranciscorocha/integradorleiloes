@@ -17,6 +17,7 @@ const createCrawler = (db) => {
 
         const browser = await puppeteer.launch({
             headless: "new",
+            protocolTimeout: 120000,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
 

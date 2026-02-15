@@ -101,10 +101,10 @@ const createCrawler = (db) => {
         console.log(`🚀 [${SITE}] High-Yield Mode: Inicializando...`);
         const browser = await puppeteer.launch({
             headless: "new",
+            protocolTimeout: 120000,
             args: [
                 '--no-sandbox', '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage', '--disable-gpu',
-                '--single-process', '--no-zygote',
                 '--window-size=1280,720'
             ]
         });

@@ -21,8 +21,8 @@ export const execute = async (database) => {
         args: [
             '--no-sandbox', '--disable-setuid-sandbox',
             '--disable-dev-shm-usage', '--disable-gpu',
-            '--single-process', '--no-zygote',
-            '--disable-extensions', '--disable-background-networking',
+            '--disable-extensions',
+            '--disable-background-networking',
             '--window-size=1280,720'
         ]
     });
@@ -253,13 +253,5 @@ const createCrawler = (db) => {
 
     return { buscarTodos, SITE };
 };
-
-if (process.argv[1].includes('sodre')) {
-    (async () => {
-        const conn = await connectDatabase();
-        await execute(conn);
-        process.exit(0);
-    })();
-}
 
 export default { execute, createCrawler };
