@@ -89,7 +89,7 @@ const createCrawler = (db) => {
                         veiculo,
                         ano: parseInt(anoFull.split(' ')[0]) || null,
                         descricao,
-                        link: `${BASE_URL}/site/lote.php?id_lote=${registroLote}&id_leilao=${leilaoId}`,
+                        link: `${BASE_URL}/site/?cl=${registroLote}&leilao=${leilaoId}`,
                         valor: parseFloat(valueStr) || 0,
                         previsao: '',
                         localLeilao: '',

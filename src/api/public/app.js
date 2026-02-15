@@ -421,7 +421,7 @@ const renderCard = (veiculo, isLocked = false) => {
             </div>
         </div>
         <div class="card-content">
-            <a ${linkAction} class="card-title" title="${veiculo.veiculo}">${isLocked ? 'Veículo Exclusivo (Cadastre-se)' : veiculo.veiculo}</a>
+            <a ${linkAction} class="card-title" title="${veiculo.veiculo}">${veiculo.veiculo}</a>
             
             <div class="card-details">
                 <div class="detail-row">
@@ -462,29 +462,35 @@ const renderCard = (veiculo, isLocked = false) => {
 
 const renderPagination = () => {
     const pag = currentState.pagination;
-    const container = document.getElementById('pagination');
+    const containers = [
+        document.getElementById('pagination'),
+        document.getElementById('pagination-bottom')
+    ];
+
     if (!pag || pag.totalPages <= 1) {
-        container.innerHTML = '';
+        containers.forEach(c => { if (c) c.innerHTML = ''; });
         return;
     }
 
     let html = '';
     // Previous
     if (pag.page > 1) {
-        html += `<button class="page-btn" onclick="buscarVeiculos(${pag.page - 1})"><i class="fas fa-chevron-left"></i></button>`;
+        html += `<button class="page-btn" onclick="buscarVeiculos(${pag.page - 1}); window.scrollTo({top: 0, behavior: 'smooth'});"><i class="fas fa-chevron-left"></i></button>`;
     }
 
     // Pages (simple)
     for (let i = 1; i <= Math.min(pag.totalPages, 5); i++) {
-        html += `<button class="page-btn ${i === pag.page ? 'active' : ''}" onclick="buscarVeiculos(${i})">${i}</button>`;
+        html += `<button class="page-btn ${i === pag.page ? 'active' : ''}" onclick="buscarVeiculos(${i}); window.scrollTo({top: 0, behavior: 'smooth'});">${i}</button>`;
     }
 
     // Next
     if (pag.page < pag.totalPages) {
-        html += `<button class="page-btn" onclick="buscarVeiculos(${pag.page + 1})"><i class="fas fa-chevron-right"></i></button>`;
+        html += `<button class="page-btn" onclick="buscarVeiculos(${pag.page + 1}); window.scrollTo({top: 0, behavior: 'smooth'});"><i class="fas fa-chevron-right"></i></button>`;
     }
 
-    container.innerHTML = html;
+    containers.forEach(c => {
+        if (c) c.innerHTML = html;
+    });
 };
 
 const formatSiteName = (site) => {

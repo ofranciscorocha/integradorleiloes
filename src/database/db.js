@@ -272,7 +272,7 @@ const connectDatabase = async () => {
                         if (v.site === SITE && v.link && v.link.includes('site/?cl=')) {
                             const [leilaoId, registroLote] = v.registro.split('_');
                             if (leilaoId && registroLote) {
-                                const newLink = `https://www.palaciodosleiloes.com.br/site/lote.php?id_lote=${registroLote}&id_leilao=${leilaoId}`;
+                                const newLink = `https://www.palaciodosleiloes.com.br/site/?cl=${registroLote}&leilao=${leilaoId}`;
                                 await update({ colecao: 'veiculos', registro: v.registro, site: SITE, set: { link: newLink } });
                             }
                         }
