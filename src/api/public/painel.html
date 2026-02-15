@@ -271,17 +271,52 @@
         }
 
         .status-running {
-            background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
+            background: #facc15;
+            /* Yellow-400 */
+            box-shadow: 0 0 15px #facc15;
             animation: pulse 1.5s infinite;
         }
 
         .status-error {
             background: var(--danger);
+            box-shadow: 0 0 10px var(--danger);
         }
 
         .status-online {
             background: var(--accent);
+        }
+
+        /* Card States */
+        @keyframes border-pulse-yellow {
+            0% {
+                border-color: rgba(250, 204, 21, 0.3);
+                box-shadow: 0 0 0 rgba(250, 204, 21, 0);
+            }
+
+            50% {
+                border-color: rgba(250, 204, 21, 0.8);
+                box-shadow: 0 0 15px rgba(250, 204, 21, 0.2);
+            }
+
+            100% {
+                border-color: rgba(250, 204, 21, 0.3);
+                box-shadow: 0 0 0 rgba(250, 204, 21, 0);
+            }
+        }
+
+        .card-running {
+            border-color: #facc15 !important;
+            animation: border-pulse-yellow 2s infinite;
+        }
+
+        .card-error {
+            border-color: var(--danger) !important;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .card-success {
+            border-color: var(--accent) !important;
+            background: rgba(34, 197, 94, 0.05);
         }
 
         .crawler-header {
@@ -735,26 +770,44 @@
 
             container.innerHTML = Object.entries(crawlers).map(([id, info]) => {
                 const isRunning = info.status === 'running';
-                const statusLabel = isRunning ? 'Executando...' : (info.status === 'error' ? 'Falhou' : 'Aguardando');
-                const dotClass = `status-${info.status}`;
+                const isError = info.status === 'error';
 
-                // DATA COUNT LOGIC
-                // sites key depends on how api returns it. usually matches ID or Name.
-                // based on previous code, sites uses ID? check `renderDistribution`.
-                // Need to match `id` to `sites` keys.
-                // Let's iterate sites to find a match or use direct look up if keys match.
-                // Assuming keys in `sites` are like 'sodre', 'copart' etc which match `id` here.
+                // DATA COUNT
                 const siteData = sites[id] || { count: 0 };
                 const count = siteData.count || 0;
-
-                // "Button turns green" logic
                 const hasItems = count > 10;
+
+                // STATUS ANIMATION LOGIC
+                let statusLabel = 'Aguardando';
+                let dotClass = 'status-idle';
+                let cardClass = '';
+
+                if (isRunning) {
+                    statusLabel = 'Coletando...';
+                    dotClass = 'status-running'; // Yellow pulse
+                    cardClass = 'card-running';
+                } else if (isError) {
+                    statusLabel = 'Falhou';
+                    dotClass = 'status-error'; // Red
+                    cardClass = 'card-error';
+                } else if (hasItems) {
+                    statusLabel = 'Online';
+                    dotClass = 'status-online'; // Green
+                    cardClass = 'card-success';
+                }
+
+                // BUTTON LOGIC
                 const btnStyle = isRunning
                     ? ''
-                    : (hasItems ? 'background: var(--accent); color: white; border: none; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);' : '');
+                    : (hasItems ? 'background: var(--accent); color: white; border: none; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);' : (isError ? 'border-color: var(--danger); color: var(--danger);' : ''));
+
+                const btnText = isRunning ? 'Coletando...' : (hasItems ? 'Atualizar Base' : (isError ? 'Tentar Novamente' : 'Rodar Agora'));
+                const btnIcon = isRunning ? 'fa-spinner fa-spin' : (isError ? 'fa-redo' : 'fa-play');
+
+
 
                 return `
-                    <div class="crawler-card" style="${hasItems ? 'border-color: rgba(34, 197, 94, 0.3);' : ''}">
+                    <div class="crawler-card ${cardClass}" style="transition: all 0.3s;">
                         <div class="crawler-header">
                             <span class="crawler-name">${info.name}</span>
                             <div style="font-size: 0.75rem; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px;">
@@ -762,13 +815,13 @@
                             </div>
                         </div>
                         <div class="crawler-info">
-                            <p style="margin-bottom: 5px;"><i class="far fa-clock"></i> Último: ${info.lastRun ? new Date(info.lastRun).toLocaleTimeString() : 'Nunca run'}</p>
+                            <p style="margin-bottom: 5px;"><i class="far fa-clock"></i> Último: ${info.lastRun ? new Date(info.lastRun).toLocaleTimeString() : 'Nunca'}</p>
                             <p style="margin-bottom: 5px;"><i class="fas fa-car"></i> Veículos: <b style="color: ${hasItems ? 'var(--accent)' : 'inherit'}">${count}</b></p>
                             <p><i class="fas fa-tag"></i> ID: <b>${id}</b></p>
                         </div>
                         <button class="btn btn-outline" style="width: 100%; border-radius: 10px; font-size: 0.8rem; ${btnStyle}" onclick="runCrawler('${id}')" ${isRunning ? 'disabled' : ''}>
-                            <i class="fas ${isRunning ? 'fa-spinner fa-spin' : 'fa-play'}"></i> 
-                            ${isRunning ? 'Coletando...' : (hasItems ? 'Atualizar Base' : 'Rodar Agora')}
+                            <i class="fas ${btnIcon}"></i> 
+                            ${btnText}
                         </button>
                     </div>
                 `;
