@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { MongoClient } from 'mongodb';
+import 'dotenv/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -107,9 +108,10 @@ export const matchesFilter = (item, filtro) => {
 const connectDatabase = async () => {
     const mongoUri = process.env.MONGODB_URI;
 
-    if (mongoUri) {
+    if (mongoUri && mongoUri !== 'undefined') {
         try {
-            console.log('🔌 Tentando conectar ao MongoDB...');
+            const maskedUri = mongoUri.replace(/\/\/.*?:.*?@/, '//***:***@');
+            console.log(`🔌 Tentando conectar ao MongoDB: ${maskedUri}`);
             const client = new MongoClient(mongoUri, {
                 serverSelectionTimeoutMS: 2000 // 2 seconds timeout
             });
@@ -289,7 +291,11 @@ const connectDatabase = async () => {
         }
     }
 
-    console.log('✅ JSON Database conectado (Modo Arquivo)');
+    if (!mongoUri || mongoUri === 'undefined') {
+        console.log('ℹ️ MONGODB_URI não detectada. Usando JSON Database (Modo Local).');
+    } else {
+        console.log('✅ JSON Database conectado (Fallback)');
+    }
 
     const buscarLista = async ({ colecao = 'veiculos', filtraEncerrados, encerrando, filtroHoras }) => {
         let items = readData(colecao);

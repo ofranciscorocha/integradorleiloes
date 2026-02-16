@@ -1,6 +1,6 @@
-import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
+import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
 
 dotenv.config();
 puppeteer.use(StealthPlugin());
@@ -16,18 +16,10 @@ const createCrawler = (db) => {
         console.log(`🚀 [${SITE}] SUPERCRAWLER: Iniciando captura via API...`);
 
         const browser = await puppeteer.launch({
-            executablePath: process.env.CHROME_PATH || (process.platform === 'linux' ? '/usr/bin/google-chrome-stable' : undefined),
+            executablePath: getExecutablePath(),
             headless: true,
             protocolTimeout: 240000,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-gpu',
-                '--disable-software-rasterizer',
-                '--disable-extensions',
-                '--window-size=1280,720'
-            ]
+            args: getCommonArgs()
         });
 
         let totalVeiculos = 0;
