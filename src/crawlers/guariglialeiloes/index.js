@@ -45,8 +45,8 @@ const createCrawler = (db) => {
 
             // 1. Get Active Auctions
             console.log(`   🔍 [${SITE}] Acessando home para listar leilões...`);
-            await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
-            await new Promise(r => setTimeout(r, 2000));
+            await page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+            await new Promise(r => setTimeout(r, 3000));
 
             const leiloes = await page.evaluate((baseUrl) => {
                 const found = [];
@@ -78,8 +78,9 @@ const createCrawler = (db) => {
                 while (hasMore && pagina <= 20) {
                     try {
                         const pageUrl = `${leilao.url}?page=${pagina}`;
-                        await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
-                        await new Promise(r => setTimeout(r, 1000));
+                        await page.goto(pageUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                        await page.waitForSelector('div.lote.rounded', { timeout: 15000 }).catch(() => null);
+                        await new Promise(r => setTimeout(r, 2000));
 
                         const itens = await page.evaluate((site, baseUrl, dh, leilaoUrl) => {
                             const batch = [];

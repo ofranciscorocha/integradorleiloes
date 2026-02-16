@@ -55,18 +55,25 @@ const createCrawler = (db) => {
                     };
 
                     const resp = await fetchWithTimeout(`${apiBase}/api/v2/leilao/agenda`, { headers });
-                    return await resp.json();
-                } catch (e) { return []; }
+                    if (!resp.ok) return { error: `HTTP ${resp.status}`, status: resp.status };
+                    const data = await resp.json();
+                    return { data, status: resp.status };
+                } catch (e) { return { error: e.message }; }
             }, API_BASE);
 
-            if (!agenda || (Array.isArray(agenda) && agenda.length === 0)) {
-                console.log(`   ⚠️ [${SITE}] NENHUM leilão encontrado via API. Verificando cabeçalhos...`);
+            if (agenda.error) {
+                console.log(`   ❌ [${SITE}] API Error: ${agenda.error} (Status: ${agenda.status || '?'})`);
+            }
+
+            const agendaData = agenda.data || [];
+            if (!Array.isArray(agendaData) || agendaData.length === 0) {
+                console.log(`   ⚠️ [${SITE}] NENHUM leilão encontrado via API.`);
             }
 
             // Get all auction IDs from agenda
             const allAuctionIds = [];
-            if (Array.isArray(agenda)) {
-                agenda.forEach(entry => {
+            if (Array.isArray(agendaData)) {
+                agendaData.forEach(entry => {
                     if (entry.auctions && Array.isArray(entry.auctions)) {
                         entry.auctions.forEach(id => {
                             if (!allAuctionIds.includes(id)) allAuctionIds.push(id);

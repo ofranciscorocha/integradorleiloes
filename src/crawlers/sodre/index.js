@@ -38,26 +38,30 @@ export const execute = async (database) => {
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
         const targetUrl = 'https://www.sodresantoro.com.br/';
-        console.log(`   🔍 [${SITE}] Estabelecendo sessão...`);
+        console.log(`   🔍 [${SITE}] Estabelecendo sessão (Warm-up)...`);
 
         let pageLoaded = false;
         for (let attempt = 1; attempt <= 3; attempt++) {
             try {
-                await page.goto(targetUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                // Use networkidle0 for a deeper warm-up in session establishment
+                await page.goto(targetUrl, { waitUntil: 'networkidle0', timeout: TIMEOUT });
+
                 try {
-                    console.log(`   ⏳ [${SITE}] Aguardando desafio WAF (até 60s)...`);
+                    console.log(`   ⏳ [${SITE}] Aguardando carregamento total (até 60s)...`);
                     await page.waitForSelector('footer, #header, nav', { timeout: 60000 });
                 } catch (e) {
-                    console.log(`   ⚠️ [${SITE}] Timeout esperando elemento da home.`);
+                    console.log(`   ⚠️ [${SITE}] Timeout parcial na home, prosseguindo...`);
                 }
-                await new Promise(r => setTimeout(r, 3000));
+
+                // Explicit wait to ensure Cloudflare/WAF session is sticky
+                await new Promise(r => setTimeout(r, 7000));
                 pageLoaded = true;
-                console.log(`   ✅ [${SITE}] Sessão estabelecida.`);
+                console.log(`   ✅ [${SITE}] Sessão estabilizada.`);
                 break;
             } catch (e) {
                 console.log(`   ⚠️ [${SITE}] Tentativa ${attempt}/3 falhou: ${e.message}`);
                 if (attempt === 3) throw e;
-                await new Promise(r => setTimeout(r, 5000));
+                await new Promise(r => setTimeout(r, 10000));
             }
         }
 
@@ -77,6 +81,10 @@ export const execute = async (database) => {
 
             for (let offset = 0; offset < 20000; offset += 96) {
                 try {
+                    // Jitter: Add a small random delay to disrupt bot detection
+                    const jitter = Math.floor(Math.random() * 2000) + 500;
+                    await new Promise(r => setTimeout(r, jitter));
+
                     const cookies = await page.cookies();
                     const cookieStr = cookies.map(c => `${c.name}=${c.value}`).join('; ');
                     const userAgent = await page.evaluate(() => navigator.userAgent);
@@ -89,9 +97,15 @@ export const execute = async (database) => {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json, text/plain, */*',
                                 'Origin': 'https://www.sodresantoro.com.br',
-                                'Referer': 'https://www.sodresantoro.com.br/',
+                                'Referer': 'https://www.sodresantoro.com.br/veiculos/lotes',
                                 'User-Agent': userAgent,
-                                'Cookie': cookieStr
+                                'Cookie': cookieStr,
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Sec-Fetch-Dest': 'empty',
+                                'Sec-Fetch-Mode': 'cors',
+                                'Sec-Fetch-Site': 'same-origin',
+                                'sec-ch-ua-mobile': '?0',
+                                'sec-ch-ua-platform': '"Windows"'
                             },
                             body: JSON.stringify({
                                 indices: config.indices,

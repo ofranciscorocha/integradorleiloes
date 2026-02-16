@@ -112,7 +112,24 @@ const createCrawler = (db) => {
 
     const scrapeLotPage = async (page, url) => {
         try {
-            await page.goto(url, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+            // Railway resilience: retry navigation if it fails
+            let lotLoaded = false;
+            for (let i = 0; i < 2; i++) {
+                try {
+                    await page.goto(url, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+                    // Verify if important elements are present
+                    await page.waitForSelector('h1, .titulo-lote, .cardLote-descVeic', { timeout: 10000 });
+                    lotLoaded = true;
+                    break;
+                } catch (e) {
+                    console.log(`      ⚠️ [${SITE}] Retrying lot page load (${i + 1}/2)...`);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+            }
+            if (!lotLoaded) return null;
+
+            // Extra wait to ensure all lazy elements are ready in production
+            await new Promise(r => setTimeout(r, 2000));
 
             // Extract details
             const data = await page.evaluate((siteDomain) => {
@@ -191,7 +208,13 @@ const createCrawler = (db) => {
             let pageNum = 1;
             while (currentUrl && pageNum <= 20) {
                 await page.goto(currentUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
-                await page.waitForSelector('.cardlote', { timeout: 15000 }).catch(() => null);
+                // Check if list is empty or blocked
+                try {
+                    await page.waitForSelector('.cardlote', { timeout: 15000 });
+                } catch (e) {
+                    console.log(`   ⚠️ [${SITE}] No cards found on page ${pageNum}.`);
+                    break;
+                }
 
                 const links = await extractLinksFromPage(page);
 
