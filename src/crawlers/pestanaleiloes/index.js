@@ -56,8 +56,11 @@ const createCrawler = (db) => {
 
                     const resp = await fetchWithTimeout(`${apiBase}/api/v2/leilao/agenda`, { headers });
                     return await resp.json();
-                } catch (e) { return []; }
-            }, API_BASE);
+                }, API_BASE);
+
+            if (!agenda || (Array.isArray(agenda) && agenda.length === 0)) {
+                console.log(`   ⚠️ [${SITE}] NENHUM leilão encontrado via API. Verificando cabeçalhos...`);
+            }
 
             // Get all auction IDs from agenda
             const allAuctionIds = [];

@@ -2,7 +2,6 @@ import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
 import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
-import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
 
 dotenv.config();
 puppeteer.use(StealthPlugin());
@@ -102,16 +101,10 @@ const createCrawler = (db) => {
     const buscarTodos = async () => {
         console.log(`🚀 [${SITE}] High-Yield Mode: Inicializando...`);
         const browser = await puppeteer.launch({
-            executablePath: process.env.CHROME_PATH || (process.platform === 'linux' ? '/usr/bin/google-chrome-stable' : undefined),
+            executablePath: getExecutablePath(),
             headless: true,
             protocolTimeout: 240000,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-gpu',
-                '--window-size=1280,720'
-            ]
+            args: getCommonArgs()
         });
 
         let total = 0;

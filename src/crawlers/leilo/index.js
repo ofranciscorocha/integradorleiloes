@@ -125,18 +125,10 @@ const createCrawler = (db) => {
         console.log(`🚀 [${SITE}] Iniciando captura - APENAS VEÍCULOS...`);
 
         const browser = await puppeteer.launch({
-            executablePath: process.env.CHROME_PATH || (process.platform === 'linux' ? '/usr/bin/google-chrome-stable' : undefined),
+            executablePath: getExecutablePath(),
             headless: true,
             protocolTimeout: 240000,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-gpu',
-                '--disable-extensions',
-                '--disable-background-networking',
-                '--window-size=1280,720'
-            ]
+            args: getCommonArgs()
         });
 
         const listaTotal = [];
