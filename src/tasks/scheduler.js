@@ -144,7 +144,9 @@ const initScheduler = async (runImmediate = false) => {
     const envCheckPath = path.join(__dirname, '../utils/env-check.js');
     if (fs.existsSync(envCheckPath)) {
         logToFile('🕵️ Running Environment Audit...');
-        spawn('node', [envCheckPath], { stdio: 'inherit', shell: true });
+        const audit = spawn('node', [envCheckPath], { shell: true });
+        audit.stdout.on('data', (data) => logToFile(`[AUDIT] ${data.toString().trim()}`));
+        audit.stderr.on('data', (data) => logToFile(`[AUDIT ERROR] ${data.toString().trim()}`));
     }
 
     if (runImmediate) {

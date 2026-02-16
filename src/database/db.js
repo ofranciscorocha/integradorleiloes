@@ -106,9 +106,9 @@ export const matchesFilter = (item, filtro) => {
 };
 
 const connectDatabase = async () => {
-    const mongoUri = process.env.MONGODB_URI;
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URL || process.env.MONGO_URL || process.env.DATABASE_URL;
 
-    if (mongoUri && mongoUri !== 'undefined') {
+    if (mongoUri && mongoUri !== 'undefined' && mongoUri.startsWith('mongodb')) {
         try {
             const maskedUri = mongoUri.replace(/\/\/.*?:.*?@/, '//***:***@');
             console.log(`🔌 Tentando conectar ao MongoDB: ${maskedUri}`);
