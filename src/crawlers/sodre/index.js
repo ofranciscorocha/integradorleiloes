@@ -122,115 +122,133 @@ export const execute = async (database) => {
                     const cookieStr = cookies.map(c => `${c.name}=${c.value}`).join('; ');
                     const userAgent = await page.evaluate(() => navigator.userAgent);
 
-                    // Refactored to Node-context fetch to bypass 499 browser blocks
-                    const response = await fetch('https://www.sodresantoro.com.br/api/search-lots', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json, text/plain, */*',
-                            'Origin': 'https://www.sodresantoro.com.br',
-                            'Referer': 'https://www.sodresantoro.com.br/veiculos/lotes?page=1',
-                            'User-Agent': userAgent,
-                            'Cookie': cookieStr
-                        },
-                        body: JSON.stringify({
-                            indices: config.indices,
-                            query: config.query,
-                            from: offset,
-                            size: 96,
-                            sort: [{ "lot_status_id_order": { "order": "asc" } }, { "lot_visits": { "order": "desc" } }]
-                        })
-                    });
+                    let results = [];
+                    try {
+                        const response = await fetch('https://www.sodresantoro.com.br/api/search-lots', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json, text/plain, */*',
+                                'Origin': 'https://www.sodresantoro.com.br',
+                                'Referer': 'https://www.sodresantoro.com.br/veiculos/lotes?page=1',
+                                'User-Agent': userAgent,
+                                'Cookie': cookieStr
+                            },
+                            body: JSON.stringify({
+                                indices: config.indices,
+                                query: config.query,
+                                from: offset,
+                                size: 96,
+                                sort: [{ "lot_status_id_order": { "order": "asc" } }, { "lot_visits": { "order": "desc" } }]
+                            })
+                        });
 
-                    if (response.status === 403 || response.status === 401 || !response.ok) {
-                        throw new Error(`Status ${response.status}`);
+                        if (!response.ok) throw new Error(`API Status ${response.status}`);
+                        const data = await response.json();
+                        results = data.results || [];
+                    } catch (apiError) {
+                        console.log(`   ⚠️ [${SITE}] API fallido (${apiError.message}). Tentando DOM scraping...`);
+                        results = await page.evaluate(() => {
+                            const domItems = [];
+                            document.querySelectorAll('.leilao-lote-card, .card-lote').forEach(card => {
+                                try {
+                                    const linkEl = card.querySelector('a');
+                                    if (!linkEl) return;
+                                    const link = linkEl.href;
+                                    const title = (card.querySelector('.titulo, h3, h4')?.innerText || '').trim();
+                                    const price = (card.querySelector('.valor')?.innerText || '0').replace(/[^0-9,]/g, '').replace(',', '.');
+                                    const img = card.querySelector('img')?.src;
+                                    if (title.length > 5) {
+                                        domItems.push({
+                                            lot_id: link.split('/').pop(),
+                                            produto: { descricao: title },
+                                            valorAtual: String(price),
+                                            imagens: img ? [{ url: img }] : [],
+                                            leilaoId: 'fallback'
+                                        });
+                                    }
+                                } catch (err) { }
+                            });
+                            return domItems;
+                        });
                     }
 
-                    const data = await response.json();
-                    const newLots = data.results || [];
-                    // FALLBACK: DOM SCRAPING
-                    const domItems = [];
-                    document.querySelectorAll('.leilao-lote-card, .card-lote, div[class*="lote"]').forEach(card => {
-                        try {
-                            const linkEl = card.querySelector('a');
-                            if (!linkEl) return;
-                            const link = linkEl.href;
-                            const title = (card.querySelector('.titulo, h3, h4, .leilao-lote-titulo')?.innerText || '').trim();
-                            const price = (card.querySelector('.valor, .leilao-lote-valor')?.innerText || '0').replace(/[^0-9,]/g, '').replace(',', '.');
-                            const img = card.querySelector('img')?.src;
+                    if (!results || results.length === 0) {
+                        console.log(`   🔸 [${SITE}] Fim dos resultados no offset ${offset}.`);
+                        break;
+                    }
 
-                            if (title.length > 5) {
-                                domItems.push({
-                                    lot_id: link.split('/').pop(),
-                                    produto: { descricao: title },
-                                    valorAtual: String(price),
-                                    imagens: img ? [{ url: img }] : [],
-                                    leilaoId: 'fallback'
-                                });
-                            }
-                        } catch (err) { }
-                    });
+                    const mapped = results.map(item => {
+                        const id = item.lot_id || item.id;
+                        if (seenIds.has(id)) return null;
+                        seenIds.add(id);
 
-                    if (domItems.length > 0) return { results: domItems, total: domItems.length, fromDOM: true };
-                    return { results: [], total: 0, error: e.message };
+                        return {
+                            registro: id,
+                            site: SITE,
+                            link: `https://www.sodresantoro.com.br/lote/${id}`,
+                            veiculo: (item.produto?.descricao || item.title || 'VEÍCULO').toUpperCase(),
+                            fotos: (item.imagens || []).map(img => img.url).filter(Boolean),
+                            valor: parseFloat(item.valorAtual || item.current_bid || 0),
+                            ano: null, // extracted later if needed
+                            localLeilao: item.leilaoId || 'Brasil',
+                            modalidade: 'leilao',
+                            tipo: 'veiculo'
+                        };
+                    }).filter(Boolean);
+                    consecutiveErrors++;
+                    if (consecutiveErrors >= 3) break;
+                    continue;
                 }
-                    }, config, offset);
-
-            if (newLots.error) {
-                console.log(`   ⚠️ [${SITE}] API error: ${newLots.error}`);
-                consecutiveErrors++;
-                if (consecutiveErrors >= 3) break;
-                continue;
-            }
 
             consecutiveErrors = 0;
 
-            if (newLots.results.length === 0) {
-                console.log(`   🔸 [${SITE}] ${config.label} - Fim no offset ${offset}`);
-                break;
-            }
+                if (newLots.results.length === 0) {
+                    console.log(`   🔸 [${SITE}] ${config.label} - Fim no offset ${offset}`);
+                    break;
+                }
 
-            let veiculos = [];
-            if (newLots.fromDOM) {
-                // Direct usage of DOM items
-                console.log(`   ⚠️ [${SITE}] Usando dados do Fallback DOM (WAF Bypass)...`);
-                veiculos = newLots.results;
-            } else {
-                // Filter out already seen
-                const newResults = newLots.results.filter(item => {
-                    const id = String(item.lot_id || item.id);
-                    if (seenIds.has(id)) return false;
-                    seenIds.add(id);
-                    return true;
-                });
-                veiculos = processResults(newResults, SITE);
-            }
+                let veiculos = [];
+                if (newLots.fromDOM) {
+                    // Direct usage of DOM items
+                    console.log(`   ⚠️ [${SITE}] Usando dados do Fallback DOM (WAF Bypass)...`);
+                    veiculos = newLots.results;
+                } else {
+                    // Filter out already seen
+                    const newResults = newLots.results.filter(item => {
+                        const id = String(item.lot_id || item.id);
+                        if (seenIds.has(id)) return false;
+                        seenIds.add(id);
+                        return true;
+                    });
+                    veiculos = processResults(newResults, SITE);
+                }
 
-            if (veiculos.length > 0) {
-                await db.salvarLista(veiculos);
-                capturados += veiculos.length;
-                configCapturados += veiculos.length;
-                console.log(`   ✅ [${SITE}] ${config.label} offset=${offset}: +${veiculos.length} veículos. Total: ${capturados} (API total: ${newLots.total})`);
-            }
+                if (veiculos.length > 0) {
+                    await db.salvarLista(veiculos);
+                    capturados += veiculos.length;
+                    configCapturados += veiculos.length;
+                    console.log(`   ✅ [${SITE}] ${config.label} offset=${offset}: +${veiculos.length} veículos. Total: ${capturados} (API total: ${newLots.total})`);
+                }
 
-            // Stop if we're past the total
-            if (newLots.total > 0 && offset + 96 >= newLots.total) break;
+                // Stop if we're past the total
+                if (newLots.total > 0 && offset + 96 >= newLots.total) break;
 
-            await new Promise(r => setTimeout(r, 400));
-        } catch (e) {
-            console.log(`   ⚠️ [${SITE}] Erro offset ${offset}: ${e.message}`);
-            consecutiveErrors++;
-            if (consecutiveErrors >= 3) {
-                console.log(`   ❌ [${SITE}] ${config.label} - 3 erros consecutivos, pulando.`);
-                break;
+                await new Promise(r => setTimeout(r, 400));
+            } catch (e) {
+                console.log(`   ⚠️ [${SITE}] Erro offset ${offset}: ${e.message}`);
+                consecutiveErrors++;
+                if (consecutiveErrors >= 3) {
+                    console.log(`   ❌ [${SITE}] ${config.label} - 3 erros consecutivos, pulando.`);
+                    break;
+                }
             }
         }
-    }
 
-            if (configCapturados > 0) {
-        console.log(`   📊 [${SITE}] ${config.label}: ${configCapturados} veículos.`);
+        if (configCapturados > 0) {
+            console.log(`   📊 [${SITE}] ${config.label}: ${configCapturados} veículos.`);
+        }
     }
-}
 
     } catch (e) {
     console.error(`❌ [${SITE}] Erro:`, e.message);
