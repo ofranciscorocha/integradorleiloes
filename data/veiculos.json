@@ -69331,12 +69331,13 @@
       "https://www.patiorochaleiloes.com.br/site/images/sem-imagem-lote.jpg?modified=20240531"
     ],
     "valor": 26,
-    "condicao": "Conservado",
+    "condicao": "Leilão",
     "ano": 2009,
     "localLeilao": "PR / BR",
     "modalidade": "leilao",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:02:18.088Z"
+    "atualizadoEm": "2026-02-16T05:21:59.594Z",
+    "tipo": "veiculo"
   },
   {
     "_id": "177111302894899laj",

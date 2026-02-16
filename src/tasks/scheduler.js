@@ -36,8 +36,9 @@ const crawlerScripts = [
     { id: 'parque', site: 'parquedosleiloes.com.br', path: path.join(__dirname, '../crawlers/parque/run.js'), name: 'Parque dos Leilões' },
     { id: 'leilo', site: 'leilo.com.br', path: path.join(__dirname, '../crawlers/leilo/run.js'), name: 'Leilo' },
     { id: 'pestana', site: 'pestanaleiloes.com.br', path: path.join(__dirname, '../crawlers/pestanaleiloes/run.js'), name: 'Pestana Leilões' },
+    { id: 'joaoemilio', site: 'joaoemilio.com.br', path: path.join(__dirname, '../crawlers/joaoemilio/run.js'), name: 'João Emílio' },
     // NOTE: The following crawlers are not yet implemented (no run.js exists):
-    // milan, sumareleiloes, satoleiloes, danielgarcialeiloes, joaoemilio, claudiokussleiloes
+    // milan, sumareleiloes, satoleiloes, danielgarcialeiloes, claudiokussleiloes
 ];
 
 // Initialize crawler status map
