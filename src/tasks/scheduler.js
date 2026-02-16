@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LOG_FILE = path.join(__dirname, '../../crawler.log');
 
-const CONCURRENCY = 1; // Sequential to prevent JSON file race conditions
+const CONCURRENCY = process.env.MONGODB_URI ? 2 : 1; // More concurrent on Railway, stay sequential on JSON
 
 // Status Tracking
 const schedulerStatus = {

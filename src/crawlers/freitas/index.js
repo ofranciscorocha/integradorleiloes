@@ -243,11 +243,16 @@ const createCrawler = (db) => {
         console.log(`🚀 [${SITE}] Iniciando captura de veículos...`);
 
         const browser = await puppeteer.launch({
-            headless: "new",
-            protocolTimeout: 120000,
+            executablePath: process.env.CHROME_PATH || (process.platform === 'linux' ? '/usr/bin/google-chrome-stable' : undefined),
+            headless: true,
+            protocolTimeout: 240000,
             args: [
-                '--no-sandbox', '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage', '--disable-gpu',
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--disable-software-rasterizer',
+                '--disable-extensions',
                 '--window-size=1280,720'
             ]
         });
