@@ -1,3 +1,4 @@
+import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
 import connectDatabase from '../../database/db.js';

@@ -65791,30 +65791,39 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:21:27.063Z"
+    "atualizadoEm": "2026-02-16T04:45:33.942Z"
   },
   {
     "_id": "1771018879751rej83",
     "criadoEm": "2026-02-13T21:41:19.751Z",
-    "veiculo": "MOTO À VENDA EM LEILÃO",
-    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7659&loteNumero=238",
+    "veiculo": "CARRO À VENDA EM LEILÃO",
+    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7648&loteNumero=238",
     "registro": "238",
     "fotos": [
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_01.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_02.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_03.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_04.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_05.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_06.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_07.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_08.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_09.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_10.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_11.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_12.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_13.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LT238_14.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/238/LTFOTO_KM.JPG"
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_01.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_02.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_03.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_04.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_05.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_06.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_07.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_08.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_09.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_10.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_11.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_12.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_13.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_14.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_15.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_16.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_17.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_18.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_19.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_20.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_21.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_22.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LT238_23.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/238/LTFOTO_KM.JPG"
     ],
     "valor": 0,
     "site": "freitasleiloeiro.com.br",
@@ -65822,7 +65831,7 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:44:23.653Z",
+    "atualizadoEm": "2026-02-16T04:45:38.297Z",
     "ano": null
   },
   {
@@ -65864,42 +65873,36 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:21:34.566Z",
+    "atualizadoEm": "2026-02-16T04:45:42.950Z",
     "ano": null
   },
   {
     "_id": "17710188797522pcn8",
     "criadoEm": "2026-02-13T21:41:19.752Z",
     "veiculo": "CARRO À VENDA EM LEILÃO",
-    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7659&loteNumero=240",
+    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7648&loteNumero=240",
     "registro": "240",
     "fotos": [
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_01.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_02.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_03.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_04.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_05.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_06.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_07.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_08.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_09.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_10.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_11.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_12.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_13.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_14.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_15.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_16.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_17.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_18.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_19.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_20.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_21.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_22.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_23.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_24.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LT240_25.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/240/LTFOTO_KM.JPG"
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_01.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_02.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_03.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_04.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_05.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_06.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_07.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_08.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_09.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_10.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_11.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_12.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_13.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_14.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_15.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_16.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_17.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_18.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LT240_19.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/240/LTFOTO_KM.JPG"
     ],
     "valor": 0,
     "site": "freitasleiloeiro.com.br",
@@ -65907,42 +65910,39 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:44:27.292Z",
+    "atualizadoEm": "2026-02-16T04:45:48.723Z",
     "ano": null
   },
   {
     "_id": "1771018879752z7rwu",
     "criadoEm": "2026-02-13T21:41:19.752Z",
     "veiculo": "CARRO À VENDA EM LEILÃO",
-    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7659&loteNumero=241",
+    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7648&loteNumero=241",
     "registro": "241",
     "fotos": [
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_01.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_02.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_03.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_04.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_05.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_06.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_07.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_08.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_09.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_10.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_11.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_12.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_13.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_14.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_15.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_16.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_17.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_18.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_19.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_20.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_21.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_22.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_23.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_24.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LT241_25.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/241/LTFOTO_KM.JPG"
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_01.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_02.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_03.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_04.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_05.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_06.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_07.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_08.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_09.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_10.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_11.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_12.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_13.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_14.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_15.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_16.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_17.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_18.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_19.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_20.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_21.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LT241_22.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/241/LTFOTO_KM.JPG"
     ],
     "valor": 0,
     "site": "freitasleiloeiro.com.br",
@@ -65950,47 +65950,40 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:44:30.850Z",
+    "atualizadoEm": "2026-02-16T04:45:53.884Z",
     "ano": null
   },
   {
     "_id": "17710188797532hndf",
     "criadoEm": "2026-02-13T21:41:19.753Z",
     "veiculo": "CARRO À VENDA EM LEILÃO",
-    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7659&loteNumero=242",
+    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7648&loteNumero=242",
     "registro": "242",
     "fotos": [
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_01.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_02.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_03.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_04.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_05.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_06.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_07.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_08.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_09.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_10.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_11.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_12.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_13.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_14.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_15.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_16.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_17.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_18.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_19.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_20.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_21.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_22.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_23.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_24.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_25.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_26.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_27.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_28.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_29.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LT242_30.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/242/LTFOTO_KM.JPG"
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_01.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_02.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_03.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_04.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_05.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_06.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_07.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_08.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_09.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_10.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_11.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_12.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_13.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_14.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_15.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_16.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_17.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_18.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_19.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_20.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_21.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_22.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LT242_23.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/242/LTFOTO_KM.JPG"
     ],
     "valor": 0,
     "site": "freitasleiloeiro.com.br",
@@ -65998,37 +65991,36 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:44:34.638Z",
+    "atualizadoEm": "2026-02-16T04:45:59.455Z",
     "ano": null
   },
   {
     "_id": "1771018879753517n8",
     "criadoEm": "2026-02-13T21:41:19.753Z",
     "veiculo": "CARRO À VENDA EM LEILÃO",
-    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7659&loteNumero=243",
+    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7648&loteNumero=243",
     "registro": "243",
     "fotos": [
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_01.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_02.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_03.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_04.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_05.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_06.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_07.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_08.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_09.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_10.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_11.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_12.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_13.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_14.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_15.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_16.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_17.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_18.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_19.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LT243_20.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/243/LTFOTO_KM.JPG"
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_01.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_02.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_03.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_04.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_05.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_06.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_07.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_08.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_09.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_10.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_11.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_12.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_13.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_14.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_15.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_16.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_17.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_18.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LT243_19.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/243/LTFOTO_KM.JPG"
     ],
     "valor": 0,
     "site": "freitasleiloeiro.com.br",
@@ -66036,35 +66028,38 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:44:38.660Z",
+    "atualizadoEm": "2026-02-16T04:46:05.013Z",
     "ano": null
   },
   {
     "_id": "1771018882441x0fcq",
     "criadoEm": "2026-02-13T21:41:22.441Z",
     "veiculo": "CARRO À VENDA EM LEILÃO",
-    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7659&loteNumero=244",
+    "link": "https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7648&loteNumero=244",
     "registro": "244",
     "fotos": [
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_01.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_02.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_03.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_04.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_05.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_06.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_07.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_08.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_09.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_10.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_11.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_12.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_13.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_14.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_15.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_16.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_17.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LT244_18.JPG",
-      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7659/FOTOS/244/LTFOTO_KM.JPG"
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_01.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_02.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_03.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_04.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_05.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_06.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_07.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_08.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_09.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_10.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_11.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_12.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_13.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_14.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_15.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_16.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_17.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_18.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_19.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_20.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LT244_21.JPG",
+      "https://cdn3.freitasleiloeiro.com.br/LEILOES/7648/FOTOS/244/LTFOTO_KM.JPG"
     ],
     "valor": 0,
     "site": "freitasleiloeiro.com.br",
@@ -66072,7 +66067,7 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:44:43.613Z",
+    "atualizadoEm": "2026-02-16T04:46:13.878Z",
     "ano": null
   },
   {
@@ -66116,7 +66111,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:02.826Z"
+    "atualizadoEm": "2026-02-16T04:46:17.512Z"
   },
   {
     "_id": "1771018882442o7y2g",
@@ -66155,7 +66150,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:06.970Z"
+    "atualizadoEm": "2026-02-16T04:46:21.413Z"
   },
   {
     "_id": "1771018882442fe6q9",
@@ -66189,7 +66184,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:11.103Z"
+    "atualizadoEm": "2026-02-16T04:46:25.391Z"
   },
   {
     "_id": "1771018882442ku55d",
@@ -66232,7 +66227,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:15.814Z"
+    "atualizadoEm": "2026-02-16T04:46:30.232Z"
   },
   {
     "_id": "1771018882443ikjiq",
@@ -66272,7 +66267,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:19.734Z"
+    "atualizadoEm": "2026-02-16T04:46:35.061Z"
   },
   {
     "_id": "1771018882444qnlgl",
@@ -66307,7 +66302,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:23.452Z"
+    "atualizadoEm": "2026-02-16T04:46:39.277Z"
   },
   {
     "_id": "1771018882445nnrw6",
@@ -66338,7 +66333,7 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:22:27.325Z",
+    "atualizadoEm": "2026-02-16T04:46:42.920Z",
     "ano": null
   },
   {
@@ -66382,7 +66377,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:30.986Z"
+    "atualizadoEm": "2026-02-16T04:46:46.978Z"
   },
   {
     "_id": "177101888244616dt2",
@@ -66426,7 +66421,7 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:22:35.599Z",
+    "atualizadoEm": "2026-02-16T04:46:50.770Z",
     "ano": null
   },
   {
@@ -66469,7 +66464,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:39.637Z"
+    "atualizadoEm": "2026-02-16T04:46:54.352Z"
   },
   {
     "_id": "1771018882447hscb4",
@@ -66503,7 +66498,7 @@
     "modalidade": "leilao",
     "tipo": "veiculo",
     "log": [],
-    "atualizadoEm": "2026-02-15T15:22:43.849Z",
+    "atualizadoEm": "2026-02-16T04:46:58.091Z",
     "ano": null
   },
   {
@@ -66547,7 +66542,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:47.813Z"
+    "atualizadoEm": "2026-02-16T04:47:01.839Z"
   },
   {
     "_id": "1771018882448i03nl",
@@ -66588,7 +66583,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:51.279Z"
+    "atualizadoEm": "2026-02-16T04:47:05.531Z"
   },
   {
     "_id": "1771018882449r1aal",
@@ -66626,7 +66621,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:54.924Z"
+    "atualizadoEm": "2026-02-16T04:47:09.173Z"
   },
   {
     "_id": "1771018882449rgzvc",
@@ -66660,7 +66655,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:22:58.928Z"
+    "atualizadoEm": "2026-02-16T04:47:13.503Z"
   },
   {
     "_id": "1771018882450x7t7q",
@@ -66704,7 +66699,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:23:02.726Z"
+    "atualizadoEm": "2026-02-16T04:47:16.990Z"
   },
   {
     "_id": "1771018882450conaq",
@@ -66746,7 +66741,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:23:06.216Z"
+    "atualizadoEm": "2026-02-16T04:47:20.504Z"
   },
   {
     "_id": "1771018882451724r5",
@@ -66785,7 +66780,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:23:10.003Z"
+    "atualizadoEm": "2026-02-16T04:47:24.471Z"
   },
   {
     "_id": "1771018882451kaiq0",
@@ -66825,7 +66820,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:23:13.717Z"
+    "atualizadoEm": "2026-02-16T04:47:28.229Z"
   },
   {
     "_id": "177101888245178sjb",
@@ -66858,7 +66853,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:23:18.105Z"
+    "atualizadoEm": "2026-02-16T04:47:32.714Z"
   },
   {
     "_id": "1771018882452s9v74",
@@ -66888,7 +66883,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:23:21.680Z"
+    "atualizadoEm": "2026-02-16T04:47:36.602Z"
   },
   {
     "_id": "1771018882452pqjee",
@@ -66930,7 +66925,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:23:25.361Z"
+    "atualizadoEm": "2026-02-16T04:47:41.248Z"
   },
   {
     "_id": "1771018882453y7wqm",
@@ -66969,7 +66964,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:23:29.529Z"
+    "atualizadoEm": "2026-02-16T04:47:45.138Z"
   },
   {
     "_id": "17710188824530i0ps",
@@ -67006,7 +67001,7 @@
     "tipo": "veiculo",
     "log": [],
     "ano": null,
-    "atualizadoEm": "2026-02-15T15:23:33.113Z"
+    "atualizadoEm": "2026-02-16T04:47:49.276Z"
   },
   {
     "_id": "17710188824546i2yx",
