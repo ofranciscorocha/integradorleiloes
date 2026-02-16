@@ -86,7 +86,15 @@ const runCrawler = (crawler) => {
             try { fs.appendFileSync(LOG_FILE, `[${name} ERROR] ${output}\n`); } catch (e) { }
         });
 
+        // Hard timeout: 15 minutes per crawler to prevent hanging forever
+        const timeout = setTimeout(() => {
+            logToFile(`⚠️ ${name} timed out after 15m. Killing process.`);
+            child.kill('SIGKILL');
+            resolve(1);
+        }, 15 * 60 * 1000);
+
         child.on('close', (code) => {
+            clearTimeout(timeout);
             logToFile(`${name} finished with code ${code}`);
             schedulerStatus.history.push({ name, code, time: new Date() });
             if (schedulerStatus.history.length > 30) schedulerStatus.history.shift();
@@ -98,6 +106,7 @@ const runCrawler = (crawler) => {
         });
 
         child.on('error', (err) => {
+            clearTimeout(timeout);
             logToFile(`${name} failed to start: ${err.message}`);
             schedulerStatus.crawlers[id].status = 'error';
             resolve(1);

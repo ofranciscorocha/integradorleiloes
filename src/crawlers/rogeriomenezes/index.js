@@ -100,11 +100,14 @@ const createCrawler = (db) => {
     const buscarTodos = async () => {
         console.log(`🚀 [${SITE}] High-Yield Mode: Inicializando...`);
         const browser = await puppeteer.launch({
-            headless: "new",
-            protocolTimeout: 120000,
+            executablePath: process.env.CHROME_PATH || (process.platform === 'linux' ? '/usr/bin/google-chrome-stable' : undefined),
+            headless: true,
+            protocolTimeout: 240000,
             args: [
-                '--no-sandbox', '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage', '--disable-gpu',
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
                 '--window-size=1280,720'
             ]
         });

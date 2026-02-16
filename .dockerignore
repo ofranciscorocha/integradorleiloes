@@ -1,22 +1,9 @@
-node_modules/
-.npm
+node_modules
+data
 .env
+*.log
+.vscode
 .git
-.gemini/
-.agent/
-
-# Ignorar apenas arquivos de dump e testes temporários
-inspect-*.js
-dump-*.js
-*_dump.html
-*_inspect.png
-sato_*.html
-sato_*.json
-
-# Manter arquivos de data locais fora do Docker para evitar conflitos
-# (O app criará novas pastas de data em runtime no Railway)
-data/
-src/database/data/
-
-# Logar histórico local
-logs/
+.gitignore
+.dockerignore
+npm-debug.log

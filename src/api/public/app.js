@@ -338,8 +338,15 @@ const renderVeiculos = () => {
     const MAX_FREE_PER_SITE = 8;
     const isLogged = !!currentState.user;
 
-    // Page 1 check: Be more permissive if currentPage is undefined or 1
-    const isPageOne = !currentState.currentPage || currentState.currentPage === 1 || (currentState.pagination && currentState.pagination.page === 1);
+    // Page 1 check: Use Number() to avoid string/number mismatch
+    const currentPageNum = Number(currentState.currentPage || 1);
+    const paginationPageNum = currentState.pagination ? Number(currentState.pagination.page) : 1;
+    const isPageOne = currentPageNum === 1 || paginationPageNum === 1;
+
+    // Is there an active search or filter?
+    const hasSearch = !!document.getElementById('search-input')?.value;
+    const hasSiteFilter = !!document.getElementById('site-filter')?.value;
+    const hasAnyFilter = hasSearch || hasSiteFilter;
 
     // POPULAR BRANDS (Expanded)
     const popularBrands = [
@@ -388,8 +395,14 @@ const renderVeiculos = () => {
             });
         });
 
-        // SAFETY: Always unlock the first 3 items of any page 1 search
-        currentState.veiculos.slice(0, 3).forEach(v => unlockedIds.add(getVehicleKey(v)));
+        // SAFETY: Always unlock the first 12 items if we are in a search/filter on page 1
+        // This ensures the user NEVER sees an entirely locked result page.
+        if (hasAnyFilter) {
+            currentState.veiculos.slice(0, 12).forEach(v => unlockedIds.add(getVehicleKey(v)));
+        } else {
+            // General safety for homepage: unlock first 5 regardless
+            currentState.veiculos.slice(0, 5).forEach(v => unlockedIds.add(getVehicleKey(v)));
+        }
     }
 
     container.innerHTML = currentState.veiculos
@@ -399,7 +412,12 @@ const renderVeiculos = () => {
                 if (!isPageOne) {
                     isLocked = true;
                 } else {
-                    isLocked = !unlockedIds.has(getVehicleKey(v));
+                    // BRUTE FORCE: If it's a popular brand on page 1, let it through!
+                    const vName = (v.veiculo || '').toUpperCase();
+                    const isPopular = popularBrands.some(brand => vName.includes(brand));
+
+                    // Unlock if it's in the pre-calculated set OR if it's a popular brand
+                    isLocked = !unlockedIds.has(getVehicleKey(v)) && !isPopular;
                 }
             }
             return renderCard(v, isLocked);

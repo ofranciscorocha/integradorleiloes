@@ -14,12 +14,13 @@ export const execute = async (database) => {
     console.log(`--- Iniciando Crawler ${SITE} ---`);
 
     const browser = await puppeteer.launch({
-        headless: "new",
-        protocolTimeout: 120000,
+        executablePath: process.env.CHROME_PATH || (process.platform === 'linux' ? '/usr/bin/google-chrome-stable' : undefined),
+        headless: true,
+        protocolTimeout: 240000,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
-            '--window-size=1920,1080',
+            '--window-size=1280,720',
             '--disable-dev-shm-usage',
             '--disable-accelerated-2d-canvas',
             '--disable-gpu',
