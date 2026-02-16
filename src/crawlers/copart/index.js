@@ -1,4 +1,3 @@
-import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
 import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
@@ -500,5 +499,6 @@ const createCrawler = (db) => {
 
 // run() removed to prevent double execution
 
-export { execute };
-export default createCrawler;
+// Export both named and default for compatibility
+export { execute, run, createCrawler };
+export default { run, createCrawler, SITE };

@@ -6,7 +6,7 @@ const run = async () => {
         console.log('🚀 Iniciando crawler VIP Leilões (Turbo API Mode)...\n');
         const db = await connectDatabase();
         const crawler = createCrawler(db);
-        await crawler.buscarTodasPaginas();
+        await crawler.buscarTodos();
         await db.close();
         process.exit(0);
     } catch (error) {

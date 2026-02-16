@@ -140,6 +140,13 @@ const runPool = async (scripts, concurrency) => {
 };
 
 const initScheduler = async (runImmediate = false) => {
+    // Audit environment on startup
+    const envCheckPath = path.join(__dirname, '../utils/env-check.js');
+    if (fs.existsSync(envCheckPath)) {
+        logToFile('🕵️ Running Environment Audit...');
+        spawn('node', [envCheckPath], { stdio: 'inherit', shell: true });
+    }
+
     if (runImmediate) {
         console.log('🚀 [Scheduler] Iniciando coleta TOTAL (Modo POOL Dynamic)...');
         // Run in background
