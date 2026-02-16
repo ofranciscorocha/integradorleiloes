@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
+import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
 import connectDatabase from '../../database/db.js';
 
 dotenv.config();

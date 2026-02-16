@@ -2,6 +2,7 @@ import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
 import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
+import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
 
 dotenv.config();
 puppeteer.use(StealthPlugin());
