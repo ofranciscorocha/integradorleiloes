@@ -5,7 +5,9 @@ import connectDatabase from '../../database/db.js';
     try {
         const db = await connectDatabase();
         await execute(db);
+        process.exit(0);
     } catch (error) {
-        console.error('Erro ao executar crawler:', error);
+        console.error('Erro crítico na execução do crawler:', error);
+        process.exit(1);
     }
 })();

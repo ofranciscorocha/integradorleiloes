@@ -135,11 +135,12 @@ const connectDatabase = async () => {
             }
 
             // Implementation methods
-            const buscarLista = async ({ colecao = 'veiculos', filtraEncerrados, encerrando }) => {
-                const query = {};
-                if (encerrando) query.encerrado = { $gte: 1 };
-                if (filtraEncerrados) query.encerrado = { $ne: true };
-                return await db.collection(colecao).find(query).toArray();
+            const buscarLista = async (params = {}) => {
+                const { colecao = 'veiculos', filtraEncerrados, encerrando, ...query } = params;
+                const mongoQuery = { ...query };
+                if (encerrando) mongoQuery.encerrado = { $gte: 1 };
+                if (filtraEncerrados) mongoQuery.encerrado = { $ne: true };
+                return await db.collection(colecao).find(mongoQuery).toArray();
             };
 
             const list = async ({ colecao = 'veiculos', filtro = {} }) => {
@@ -219,7 +220,8 @@ const connectDatabase = async () => {
 
             const paginate = async ({ colecao = 'veiculos', filtro = {}, page = 1, limit = 20, sort = { criadoEm: -1 } }) => {
                 const col = db.collection(colecao);
-                const query = filtro || {};
+                // Ensure filtro is a plain object or defaults to {}
+                const query = { ...(filtro || {}) };
 
                 // FORCE: Always filter out items without photos if requested or as a global rule if preferred
                 // For now, let's make it easy to toggle or always-on for the listing
@@ -269,10 +271,10 @@ const connectDatabase = async () => {
                     const SITE = 'palaciodosleiloes.com.br';
                     const items = await buscarLista({ colecao: 'veiculos' });
                     for (const v of items) {
-                        if (v.site === SITE && v.link && v.link.includes('site/?cl=')) {
+                        if (v.site === SITE && v.link && v.link.includes('lote.php')) {
                             const [leilaoId, registroLote] = v.registro.split('_');
                             if (leilaoId && registroLote) {
-                                const newLink = `https://www.palaciodosleiloes.com.br/site/?cl=${registroLote}&leilao=${leilaoId}`;
+                                const newLink = `https://www.palaciodosleiloes.com.br/site/?opcao=exibir_lote&id_lote=${registroLote}&id_leilao=${leilaoId}`;
                                 await update({ colecao: 'veiculos', registro: v.registro, site: SITE, set: { link: newLink } });
                             }
                         }
