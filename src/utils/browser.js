@@ -18,10 +18,14 @@ export const getExecutablePath = () => {
 
     if (process.platform === 'linux') {
         for (const path of linuxPaths) {
-            if (fs.existsSync(path)) return path;
+            if (fs.existsSync(path)) {
+                console.log(`🧩 [Browser] Chrome detectado em: ${path}`);
+                return path;
+            }
         }
     }
 
+    console.log(`⚠️ [Browser] Nenhum Chrome detectado na lista padrão (${process.platform}). Usando default.`);
     // Default to undefined to let Puppeteer decide (works on Windows/Mac)
     return undefined;
 };

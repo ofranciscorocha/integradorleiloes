@@ -99,6 +99,31 @@ app.get(['/painel', '/admin.html'], (req, res) => {
     res.redirect('/a-painel-secreto');
 });
 
+// Health Check & Diagnostics
+app.get('/health', async (req, res) => {
+    try {
+        const db = await connectDatabase();
+        const mongoStatus = process.env.MONGODB_URI ? 'Configured' : 'NOT Configured';
+        const browserPath = (await import('../utils/browser.js')).getExecutablePath();
+
+        res.json({
+            status: 'ok',
+            database: {
+                type: process.env.MONGODB_URI ? 'MongoDB' : 'JSON',
+                mongoEnv: mongoStatus,
+                uriMasked: process.env.MONGODB_URI ? process.env.MONGODB_URI.replace(/\/\/.*?:.*?@/, '//***:***@') : null
+            },
+            browser: {
+                detectedPath: browserPath,
+                platform: process.platform
+            },
+            timestamp: new Date().toISOString()
+        });
+    } catch (e) {
+        res.status(500).json({ status: 'error', message: e.message });
+    }
+});
+
 // ==========================================
 // AUTH ROUTES (User System)
 // ==========================================

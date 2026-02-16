@@ -292,9 +292,9 @@ const connectDatabase = async () => {
     }
 
     if (!mongoUri || mongoUri === 'undefined') {
-        console.log('ℹ️ MONGODB_URI não detectada. Usando JSON Database (Modo Local).');
+        console.log('ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).');
     } else {
-        console.log('✅ JSON Database conectado (Fallback)');
+        console.log('⚠️ Conexão com MongoDB falhou mesmo com URI configurada. Usando JSON Fallback.');
     }
 
     const buscarLista = async ({ colecao = 'veiculos', filtraEncerrados, encerrando, filtroHoras }) => {

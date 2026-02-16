@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
+import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
 import connectDatabase from '../../database/db.js';
 
 dotenv.config();
@@ -27,17 +28,10 @@ const execute = async (database) => {
     console.log(`🚀 [${SITE}] SUPERCRAWLER: Iniciando captura via API dentro do browser...`);
 
     const browser = await puppeteer.launch({
-        executablePath: process.env.CHROME_PATH || (process.platform === 'linux' ? '/usr/bin/google-chrome-stable' : undefined),
+        executablePath: getExecutablePath(),
         headless: true,
         protocolTimeout: 240000,
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-gpu',
-            '--disable-blink-features=AutomationControlled',
-            '--window-size=1280,720'
-        ]
+        args: getCommonArgs()
     });
 
     let capturados = 0;
