@@ -41,7 +41,7 @@ export const getCommonArgs = () => [
     '--disable-sync',
     '--no-first-run',
     '--no-zygote',
-    '--single-process', // Warning: can be unstable, but saves a lot of memory
+    // '--single-process', // Warning: can be unstable, but saves a lot of memory
     '--window-size=1280,720'
 ];
 
