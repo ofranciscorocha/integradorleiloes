@@ -35,43 +35,52 @@ export const execute = async (database) => {
             }
         });
 
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+        // Advanced WAF Bypass: Random User-Agent
+        const userAgents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0'
+        ];
+        const randomUA = userAgents[Math.floor(Math.random() * userAgents.length)];
+        await page.setUserAgent(randomUA);
 
         const targetUrl = 'https://www.sodresantoro.com.br/';
-        console.log(`   🔍 [${SITE}] Estabelecendo sessão (Warm-up)...`);
+        console.log(`   🔍 [${SITE}] Estabelecendo sessão (Warm-up 2.0) com UA: ${randomUA.substring(0, 50)}...`);
 
         let pageLoaded = false;
-        for (let attempt = 1; attempt <= 3; attempt++) {
+        // Increase attempts and timeout for Railway
+        for (let attempt = 1; attempt <= 4; attempt++) {
             try {
-                // Use networkidle0 for a deeper warm-up in session establishment
-                await page.goto(targetUrl, { waitUntil: 'networkidle0', timeout: TIMEOUT });
+                // Use domcontentloaded first, then wait for selector manually
+                await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: TIMEOUT + 10000 });
 
                 try {
-                    console.log(`   ⏳ [${SITE}] Aguardando carregamento total (até 60s)...`);
-                    await page.waitForSelector('footer, #header, nav', { timeout: 60000 });
+                    console.log(`   ⏳ [${SITE}] Aguardando banner ou footer...`);
+                    // Wait for distinct elements that indicate SUCCESSFUL load (not 403 page)
+                    await page.waitForSelector('footer, .search-bar, #header-desk', { timeout: 30000 });
                 } catch (e) {
-                    console.log(`   ⚠️ [${SITE}] Timeout parcial na home, prosseguindo...`);
+                    console.log(`   ⚠️ [${SITE}] Timeout esperando elementos visuais. WAF pode estar bloqueando.`);
                 }
 
                 // Explicit wait to ensure Cloudflare/WAF session is sticky
-                await new Promise(r => setTimeout(r, 7000));
+                await new Promise(r => setTimeout(r, 5000 + (Math.random() * 3000)));
                 pageLoaded = true;
                 console.log(`   ✅ [${SITE}] Sessão estabilizada.`);
                 break;
             } catch (e) {
-                console.log(`   ⚠️ [${SITE}] Tentativa ${attempt}/3 falhou: ${e.message}`);
-                if (attempt === 3) throw e;
-                await new Promise(r => setTimeout(r, 10000));
+                console.log(`   ⚠️ [${SITE}] Tentativa ${attempt}/4 falhou: ${e.message}`);
+                if (attempt === 4) throw e;
+                await new Promise(r => setTimeout(r, 15000));
             }
         }
 
         if (!pageLoaded) throw new Error('Não foi possível carregar a página');
 
         const searchConfigs = [
-            { label: 'Veículos + Judiciais', indices: ["veiculos", "judiciais-veiculos"], query: buildQuery(["online", "aberto", "encerrado", "programado"]) },
-            { label: 'Venda Direta', indices: ["venda-direta"], query: buildQuery(["online", "aberto", "programado"]) },
-            { label: 'Veículos Leilão', indices: ["veiculos"], query: buildQuery(["online", "aberto", "encerrado", "programado"]) },
-            { label: 'Judiciais', indices: ["judiciais-veiculos"], query: buildQuery(["online", "aberto", "encerrado", "programado"]) }
+            { label: 'Veículos + Judiciais', indices: ["veiculos", "judiciais-veiculos"], query: buildQuery(["online", "aberto", "encerrado", "programado"], [1, 2, 3, 27]) },
+            { label: 'Imóveis', indices: ["imoveis"], query: buildQuery(["online", "aberto", "programado"], [4]) },
+            { label: 'Diversos', indices: ["diversos"], query: buildQuery(["online", "aberto", "programado"], [5, 6, 7, 8, 9, 10]) },
+            { label: 'Venda Direta', indices: ["venda-direta"], query: buildQuery(["online", "aberto", "programado"], [1, 2, 3, 4, 5, 27]) }
         ];
 
         const seenIds = new Set();
@@ -137,17 +146,39 @@ export const execute = async (database) => {
                         const id = String(item.lot_id || item.id);
                         if (seenIds.has(id)) return null;
                         seenIds.add(id);
+
+                        const title = (item.produto?.descricao || 'ITEM').toUpperCase();
+
+                        // Extract rich metadata from item details if available
+                        const yearMatch = title.match(/\b(19[89]\d|20[0-2]\d)\b/);
+                        const isBlindado = title.includes('BLIND') || title.includes('BLIN');
+
+                        // Sodré API usually includes category and classification
+                        const condicao = item.classificacao_nome || item.lot_category_name || '';
+                        const localLeilao = item.cidade_patio ? `${item.cidade_patio}/${item.uf_patio || ''}` : 'Brasil';
+                        const combustivel = item.combustivel_nome || '';
+                        const cor = item.cor_nome || '';
+
+                        // Determine category (tipo)
+                        let tipo = 'veiculo';
+                        if (config.indices.includes('imoveis')) tipo = 'imovel';
+                        else if (config.indices.includes('diversos')) tipo = 'diversos';
+
                         return {
                             registro: id,
                             site: SITE,
                             link: `https://www.sodresantoro.com.br/lote/${id}`,
-                            veiculo: (item.produto?.descricao || 'VEÍCULO').toUpperCase(),
+                            veiculo: title,
                             fotos: (item.imagens || []).map(img => img.url).filter(Boolean),
                             valor: parseFloat(item.valorAtual || 0),
-                            ano: null,
-                            localLeilao: 'Brasil',
+                            ano: item.ano_modelo || (yearMatch ? parseInt(yearMatch[1]) : null),
+                            localLeilao,
                             modalidade: 'leilao',
-                            tipo: 'veiculo'
+                            tipo: tipo,
+                            condicao,
+                            combustivel,
+                            cor,
+                            blindado: isBlindado
                         };
                     }).filter(Boolean);
 
@@ -174,13 +205,13 @@ export const execute = async (database) => {
     }
 };
 
-function buildQuery(statuses) {
+function buildQuery(statuses, categories = [1, 2, 3, 27]) {
     const statusShould = statuses.map(status => {
         if (status === 'encerrado') return { bool: { must: [{ term: { auction_status: "encerrado" } }, { terms: { lot_status_id: [6] } }] } };
         if (status === 'aberto') return { bool: { must: [{ term: { auction_status: "aberto" } }], must_not: [{ terms: { lot_status_id: [5, 7] } }] } };
         return { term: { auction_status: status } };
     });
-    return { bool: { should: statusShould, minimum_should_match: 1, must: [{ terms: { category_id: [1, 2, 3, 27] } }] } };
+    return { bool: { should: statusShould, minimum_should_match: 1, must: [{ terms: { category_id: categories } }] } };
 }
 
 const createCrawler = (db) => ({ buscarTodos: () => execute(db), SITE: 'sodresantoro.com.br' });

@@ -10,6 +10,9 @@
     "crawler:palacio": "node src/crawlers/palaciodosleiloes/run.js",
     "crawler:vip": "node src/crawlers/vipleiloes/run.js",
     "crawler:guariglia": "node src/crawlers/guariglialeiloes/run.js",
+    "crawler:caixa": "node src/crawlers/caixa/run.js",
+    "crawler:copart": "node src/crawlers/copart/run.js",
+    "crawler:parque": "node src/crawlers/parque/run.js",
     "crawler:all": "node src/schedulers/index.js",
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",
@@ -36,7 +39,8 @@
     "node-cron": "^3.0.2",
     "puppeteer": "^24.37.2",
     "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "user-agents": "^1.1.669"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

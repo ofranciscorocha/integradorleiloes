@@ -641,6 +641,34 @@
                 </button>
             </div>
 
+            <div class="widget" style="margin-bottom: 2rem; border-color: var(--primary);">
+                <div class="widget-title"><i class="fas fa-plus-circle"></i> Cadastrar Novo Leiloeiro</div>
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: flex-end;">
+                    <div class="form-group">
+                        <label style="font-size: 0.8rem; color: var(--text-dim);">Nome (Ex: Sodré Santoro)</label>
+                        <input type="text" id="new-site-name" class="btn btn-outline"
+                            style="width: 100%; text-align: left; background: rgba(0,0,0,0.2);"
+                            placeholder="Nome Exibido">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 0.8rem; color: var(--text-dim);">ID (Ex: sodre)</label>
+                        <input type="text" id="new-site-id" class="btn btn-outline"
+                            style="width: 100%; text-align: left; background: rgba(0,0,0,0.2);" placeholder="id_unico">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 0.8rem; color: var(--text-dim);">Domínio (Ex:
+                            sodresantoro.com.br)</label>
+                        <input type="text" id="new-site-domain" class="btn btn-outline"
+                            style="width: 100%; text-align: left; background: rgba(0,0,0,0.2);"
+                            placeholder="site.com.br">
+                    </div>
+                    <button class="btn btn-primary" onclick="addSite()">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                </div>
+            </div>
+
             <div class="crawler-grid" id="crawler-list">
                 <!-- Cards inject via JS -->
             </div>
@@ -822,7 +850,7 @@
                 const btnIcon = isRunning ? 'fa-spinner fa-spin' : (isError ? 'fa-redo' : 'fa-play');
 
                 return `
-                    <div class="crawler-card ${cardClass}" style="transition: all 0.3s;">
+                    <div class="crawler-card ${cardClass}" style="transition: all 0.3s;" id="card-${id}">
                         <div class="crawler-header">
                             <span class="crawler-name">${info.name}</span>
                             <div style="font-size: 0.75rem; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px;">
@@ -831,13 +859,19 @@
                         </div>
                         <div class="crawler-info">
                             <p style="margin-bottom: 5px;"><i class="far fa-clock"></i> Último: ${info.lastRun ? new Date(info.lastRun).toLocaleTimeString() : 'Nunca'}</p>
-                            <p style="margin-bottom: 5px;"><i class="fas fa-car"></i> Veículos: <b style="color: ${hasItems ? 'var(--accent)' : 'inherit'}">${count}</b></p>
-                            <p><i class="fas fa-tag"></i> ID: <b>${id}</b></p>
+                            <p style="margin-bottom: 5px;"><i class="fas fa-car"></i> Veículos: <b id="count-${id}" style="color: ${hasItems ? 'var(--accent)' : 'inherit'}">${count}</b></p>
+                            <p style="margin-bottom: 5px;"><i class="fas fa-tag"></i> ID: <b>${id}</b></p>
+                            <p><i class="fas fa-code"></i> Status: <b>${info.implemented ? 'Pronto' : 'Pendente (IA)'}</b></p>
                         </div>
-                        <button class="btn btn-outline" style="width: 100%; border-radius: 10px; font-size: 0.8rem; ${btnStyle}" onclick="runCrawler('${id}')" ${isRunning ? 'disabled' : ''}>
-                            <i class="fas ${btnIcon}"></i> 
-                            ${btnText}
-                        </button>
+                        <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                            <button class="btn btn-outline" style="flex: 2; border-radius: 10px; font-size: 0.8rem; ${btnStyle}" onclick="runCrawler('${id}')" ${isRunning ? 'disabled' : ''}>
+                                <i class="fas ${btnIcon}"></i> 
+                                ${btnText}
+                            </button>
+                            <button class="btn btn-outline" style="flex: 1; border-radius: 10px; font-size: 0.8rem; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);" onclick="clearSiteData('${id}')" title="Limpar Base para este leiloeiro">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -1019,6 +1053,54 @@
             await fetch('/admin/refresh-db', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             alert('Banco de dados e Cache sincronizados!');
             loadData();
+        }
+
+        async function clearSiteData(id) {
+            if (!confirm(`Tem certeza que deseja apagar todos os veículos do leiloeiro "${id}"?`)) return;
+
+            appendTerminal(`🗑️ Solicitando limpeza de dados para: ${id}...`, 'info');
+            try {
+                const res = await fetch('/admin/clear-site', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ siteId: id })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    appendTerminal(`✅ Sucesso: ${data.message}`, 'success');
+                    // Immediate visual feedback
+                    const countEl = document.getElementById(`count-${id}`);
+                    if (countEl) countEl.innerText = '0';
+                } else {
+                    appendTerminal(`❌ Erro: ${data.error}`, 'error');
+                }
+            } catch (e) { appendTerminal(`❌ Falha na requisição de limpeza.`, 'error'); }
+        }
+
+        async function addSite() {
+            const id = document.getElementById('new-site-id').value.trim();
+            const name = document.getElementById('new-site-name').value.trim();
+            const domain = document.getElementById('new-site-domain').value.trim();
+
+            if (!id || !name || !domain) return alert('Preencha todos os campos.');
+
+            try {
+                const res = await fetch('/admin/add-site', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ id, name, domain })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Leiloeiro cadastrado com sucesso!');
+                    document.getElementById('new-site-id').value = '';
+                    document.getElementById('new-site-name').value = '';
+                    document.getElementById('new-site-domain').value = '';
+                    loadData();
+                } else {
+                    alert('Erro: ' + data.error);
+                }
+            } catch (e) { alert('Erro de rede ao cadastrar site.'); }
         }
 
         function logout() { localStorage.removeItem('admin_token'); window.location.href = '/login.html'; }

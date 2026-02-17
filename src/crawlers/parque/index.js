@@ -1,117 +1,120 @@
-import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+import { parseVehicleDetails } from '../../utils/vehicle-parser.js';
 import dotenv from 'dotenv';
-import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
 
 dotenv.config();
-puppeteer.use(StealthPlugin());
-
-const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 60000;
 
 const createCrawler = (db) => {
     const { salvarLista } = db;
     const SITE = 'parquedosleiloes.com.br';
     const BASE_URL = 'https://www.parquedosleiloes.com.br';
 
-    const buscarTodasPaginas = async (maxPaginas = 30) => { // Increased depth
-        console.log(`🚀 [${SITE}] HIGH-YIELD: Iniciando coleta profunda...`);
+    const buscarTodasPaginas = async (maxPaginas = 50) => {
+        console.log(`🚀 [${SITE}] SUPERCRAWLER AXIOS: Iniciando captura...`);
+        let totalCapturados = 0;
+        let pagina = 1;
+        let hasMore = true;
 
-        const browser = await puppeteer.launch({
-            executablePath: getExecutablePath(),
-            headless: true,
-            protocolTimeout: 240000,
-            args: getCommonArgs()
-        });
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Referer': BASE_URL
+        };
 
-        let totalCapturado = 0;
-        try {
-            const page = await browser.newPage();
-            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+        while (hasMore && pagina <= maxPaginas) {
+            console.log(`🔍 [${SITE}] Buscando página ${pagina}...`);
+            const url = `${BASE_URL}/leiloes?is_lot=1&searchMode=normal&page=${pagina}`;
 
-            for (let p = 1; p <= maxPaginas; p++) {
-                console.log(`🔍 [${SITE}] Buscando página ${p}...`);
-                const url = `${BASE_URL}/leiloes?is_lot=1&searchMode=normal&page=${p}`;
+            try {
+                const response = await axios.get(url, { headers, timeout: 30000 });
+                const $ = cheerio.load(response.data);
+                const items = [];
 
-                let success = false;
-                try {
-                    await page.goto(url, { waitUntil: 'networkidle2', timeout: TIMEOUT });
-                    await page.waitForSelector('.auction-lot-card', { timeout: 15000 }).catch(() => null);
-                    success = true;
-                } catch (e) {
-                    console.log(`   ⚠️ [${SITE}] Erro ao carregar página ${p}, tentando novamente...`);
-                    await page.reload({ waitUntil: 'networkidle2' });
-                }
+                $('.auction-lot-card').each((i, el) => {
+                    const card = $(el);
+                    const linkEl = card.find('.thumbnail a');
+                    const h3El = card.find('.name');
 
-                if (!success) break;
+                    if (!linkEl.length || !h3El.length) return;
 
-                const itens = await page.evaluate((site) => {
-                    const results = [];
-                    const cards = document.querySelectorAll('.auction-lot-card');
+                    const title = h3El.text().trim().toUpperCase();
+                    const link = linkEl.attr('href');
+                    const registro = link.split('/').pop();
+                    const details = card.find('.comments-text').text().trim() || '';
 
-                    cards.forEach(card => {
-                        const linkEl = card.querySelector('.thumbnail a');
-                        const h3El = card.querySelector('.name');
-                        const imgEl = card.querySelector('img');
+                    const imgEl = card.find('img');
+                    let imgUrl = imgEl.attr('src');
 
-                        if (!linkEl || !h3El) return;
+                    if (imgUrl && !imgUrl.startsWith('http')) {
+                        imgUrl = BASE_URL + imgUrl;
+                    }
 
-                        const title = h3El.innerText.trim();
-                        const link = linkEl.href;
-                        const registro = link.split('/').pop();
-                        const details = card.querySelector('.comments-text')?.innerText.trim() || '';
+                    // Categorization Logic
+                    let tipo = 'veiculo';
+                    const textUpper = (title + ' ' + details).toUpperCase();
 
-                        results.push({
-                            registro,
-                            site: site,
-                            veiculo: title.toUpperCase(),
-                            link: link,
-                            fotos: imgEl && imgEl.src ? [imgEl.src] : [],
-                            descricao: details,
-                            localLeilao: 'DF',
-                            modalidade: 'leilao',
-                            tipo: 'veiculo'
-                        });
+                    if (textUpper.includes('CASA') || textUpper.includes('APARTAMENTO') || textUpper.includes('TERRENO') || textUpper.includes('IMÓVEL') || textUpper.includes('IMOVEL') || textUpper.includes('GALPÃO') || textUpper.includes('SÍTIO') || textUpper.includes('CHÁCARA')) {
+                        tipo = 'imovel';
+                    } else if (textUpper.includes('SUCATA') || textUpper.includes('PEÇAS') || textUpper.includes('DIVERSOS') || textUpper.includes('LOTE') || textUpper.includes('MÓVEIS') || textUpper.includes('ELETRO') || textUpper.includes('INFORMÁTICA')) {
+                        tipo = 'diversos';
+                    }
+
+                    const parsed = parseVehicleDetails(title + ' ' + details);
+
+                    items.push({
+                        registro,
+                        site: SITE,
+                        veiculo: title,
+                        link,
+                        fotos: imgUrl ? [imgUrl] : [],
+                        descricao: details,
+                        localLeilao: 'DF', // Default for Parque
+                        modalidade: 'leilao',
+                        tipo,
+                        ano: parsed.ano,
+                        condicao: parsed.condicao,
+                        combustivel: parsed.combustivel,
+                        km: parsed.km,
+                        cor: parsed.cor,
+                        cambio: parsed.cambio,
+                        blindado: parsed.blindado
                     });
-                    return results;
-                }, SITE);
+                });
 
-                if (itens.length === 0) {
-                    console.log(`   🔸 [${SITE}] Fim da listagem na página ${p}.`);
+                if (items.length === 0) {
+                    console.log(`   🔸 [${SITE}] Sem itens na página ${pagina}. Fim.`);
+                    hasMore = false;
                     break;
                 }
 
-                // Standard Fuzzy Filter
-                const filtered = itens.filter(item => {
-                    const text = (item.veiculo + ' ' + item.descricao).toUpperCase();
-                    const blacklist = [
-                        'MOVEIS', 'ELETRO', 'INFORMÁTICA', 'SUCATA DE FERRO', 'LOTE DE PEÇAS',
-                        'IMOVEL', 'EQUIPAMENTO', 'APARTAMENTO', 'APTO', 'CASA', 'TERRENO',
-                        'SALA', 'VAGA', 'GARAGEM', 'LOTEAMENTO', 'CHACARA', 'FAZENDA', 'SITIO'
-                    ];
-                    return !blacklist.some(b => text.includes(b));
-                });
+                // Save items
+                await salvarLista(items);
+                totalCapturados += items.length;
+                console.log(`   ✅ [${SITE}] Página ${pagina}: ${items.length} itens capturados.`);
 
-                if (filtered.length > 0) {
-                    await salvarLista(filtered);
-                    totalCapturado += filtered.length;
-                    console.log(`   ✅ Salvos ${filtered.length} veículos. Total: ${totalCapturado}`);
+                // Check for next page (naive check: if returns items, try next)
+                // Better check: check pagination element if exists
+                if (!$('.pagination .next').length && !$('.pagination li.next').length) {
+                    console.log(`   🔸 [${SITE}] Paginação terminou.`);
+                    hasMore = false;
+                } else {
+                    pagina++;
                 }
 
-                // Check Next Page
-                const hasNext = await page.evaluate(() => {
-                    const next = document.querySelector('li.next:not(.disabled)');
-                    return !!next;
-                });
-                if (!hasNext) break;
-            }
+                // Respectful delay
+                await new Promise(r => setTimeout(r, 1000));
 
-        } catch (error) {
-            console.error(`❌ [${SITE}] Erro:`, error.message);
-        } finally {
-            await browser.close();
+            } catch (error) {
+                console.error(`❌ [${SITE}] Erro na página ${pagina}: ${error.message}`);
+                // If 404 or specific error, maybe break
+                if (error.response && error.response.status === 404) hasMore = false;
+                else pagina++; // try next?? or retry? Let's skip to next for now
+            }
         }
-        console.log(`✅ [${SITE}] Finalizado: ${totalCapturado} veículos coletados.`);
-        return totalCapturado;
+
+        console.log(`✅ [${SITE}] Finalizado: ${totalCapturados} itens coletados.`);
+        return totalCapturados;
     };
 
     return { buscarTodasPaginas, SITE, buscarTodos: buscarTodasPaginas };

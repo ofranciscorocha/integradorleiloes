@@ -1,12 +1,10 @@
-import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 import dotenv from 'dotenv';
-import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
+import moment from 'moment';
 
 dotenv.config();
-puppeteer.use(StealthPlugin());
 
-const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 90000;
 const SITE = 'guariglialeiloes.com.br';
 const BASE_URL = 'https://www.guariglialeiloes.com.br';
 
@@ -27,155 +25,150 @@ const trataDataHora = (dataStr) => {
 const createCrawler = (db) => {
     const { salvarLista } = db;
 
+    const getHtml = async (url) => {
+        try {
+            const { data } = await axios.get(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                    'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Referer': BASE_URL
+                },
+                timeout: 30000
+            });
+            return data;
+        } catch (e) {
+            console.error(`❌ [${SITE}] Erro request ${url}: ${e.message}`);
+            return null;
+        }
+    };
+
     const buscarTodos = async () => {
-        console.log(`🚀 [${SITE}] INICIANDO COLETA VIA PUPPETEER (Bypass 403)...`);
-
-        const browser = await puppeteer.launch({
-            executablePath: getExecutablePath(),
-            headless: true,
-            protocolTimeout: 240000,
-            args: getCommonArgs()
-        });
-
+        console.log(`🚀 [${SITE}] SUPERCRAWLER AXIOS: Iniciando coleta...`);
         let totalColetado = 0;
 
-        try {
-            const page = await browser.newPage();
-            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+        // 1. Get Home to finding auctions
+        const homeHtml = await getHtml(BASE_URL);
+        if (!homeHtml) return;
 
-            // 1. Get Active Auctions
-            console.log(`   🔍 [${SITE}] Acessando home para listar leilões...`);
-            await page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: TIMEOUT });
-            await new Promise(r => setTimeout(r, 3000));
+        const $home = cheerio.load(homeHtml);
+        const leiloes = [];
 
-            const leiloes = await page.evaluate((baseUrl) => {
-                const found = [];
-                document.querySelectorAll('div.card-body.d-flex.flex-column').forEach(div => {
-                    const tituloEl = div.querySelector('div.titulo-leilao');
-                    const linkEl = div.querySelector('div.descricao-leilao.my-auto a');
-                    const timeEl = div.querySelector('div.descricao-leilao.my-auto a strong');
-
-                    if (linkEl && linkEl.href && linkEl.href.includes('/leilao/')) {
-                        found.push({
-                            titulo: tituloEl ? tituloEl.innerText.trim() : 'Leilão',
-                            url: linkEl.href.startsWith('http') ? linkEl.href : `${baseUrl}${linkEl.getAttribute('href')}`,
-                            dataHoraRaw: timeEl ? timeEl.innerText.trim() : ''
-                        });
-                    }
+        $home('div.card-body.d-flex.flex-column').each((i, el) => {
+            const linkEl = $home(el).find('div.descricao-leilao a');
+            const href = linkEl.attr('href');
+            if (href && href.includes('/leilao/')) {
+                leiloes.push({
+                    url: href.startsWith('http') ? href : `${BASE_URL}${href}`,
+                    titulo: $home(el).find('div.titulo-leilao').text().trim(),
+                    dataHoraRaw: $home(el).find('div.descricao-leilao strong').text().trim()
                 });
-                return found;
-            }, BASE_URL);
+            }
+        });
 
-            console.log(`   📊 [${SITE}] Encontrados ${leiloes.length} leilões ativos.`);
+        console.log(`   📊 [${SITE}] Encontrados ${leiloes.length} leilões ativos.`);
 
-            // 2. Scrape each auction
-            for (const leilao of leiloes) {
-                console.log(`   🔄 [${SITE}] Processando: ${leilao.titulo}`);
-                const dataHora = trataDataHora(leilao.dataHoraRaw);
-                let pagina = 1;
-                let hasMore = true;
+        for (const leilao of leiloes) {
+            console.log(`   🔄 [${SITE}] Processando: ${leilao.titulo}`);
+            const dataHora = trataDataHora(leilao.dataHoraRaw);
+            let pagina = 1;
+            let hasMore = true;
 
-                while (hasMore && pagina <= 20) {
+            while (hasMore && pagina <= 30) {
+                const pageUrl = `${leilao.url}?page=${pagina}`;
+                // console.log(`      📄 Baixando pág ${pagina}...`);
+
+                const pageHtml = await getHtml(pageUrl);
+                if (!pageHtml) { hasMore = false; break; }
+
+                const $ = cheerio.load(pageHtml);
+                const items = [];
+
+                $('div.lote.rounded').each((i, el) => {
                     try {
-                        const pageUrl = `${leilao.url}?page=${pagina}`;
-                        await page.goto(pageUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
-                        await page.waitForSelector('div.lote.rounded', { timeout: 15000 }).catch(() => null);
-                        await new Promise(r => setTimeout(r, 2000));
+                        const infoDiv = $(el).find('div.col-lg-7 div.body-lote');
+                        const linkEl = infoDiv.find('a');
+                        if (!linkEl.length) return;
 
-                        const itens = await page.evaluate((site, baseUrl, dh, leilaoUrl) => {
-                            const batch = [];
-                            document.querySelectorAll('div.lote.rounded').forEach(div => {
-                                const infoDiv = div.querySelector('div.col-lg-7 div.body-lote');
-                                const lanceDiv = div.querySelector('div.col-lg-3 div.lance-lote');
-                                const imgEl = div.querySelector('div.col-lg-2 img, div.img-lote img, img');
-                                const linkEl = infoDiv ? infoDiv.querySelector('a') : null;
+                        const urlLote = linkEl.attr('href');
+                        const link = urlLote.startsWith('http') ? urlLote : `${BASE_URL}${urlLote}`;
+                        const registro = link.split('/').filter(Boolean).pop();
 
-                                if (!linkEl) return;
+                        const textoCompleto = infoDiv.text();
+                        const linhas = textoCompleto.split('\n').map(l => l.trim()).filter(Boolean);
 
-                                const urlLote = linkEl.href.startsWith('http') ? linkEl.href : `${baseUrl}${linkEl.getAttribute('href')}`;
-                                const textoCompleto = infoDiv.innerText;
-                                const linhas = textoCompleto.split('\n').map(l => l.trim()).filter(Boolean);
-
-                                // Veiculo
-                                let veiculo = 'VEÍCULO';
-                                const linhaMarca = linhas.find(l => /marca\s*\/?\s*modelo/i.test(l));
-                                if (linhaMarca) {
-                                    veiculo = linhaMarca.replace(/marca\s*\/?\s*modelo\s*:?\s*/gi, '').trim();
-                                    if (!veiculo && linhaMarca.includes(':')) veiculo = linhaMarca.split(':').slice(1).join(':').trim();
-                                }
-                                if (!veiculo || veiculo === 'VEÍCULO' || veiculo.length < 2) {
-                                    veiculo = linhas[0] || 'VEÍCULO';
-                                    veiculo = veiculo.replace(/marca\s*\/?\s*modelo\s*:?\s*/gi, '').trim();
-                                }
-
-                                const anoLine = linhas.find(l => l.includes('Ano'));
-                                const ano = anoLine ? parseInt(anoLine.split(':')[1]) : null;
-
-                                const placaLine = linhas.find(l => l.includes('Placa'));
-                                const placa = placaLine ? placaLine.split(':')[1].trim() : undefined;
-
-                                const valorStr = lanceDiv ? lanceDiv.innerText.replace(/[^0-9,]/g, '').replace(',', '.') : '0';
-
-                                // Fotos
-                                const fotos = [];
-                                if (imgEl) {
-                                    let src = imgEl.src || imgEl.getAttribute('data-src');
-                                    if (src) {
-                                        if (!src.startsWith('http')) src = `${baseUrl}${src}`;
-                                        fotos.push(src);
-                                    }
-                                }
-
-                                batch.push({
-                                    site: site,
-                                    registro: urlLote.split('/').filter(Boolean).pop(),
-                                    link: urlLote,
-                                    veiculo: veiculo.toUpperCase(),
-                                    ano: ano,
-                                    valor: parseFloat(valorStr) || 0,
-                                    previsao: dh,
-                                    modalidade: 'leilao',
-                                    tipo: 'veiculo',
-                                    fotos: fotos,
-                                    placa: placa
-                                });
-                            });
-                            return batch;
-                        }, SITE, BASE_URL, dataHora, leilao.url);
-
-                        if (itens.length > 0) {
-                            await salvarLista(itens);
-                            totalColetado += itens.length;
-                            console.log(`      ✅ [${SITE}] Pág ${pagina}: +${itens.length} itens.`);
-
-                            // Check for next page
-                            const hasNextMock = await page.evaluate(() => {
-                                // Guariglia pagination often has "Próximo" or number links
-                                const next = Array.from(document.querySelectorAll('.pagination a')).find(a => a.innerText.includes('›') || a.innerText.includes('Próximo'));
-                                return !!next;
-                            });
-
-                            if (!hasNextMock && itens.length < 5) hasMore = false; // Heuristic
-                            pagina++;
-                        } else {
-                            hasMore = false;
+                        // Extract Vehicle Name
+                        let veiculo = 'VEÍCULO';
+                        const linhaMarca = linhas.find(l => /marca\s*\/?\s*modelo/i.test(l));
+                        if (linhaMarca) {
+                            veiculo = linhaMarca.replace(/marca\s*\/?\s*modelo\s*:?\s*/gi, '').trim();
+                            if (!veiculo && linhaMarca.includes(':')) veiculo = linhaMarca.split(':').slice(1).join(':').trim();
+                        }
+                        if (!veiculo || veiculo === 'VEÍCULO' || veiculo.length < 2) {
+                            veiculo = linhas[0] || 'VEÍCULO';
+                            veiculo = veiculo.replace(/marca\s*\/?\s*modelo\s*:?\s*/gi, '').trim();
                         }
 
-                    } catch (e) {
-                        console.log(`      ⚠️ [${SITE}] Erro pág ${pagina}: ${e.message}`);
-                        hasMore = false;
-                    }
-                }
-            }
+                        // Extract Year
+                        let ano = null;
+                        const anoLine = linhas.find(l => l.includes('Ano'));
+                        if (anoLine) ano = parseInt(anoLine.split(':')[1]) || null;
 
-        } catch (e) {
-            console.error(`❌ [${SITE}] Erro Fatal:`, e.message);
-        } finally {
-            await browser.close();
+                        // Extract Price
+                        const lanceDiv = $(el).find('div.col-lg-3 div.lance-lote');
+                        const valorStr = lanceDiv.text().replace(/[^0-9,]/g, '').replace(',', '.');
+                        const valor = parseFloat(valorStr) || 0;
+
+                        // Extract Photos including Lazy Load
+                        const fotos = [];
+                        const imgEl = $(el).find('img');
+                        let src = imgEl.attr('src') || imgEl.attr('data-src');
+                        if (src) {
+                            if (!src.startsWith('http')) src = `${BASE_URL}${src}`;
+                            fotos.push(src);
+                        }
+
+                        // Category Logic
+                        let tipo = 'veiculo';
+                        const vUpper = veiculo.toUpperCase();
+                        if (vUpper.includes('CASA') || vUpper.includes('APARTAMENTO') || vUpper.includes('TERRENO') || vUpper.includes('IMÓVEL') || vUpper.includes('IMOVEL') || vUpper.includes('GALPÃO') || vUpper.includes('SÍTIO') || vUpper.includes('CHÁCARA')) {
+                            tipo = 'imovel';
+                        } else if (vUpper.includes('SUCATA') || vUpper.includes('PEÇAS') || vUpper.includes('DIVERSOS') || vUpper.includes('LOTE') || vUpper.includes('MÓVEIS') || vUpper.includes('ELETRO')) {
+                            tipo = 'diversos';
+                        }
+
+                        items.push({
+                            site: SITE,
+                            registro,
+                            link,
+                            veiculo: veiculo.toUpperCase(),
+                            ano,
+                            valor,
+                            previsao: dataHora.string,
+                            modalidade: 'leilao',
+                            tipo,
+                            fotos,
+                            localLeilao: 'Guariglia/SP' // Default or extract if avail
+                        });
+
+                    } catch (e) { }
+                });
+
+                if (items.length > 0) {
+                    await salvarLista(items);
+                    totalColetado += items.length;
+                    console.log(`      ✅ [${SITE}] Pág ${pagina}: +${items.length} itens.`);
+                    pagina++;
+                } else {
+                    hasMore = false;
+                }
+
+                // Polite delay
+                await new Promise(r => setTimeout(r, 500));
+            }
         }
 
-        console.log(`✅ [${SITE}] Finalizado! ${totalColetado} veículos coletados.`);
-        return totalColetado;
+        console.log(`✅ [${SITE}] Finalizado! ${totalColetado} itens coletados.`);
     };
 
     return { buscarTodos, SITE };

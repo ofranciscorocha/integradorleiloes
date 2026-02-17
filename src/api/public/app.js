@@ -1,8 +1,9 @@
+/* FILE_START */
 let currentState = {
     user: null,
     totalVehicles: 0,
     currentPage: 1,
-    currentTipo: '',
+    currentTipo: 'veiculo',
     filters: {
         search: '',
         site: '',
@@ -307,7 +308,7 @@ const buscarVeiculos = async (page = 1) => {
             // Update all counters
             const total = data.pagination.total;
             if (document.getElementById('count-value')) document.getElementById('count-value').textContent = total;
-            if (document.getElementById('total-veiculos')) document.getElementById('total-veiculos').textContent = total;
+            if (document.getElementById('total-itens')) document.getElementById('total-itens').textContent = total;
 
             // Optional: Update hero if we want it to reflect "available"
             if (document.getElementById('hero-total-vehicles')) {
@@ -442,17 +443,21 @@ const renderCard = (veiculo, isLocked = false) => {
     let valorStr = veiculo.valor ? parseFloat(veiculo.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'Consulte';
     if (isLocked) valorStr = 'R$ *******';
 
-    let dataLeilao = '---';
-    if (veiculo.previsao && veiculo.previsao.string) {
-        dataLeilao = veiculo.previsao.string;
-    } else if (veiculo.dataInicio) {
-        const d = new Date(veiculo.dataInicio);
-        dataLeilao = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    }
+    // The 'dataLeilao' field is no longer displayed in the card details, but kept for potential future use or debugging.
+    // let dataLeilao = '---';
+    // if (veiculo.previsao && veiculo.previsao.string) {
+    //     dataLeilao = veiculo.previsao.string;
+    // } else if (veiculo.dataInicio) {
+    //     const d = new Date(veiculo.dataInicio);
+    //     dataLeilao = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    // }
 
     const localizacao = veiculo.localLeilao || 'Consultar';
     const condicao = veiculo.condicao || 'Geral';
     const condicaoClass = condicao.toLowerCase().replace(/[^a-z0-9]/gi, '-');
+
+    // Blindado badge
+    const blindadoBadge = veiculo.blindado ? `<div class="badge-blindado"><i class="fas fa-shield-alt"></i> BLINDADO</div>` : '';
 
     // Photo logic
     let photoUrl = 'https://placehold.co/400x300?text=Sem+Foto';
@@ -478,6 +483,7 @@ const renderCard = (veiculo, isLocked = false) => {
             ${lockOverlay}
             <div class="card-badges">
                 ${siteBadge}
+                ${blindadoBadge}
             </div>
         </div>
         <div class="card-content">
@@ -489,20 +495,24 @@ const renderCard = (veiculo, isLocked = false) => {
                     <span class="detail-value">${veiculo.ano || '---'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">DATA</span>
-                    <span class="detail-value">${dataLeilao}</span>
-                </div>
-                <div class="detail-row">
                     <span class="detail-label">LEILOEIRO</span>
                     <span class="detail-value" style="${!isLogged ? 'color: #9ca3af;' : ''}">${siteNameDisplay}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">LOCAL</span>
-                    <span class="detail-value">${localizacao}</span>
-                </div>
-                <div class="detail-row">
                     <span class="detail-label">CONDIÇÃO</span>
                     <span class="detail-value badge-condicao condicao-${condicaoClass}">${condicao}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-gas-pump"></i> COMBUSTÍVEL</span>
+                    <span class="detail-value">${veiculo.combustivel || '---'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-palette"></i> COR</span>
+                    <span class="detail-value">${veiculo.cor || '---'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">LOCAL</span>
+                    <span class="detail-value">${localizacao}</span>
                 </div>
             </div>
 

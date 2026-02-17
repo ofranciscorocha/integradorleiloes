@@ -20,6 +20,8 @@ const schedulerStatus = {
 
 export const getSchedulerStatus = () => schedulerStatus;
 
+const SITES_FILE = path.join(__dirname, '../../data/sites.json');
+
 // Priority Ordered List of all available crawlers
 const crawlerScripts = [
     { id: 'copart', site: 'copart.com.br', path: path.join(__dirname, '../crawlers/copart/run.js'), name: 'Copart' },
@@ -37,18 +39,39 @@ const crawlerScripts = [
     { id: 'leilo', site: 'leilo.com.br', path: path.join(__dirname, '../crawlers/leilo/run.js'), name: 'Leilo' },
     { id: 'pestana', site: 'pestanaleiloes.com.br', path: path.join(__dirname, '../crawlers/pestanaleiloes/run.js'), name: 'Pestana Leilões' },
     { id: 'joaoemilio', site: 'joaoemilio.com.br', path: path.join(__dirname, '../crawlers/joaoemilio/run.js'), name: 'João Emílio' },
-    // NOTE: The following crawlers are not yet implemented (no run.js exists):
-    // milan, sumareleiloes, satoleiloes, danielgarcialeiloes, claudiokussleiloes
+    { id: 'caixa', site: 'venda-imoveis.caixa.gov.br', path: path.join(__dirname, '../crawlers/caixa/run.js'), name: 'Caixa Imóveis' },
 ];
 
-// Initialize crawler status map
+// Load and sync with dynamic sites.json
+try {
+    if (fs.existsSync(SITES_FILE)) {
+        const dynamicSites = JSON.parse(fs.readFileSync(SITES_FILE, 'utf8'));
+        dynamicSites.forEach(site => {
+            // Initialize status for all sites
+            if (!schedulerStatus.crawlers[site.id]) {
+                schedulerStatus.crawlers[site.id] = {
+                    name: site.name,
+                    status: 'idle',
+                    lastRun: null,
+                    lastCode: null,
+                    implemented: crawlerScripts.some(c => c.id === site.id)
+                };
+            }
+        });
+    }
+} catch (e) { console.error('Error syncing sites in scheduler:', e); }
+
+// Initialize remaining status map for implemented scripts
 crawlerScripts.forEach(c => {
-    schedulerStatus.crawlers[c.id] = {
-        name: c.name,
-        status: 'idle',
-        lastRun: null,
-        lastCode: null
-    };
+    if (!schedulerStatus.crawlers[c.id]) {
+        schedulerStatus.crawlers[c.id] = {
+            name: c.name,
+            status: 'idle',
+            lastRun: null,
+            lastCode: null,
+            implemented: true
+        };
+    }
 });
 
 // Helper to log to file

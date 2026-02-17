@@ -1,16 +1,17 @@
-import connectDatabase from '../../database/db.js';
 import createCrawler from './index.js';
+import connectDatabase from '../../database/db.js';
 
-(async () => {
+const run = async () => {
     try {
-        console.log('🚀 Iniciando crawler do Copart (API Mode)...\n');
         const db = await connectDatabase();
         const crawler = createCrawler(db);
         await crawler.buscarTodos();
-        await db.close();
+        console.log('Crawler Copart finalizado.');
         process.exit(0);
     } catch (error) {
-        console.error('❌ Erro fatal no crawler Copart:', error);
+        console.error('Erro ao executar crawler Copart:', error);
         process.exit(1);
     }
-})();
+};
+
+run();

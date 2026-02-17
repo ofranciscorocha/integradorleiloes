@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import { parseVehicleDetails } from '../../utils/vehicle-parser.js';
 
 dotenv.config();
 
@@ -26,7 +27,7 @@ const createCrawler = (db) => {
     const BASE_URL = 'https://www.palaciodosleiloes.com.br';
 
     const dadosItem = (dado) => {
-        const { registro, veiculo, ano, descricao, link, fotos, valor, previsao, localLeilao, condicao } = dado;
+        const { registro, veiculo, ano, descricao, link, fotos, valor, previsao, localLeilao, condicao, tipo, combustivel, cor, km, cambio, blindado } = dado;
 
         return {
             site: SITE,
@@ -42,7 +43,12 @@ const createCrawler = (db) => {
             localLeilao: localLeilao || 'MG/SP/BA',
             condicao: condicao || 'No estado',
             modalidade: 'leilao',
-            tipo: 'veiculo'
+            tipo: tipo || 'veiculo',
+            combustivel,
+            cor,
+            km,
+            cambio,
+            blindado
         };
     };
 
@@ -84,17 +90,29 @@ const createCrawler = (db) => {
                     const descricao = $(el).find('.mt-0.small.mb-2').text().trim();
                     const valueStr = $(el).find('.h3').text().replace(/[^0-9,]/g, '').replace(',', '.');
 
+                    let tipo = 'veiculo';
+                    if (catId == 5) tipo = 'diversos';
+
+                    // Parse details
+                    const details = parseVehicleDetails(veiculo + ' ' + descricao);
+
                     const item = {
                         registro: `${leilaoId}_${registroLote}`,
                         veiculo,
-                        ano: parseInt(anoFull.split(' ')[0]) || null,
+                        ano: parseInt(anoFull.split(' ')[0]) || details.ano || null,
                         descricao,
                         link: `${BASE_URL}/site/?opcao=exibir_lote&id_lote=${registroLote}&id_leilao=${leilaoId}`,
                         valor: parseFloat(valueStr) || 0,
                         previsao: '',
                         localLeilao: '',
-                        condicao: descricao.includes('SUCATA') ? 'Sucata' : 'Recuperável',
-                        fotos: []
+                        condicao: details.condicao || (descricao.includes('SUCATA') ? 'Sucata' : 'Recuperável'),
+                        fotos: [],
+                        tipo: tipo,
+                        combustivel: details.combustivel,
+                        cor: details.cor,
+                        km: details.km,
+                        cambio: details.cambio,
+                        blindado: details.blindado
                     };
 
                     $(el).find('.inf').each((i, inf) => {
@@ -128,15 +146,11 @@ const createCrawler = (db) => {
 
     const buscarESalvar = async () => {
         let totalAcumulado = [];
-        // The user wants to focus on CARS (cat 1) and get as much as possible.
-        // We still check others but we could potentially run car cat multiple times or with different filters if available.
-        // For Palácio, catId 1 is the main CARS category.
         const categorias = [1, 2, 3, 4, 5];
 
         for (const cat of categorias) {
             const items = await listarPorCategoria(cat);
             totalAcumulado = totalAcumulado.concat(items);
-            // Small delay to be polite
             await new Promise(r => setTimeout(r, 800));
         }
 
@@ -153,3 +167,4 @@ const createCrawler = (db) => {
 };
 
 export default createCrawler;
+

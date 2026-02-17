@@ -183,6 +183,12 @@ const connectDatabase = async () => {
                 return result.deletedCount;
             };
 
+            const deleteBySite = async ({ site }) => {
+                const result = await db.collection('veiculos').deleteMany({ site });
+                console.log(`🗑️ Erased ${result.deletedCount} items for site: ${site}`);
+                return result.deletedCount;
+            };
+
             const salvarLista = async (lista) => {
                 const col = db.collection('veiculos');
                 let inseridos = 0;
@@ -264,7 +270,7 @@ const connectDatabase = async () => {
             const reload = async () => true;
 
             const dbInterface = {
-                buscarLista, close, count, deleteItems, get, insert, list, paginate, salvarLista, update, overwrite, getAlerts, saveAlert, reload
+                buscarLista, close, count, deleteItems, deleteBySite, get, insert, list, paginate, salvarLista, update, overwrite, getAlerts, saveAlert, reload
             };
 
             // Migration: Fix Palacio Links
@@ -297,7 +303,7 @@ const connectDatabase = async () => {
         console.log('⚠️ Conexão com MongoDB falhou mesmo com URI configurada. Usando JSON Fallback.');
     }
 
-    const buscarLista = async ({ colecao = 'veiculos', filtraEncerrados, encerrando, filtroHoras }) => {
+    const buscarLista = async ({ colecao = 'veiculos', filtraEncerrados, encerrando, filtroHoras } = {}) => {
         let items = readData(colecao);
         const now = Date.now();
 
@@ -427,6 +433,16 @@ const connectDatabase = async () => {
 
         writeData(colecao, items);
         return initialCount - items.length;
+    };
+
+    const deleteBySite = async ({ site }) => {
+        let items = readData('veiculos');
+        const initialCount = items.length;
+        items = items.filter(item => item.site !== site);
+        writeData('veiculos', items);
+        const removed = initialCount - items.length;
+        console.log(`🗑️ [JSON] Erased ${removed} items for site: ${site}`);
+        return removed;
     };
 
 
@@ -590,6 +606,7 @@ const connectDatabase = async () => {
         close,
         count,
         deleteItems,
+        deleteBySite,
         get,
         insert,
         list,

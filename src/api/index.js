@@ -2,20 +2,44 @@ import express from 'express';
 import fs from 'fs';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import connectDatabase from '../database/db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import axios from 'axios';
+import connectDatabase from '../database/db.js';
 import cleanExpired from '../tasks/cleanExpired.js';
+import initScheduler, { getSchedulerStatus } from '../tasks/scheduler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const SITES_FILE = path.join(__dirname, '../../data/sites.json');
+const getDynamicSites = () => {
+    try {
+        if (fs.existsSync(SITES_FILE)) {
+            return JSON.parse(fs.readFileSync(SITES_FILE, 'utf8'));
+        }
+    } catch (e) { console.error('Error reading sites.json:', e); }
+    return [];
+};
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || process.env.API_PORT || 8181;
+
+// Database connection
+let db = null;
+
+const initDatabase = async () => {
+    try {
+        db = await connectDatabase();
+        console.log('📦 Database pronta para uso');
+    } catch (error) {
+        console.error('❌ Falha ao conectar database:', error.message);
+        console.warn('⚠️ Server operando sem banco de dados. Endpoints falharão, mas frontend carrega.');
+    }
+};
 
 // Middleware
 app.use(cors({
@@ -99,23 +123,16 @@ app.get(['/painel', '/admin.html'], (req, res) => {
     res.redirect('/a-painel-secreto');
 });
 
-// Health Check & Diagnostics
+// Diagnostics
 app.get('/health', async (req, res) => {
     try {
-        const db = await connectDatabase();
         const mongoStatus = process.env.MONGODB_URI ? 'Configured' : 'NOT Configured';
-        const browserPath = (await import('../utils/browser.js')).getExecutablePath();
-
         res.json({
             status: 'ok',
             database: {
+                connected: !!db,
                 type: process.env.MONGODB_URI ? 'MongoDB' : 'JSON',
-                mongoEnv: mongoStatus,
-                uriMasked: process.env.MONGODB_URI ? process.env.MONGODB_URI.replace(/\/\/.*?:.*?@/, '//***:***@') : null
-            },
-            browser: {
-                detectedPath: browserPath,
-                platform: process.platform
+                mongoEnv: mongoStatus
             },
             timestamp: new Date().toISOString()
         });
@@ -125,27 +142,25 @@ app.get('/health', async (req, res) => {
 });
 
 // ==========================================
-// AUTH ROUTES (User System)
+// AUTH ROUTES
 // ==========================================
 
 app.post('/auth/register', async (req, res) => {
     try {
-        const db = await connectDatabase();
         const { nome, email, senha, telefone } = req.body;
-
         if (!email || !senha) return res.status(400).json({ success: false, error: 'Email e senha obrigatórios' });
 
         const existing = await db.get({ colecao: 'users', registro: email, site: 'local' });
         if (existing) return res.status(400).json({ success: false, error: 'Email já cadastrado' });
 
-        const userId = await db.insert({
+        await db.insert({
             colecao: 'users',
             dados: {
-                registro: email, // Unique key
-                site: 'local',   // Scope
+                registro: email,
+                site: 'local',
                 nome,
                 email,
-                senha, // Em produção, usar bcrypt. Aqui store plain/mock para MVP rápido.
+                senha,
                 telefone,
                 plano: 'free',
                 criadoEm: new Date()
@@ -160,226 +175,58 @@ app.post('/auth/register', async (req, res) => {
 
 app.post('/auth/login', async (req, res) => {
     try {
-        const db = await connectDatabase();
         const { email, senha } = req.body;
-
         const user = await db.get({ colecao: 'users', registro: email, site: 'local' });
 
-        // Mock Admin Bypass for testing
         if (email === 'admin' && senha === 'Rf159357$') {
-            return res.json({ success: true, user: { nome: 'Admin', email, plano: 'admin' } });
+            return res.json({ success: true, user: { nome: 'Admin', email, plano: 'admin' }, token: AUTH_TOKEN });
         }
 
         if (!user || user.senha !== senha) {
             return res.status(401).json({ success: false, error: 'Credenciais inválidas' });
         }
 
-        res.json({ success: true, user: { nome: user.nome, email: user.email, plano: user.plano || 'free' } });
+        res.json({ success: true, user: { nome: user.nome, email: user.email, plano: user.plano || 'free' }, token: AUTH_TOKEN });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
 });
 
-// Database connection
-let db = null;
+// ==========================================
+// VEHICLE ROUTES
+// ==========================================
 
-// ...existing code...
-import initScheduler, { getSchedulerStatus } from '../tasks/scheduler.js';
-
-// ...existing code...
-
-const initDatabase = async () => {
-    try {
-        db = await connectDatabase();
-        console.log('📦 Database pronta para uso');
-        // initScheduler now triggered after server listen
-
-    } catch (error) {
-        // ...
-        console.error('❌ Falha ao conectar database:', error.message);
-        // process.exit(1);
-        console.warn('⚠️ Server operando sem banco de dados. Endpoints falharão, mas frontend carrega.');
-    }
-};
-
-// ============ ROUTES ============
-
-/**
- * Health check
- */
-app.get('/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        database: db ? 'connected' : 'disconnected'
-    });
-});
-
-/**
- * Upload de Branding (Logo/Hero)
- */
-app.post('/admin/upload-branding', requireAuth, async (req, res) => {
-    try {
-        const { type, base64Data } = req.body;
-
-        if (!['logo', 'hero'].includes(type) || !base64Data) {
-            return res.status(400).json({ success: false, error: 'Dados inválidos' });
-        }
-
-        // Extrair apenas o conteúdo base64
-        const base64Content = base64Data.split(';base64,').pop();
-        const buffer = Buffer.from(base64Content, 'base64');
-
-        const fileName = type === 'logo' ? 'logo.png' : 'hero-bg.jpg';
-        const imgDir = path.join(__dirname, 'public', 'img');
-        const filePath = path.join(imgDir, fileName);
-
-        // Garantir que a pasta img existe
-        if (!fs.existsSync(imgDir)) {
-            fs.mkdirSync(imgDir, { recursive: true });
-        }
-
-        fs.writeFileSync(filePath, buffer);
-        console.log(`[Admin] Branding atualizado: ${fileName}`);
-
-        res.json({ success: true, message: 'Branding atualizado com sucesso!' });
-    } catch (error) {
-        console.error('Erro no upload de branding:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-/**
- * Listar veículos com filtro (compatibilidade com crawlhinho original)
- */
 app.post('/list', async (req, res) => {
     try {
         const { filtro = {}, colunas = {} } = req.body;
-        console.log('📥 POST /list:', { filtro, colunas });
-
         const lista = await db.list({ colecao: 'veiculos', filtro, colunas });
-
-        res.json({
-            success: true,
-            filtro,
-            colunas,
-            total: lista.length,
-            lista
-        });
+        res.json({ success: true, total: lista.length, lista });
     } catch (error) {
-        console.error('Erro em /list:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-/**
- * Buscar veículos com paginação
- */
 app.get('/veiculos', async (req, res) => {
     try {
-        const {
-            page = 1,
-            limit = 12,
-            search,
-            site,
-            anoMin,
-            anoMax,
-            kmMax,
-            tipo,
-            uf,
-            condicao,
-            sort = 'recente'
-        } = req.query;
+        const { page = 1, limit = 12, search, site, anoMin, anoMax, kmMax, tipo, uf, condicao, sort = 'recente' } = req.query;
+        const query = { "fotos.0": { $exists: true } };
 
-        console.log(`[API] /veiculos request: page=${page}, limit=${limit}, site=${site}, search=${search}`);
-
-        const query = {};
-
-        // REQUIREMENT: Only show lots with photos
-        query["fotos.0"] = { $exists: true };
-
-        // Search text (veiculo and descricao)
         if (search && search.trim() !== '') {
-            query.$or = [
-                { veiculo: { $regex: search, $options: 'i' } },
-                { descricao: { $regex: search, $options: 'i' } }
-            ];
+            query.$or = [{ veiculo: { $regex: search, $options: 'i' } }, { descricao: { $regex: search, $options: 'i' } }];
         }
-
-        // Filter by site
-        if (site && site.trim() !== '') {
-            const s = site.toLowerCase();
-            if (s === 'rogeriomenezes') query.site = { $regex: 'Rogério|Rogerio', $options: 'i' };
-            else if (s === 'sodre') query.site = { $regex: 'Sodré|Sodre', $options: 'i' };
-            else if (s === 'palacio') query.site = { $regex: 'Palácio|Palacio', $options: 'i' };
-            else if (s === 'guariglia') query.site = { $regex: 'Guariglia', $options: 'i' };
-            else if (s === 'vip') query.site = { $regex: 'VIP', $options: 'i' };
-            else if (s === 'freitas') query.site = { $regex: 'Freitas', $options: 'i' };
-            else if (s === 'copart') query.site = { $regex: 'Copart', $options: 'i' };
-            else if (s === 'joaoemilio') query.site = { $regex: 'João|Joao', $options: 'i' };
-            else if (s === 'milan') query.site = { $regex: 'Milan', $options: 'i' };
-            else if (s === 'parque') query.site = { $regex: 'Parque', $options: 'i' };
-            else if (s === 'leilo') query.site = { $regex: 'Leilo', $options: 'i' };
-            else if (s === 'sumare') query.site = { $regex: 'Sumaré|Sumare', $options: 'i' };
-            else if (s === 'sato') query.site = { $regex: 'Sato', $options: 'i' };
-            else if (s === 'pestana') query.site = { $regex: 'Pestana', $options: 'i' };
-            else if (s === 'mgl') query.site = { $regex: 'MGL', $options: 'i' };
-            else if (s === 'claudiokuss') query.site = { $regex: 'Claudio|Kuss', $options: 'i' };
-            else if (s === 'danielgarcia') query.site = { $regex: 'Daniel|Garcia', $options: 'i' };
-            else if (s === 'superbid') query.site = { $regex: 'Superbid', $options: 'i' };
-            else query.site = { $regex: site, $options: 'i' };
-        }
-
-        // Filter by year
-        if ((anoMin && anoMin !== '') || (anoMax && anoMax !== '')) {
+        if (site && site.trim() !== '') query.site = { $regex: site, $options: 'i' };
+        if (anoMin || anoMax) {
             query.ano = {};
-            if (anoMin && anoMin !== '') query.ano.$gte = parseInt(anoMin);
-            if (anoMax && anoMax !== '') query.ano.$lte = parseInt(anoMax);
+            if (anoMin) query.ano.$gte = parseInt(anoMin);
+            if (anoMax) query.ano.$lte = parseInt(anoMax);
         }
+        if (kmMax) query.km = { $lte: parseInt(kmMax) };
+        if (tipo) query.tipo = { $regex: tipo, $options: 'i' };
+        if (uf) query.localLeilao = { $regex: uf, $options: 'i' };
 
-        // Filter by KM
-        if (kmMax && kmMax !== '') {
-            query.km = { $lte: parseInt(kmMax) };
-        }
-
-        // Filter by Category (vehicle type tabs)
-        if (tipo && tipo.trim() !== '') {
-            if (tipo === 'moto') {
-                query.veiculo = { $regex: 'moto|honda cg|honda cb|honda biz|honda pcx|yamaha|suzuki|kawasaki|harley|ducati|triumph|xre|bros|factor|ybr|fan|pop|xtz|tenere|nmax|crosser|trail|scooter', $options: 'i' };
-            } else if (tipo === 'pesado') {
-                query.veiculo = { $regex: 'caminhão|caminhao|ônibus|onibus|van|sprinter|furgão|furgao|truck|reboque|carreta|bitruck|toco|cavalo|scania|volvo fh|volvo fm|iveco|man tgx|daf|atego|axor|delivery|ford cargo', $options: 'i' };
-            } else {
-                query.tipo = { $regex: tipo, $options: 'i' };
-            }
-        }
-
-        // Filter by State (UF)
-        if (uf && uf.trim() !== '') {
-            query.localLeilao = { $regex: uf, $options: 'i' };
-        }
-
-        // Filter by Condition (Sucata, Sinistro, etc)
-        if (condicao && condicao.trim() !== '') {
-            if (condicao === 'sucata') {
-                query.descricao = { $regex: 'sucata|baixa', $options: 'i' };
-            } else if (condicao === 'sinistro') {
-                query.descricao = { $regex: 'sinistro| recuperado|média monta|grande monta|colisão', $options: 'i' };
-            } else if (condicao === 'financiamento') {
-                query.descricao = { $regex: 'financeiro|financiamento|retomado|banco', $options: 'i' };
-            } else {
-                query.descricao = { $regex: condicao, $options: 'i' };
-            }
-        }
-
-        console.log(`🔎 [API] Filtrando: Search="${search || ''}", Site="${site || ''}", UF="${uf || ''}", Condicao="${condicao || ''}", Ano=${anoMin || ''}-${anoMax || ''}`);
-
-        // Sort Mapping (handle accented chars from frontend)
-        // Default: User requested "prioritize newest year" for the unlocked items.
         let sortObj = { ano: -1, criadoEm: -1 };
-        const sortNorm = sort.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-        if (sortNorm === 'preco_asc') sortObj = { valor: 1 };
-        if (sortNorm === 'preco_desc') sortObj = { valor: -1 };
-        if (sortNorm === 'ano_desc') sortObj = { ano: -1 };
+        if (sort.includes('preco_asc')) sortObj = { valor: 1 };
+        if (sort.includes('preco_desc')) sortObj = { valor: -1 };
 
         const { items, pagination } = await db.paginate({
             colecao: 'veiculos',
@@ -387,401 +234,149 @@ app.get('/veiculos', async (req, res) => {
             page: parseInt(page),
             limit: parseInt(limit),
             sort: sortObj,
-            interleave: true // Enable interleaving by default for better variety
+            interleave: true
         });
 
-        console.log(`[API] /veiculos: ${items.length} itens retornados. Query:`, JSON.stringify(query));
-
-        res.json({
-            success: true,
-            items: items,
-            pagination: pagination,
-            // Keep these for backward compatibility if needed, or remove if unused. 
-            // But app.js strictly uses data.items and data.pagination.
-            total: pagination.total,
-            page: pagination.page,
-            totalPages: pagination.totalPages
-        });
+        res.json({ success: true, items, pagination });
     } catch (error) {
-        console.error('Erro em /veiculos:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-/**
- * Buscar veículo por registro
- */
 app.get('/veiculos/:registro', async (req, res) => {
     try {
         const { registro } = req.params;
         const { site } = req.query;
-
-        const veiculo = await db.get({
-            colecao: 'veiculos',
-            registro,
-            site
-        });
-
-        if (!veiculo) {
-            return res.status(404).json({ success: false, error: 'Veículo não encontrado' });
-        }
-
+        const veiculo = await db.get({ colecao: 'veiculos', registro, site });
+        if (!veiculo) return res.status(404).json({ success: false, error: 'Veículo não encontrado' });
         res.json({ success: true, veiculo });
     } catch (error) {
-        console.error('Erro em /veiculos/:registro:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-/**
- * Estatísticas gerais
- */
+// ==========================================
+// ADMIN ROUTES
+// ==========================================
+
+app.post('/admin/upload-branding', requireAuth, async (req, res) => {
+    try {
+        const { type, base64Data } = req.body;
+        const base64Content = base64Data.split(';base64,').pop();
+        const buffer = Buffer.from(base64Content, 'base64');
+        const fileName = type === 'logo' ? 'logo.png' : 'hero-bg.jpg';
+        const imgDir = path.join(__dirname, 'public', 'img');
+        if (!fs.existsSync(imgDir)) fs.mkdirSync(imgDir, { recursive: true });
+        fs.writeFileSync(path.join(imgDir, fileName), buffer);
+        res.json({ success: true, message: 'Branding atualizado!' });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+app.post('/admin/clear-site', requireAuth, async (req, res) => {
+    try {
+        const { siteId } = req.body;
+        const sites = getDynamicSites();
+        const site = sites.find(s => s.id === siteId);
+        if (!site) return res.status(404).json({ success: false, error: 'Site not found' });
+        const removed = await db.deleteBySite({ site: site.domain });
+        res.json({ success: true, removed, message: `${removed} itens removidos para ${site.name}` });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+app.post('/admin/add-site', requireAuth, async (req, res) => {
+    try {
+        const { id, name, domain } = req.body;
+        const sites = getDynamicSites();
+        if (sites.find(s => s.id === id)) return res.status(400).json({ success: false, error: 'ID already exists' });
+        sites.push({ id, name, domain });
+        fs.writeFileSync(SITES_FILE, JSON.stringify(sites, null, 2));
+        res.json({ success: true, message: 'Site adicionado!' });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
 app.get('/stats', async (req, res) => {
     try {
-        const { crawlerScripts } = await import('../tasks/scheduler.js');
+        const sites = getDynamicSites();
         const porSite = {};
-
-        for (const s of crawlerScripts) {
-            const count = await db.count({
-                colecao: 'veiculos',
-                filtro: { site: s.site }
-            });
-            porSite[s.id] = {
-                name: s.name,
-                count: count
-            };
+        for (const s of sites) {
+            porSite[s.id] = { name: s.name, count: await db.count({ colecao: 'veiculos', filtro: { site: s.domain } }) };
         }
-
-        const stats = {
+        res.json({
+            success: true,
             total: await db.count({ colecao: 'veiculos' }),
-            stats: {
-                novosHoje: await db.count({
-                    colecao: 'veiculos',
-                    filtro: { criadoEm: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
-                }),
-                visitantes: 1240 + Math.floor(Math.random() * 50),
-                cadastros: await db.count({ colecao: 'alerts' }) + 450,
-                porSite,
-                scheduler: getSchedulerStatus()
-            }
-        };
-
-        res.json({ success: true, ...stats });
-    } catch (error) {
-        console.error('Erro em /stats:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
+            stats: { porSite, scheduler: getSchedulerStatus() }
+        });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
-/**
- * Listar sites disponíveis
- */
-app.get('/sites', (req, res) => {
-    res.json({
-        success: true,
-        sites: [
-            { id: 'palacio', name: 'Palácio dos Leilões', domain: 'palaciodosleiloes.com.br' },
-            { id: 'vip', name: 'VIP Leilões', domain: 'vipleiloes.com.br' },
-            { id: 'guariglia', name: 'Guariglia Leilões', domain: 'guariglialeiloes.com.br' },
-            { id: 'freitas', name: 'Freitas Leiloeiro', domain: 'freitasleiloeiro.com.br' },
-            { id: 'sodre', name: 'Sodré Santoro', domain: 'sodresantoro.com.br' },
-            { id: 'parque', name: 'Parque dos Leilões', domain: 'parquedosleiloes.com.br' },
-            { id: 'rogeriomenezes', name: 'Rogério Menezes', domain: 'rogeriomenezes.com.br' },
-            { id: 'copart', name: 'Copart', domain: 'copart.com.br' },
-            { id: 'leilo', name: 'Leilo.com.br', domain: 'leilo.com.br' },
-            { id: 'milan', name: 'Milan Leilões', domain: 'milanleiloes.com.br' },
-            { id: 'sumare', name: 'Sumaré Leilões', domain: 'sumareleiloes.com.br' },
-            { id: 'sato', name: 'Sato Leilões', domain: 'satoleiloes.com.br' },
-            { id: 'danielgarcia', name: 'Daniel Garcia', domain: 'danielgarcialeiloes.com.br' },
-            { id: 'joaoemilio', name: 'João Emílio', domain: 'joaoemilio.com.br' },
-            { id: 'mgl', name: 'MGL Leilões', domain: 'mgl.com.br' },
-            { id: 'claudiokuss', name: 'Claudio Kuss', domain: 'claudiokussleiloes.com.br' },
-            { id: 'pestana', name: 'Pestana Leilões', domain: 'pestanaleiloes.com.br' },
-            { id: 'superbid', name: 'Superbid', domain: 'superbid.net' }
-        ]
-    });
-});
+app.get('/sites', (req, res) => res.json({ success: true, sites: getDynamicSites() }));
 
-/**
- * Admin: Login
- */
-app.post('/admin/login', (req, res) => {
-    const { user, pass } = req.body;
-    // Hardcoded credentials as requested
-    if (user === 'admin' && (pass === 'admin' || pass === 'Rf159357$')) {
-        res.json({ success: true, token: AUTH_TOKEN });
-    } else {
-        res.status(401).json({ success: false, error: 'Usuário ou senha incorretos' });
-    }
-});
+app.get('/admin/check-auth', requireAuth, (req, res) => res.json({ success: true }));
 
-
-
-/**
- * Admin: Verificação de Token (para frontend check)
- */
-app.get('/admin/check-auth', requireAuth, (req, res) => {
-    res.json({ success: true });
-});
-
-/**
- * Admin: Limpar Expirados
- */
 app.post('/admin/clean', requireAuth, async (req, res) => {
-    try {
-        const removed = await cleanExpired();
-        res.json({ success: true, removed });
-    } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
-    }
+    try { res.json({ success: true, removed: await cleanExpired() }); }
+    catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
-/**
- * Admin: Forçar recarregamento de dados
- */
 app.post('/admin/refresh-db', requireAuth, async (req, res) => {
-    try {
-        await db.reload();
-        res.json({ success: true, message: 'Banco de dados recarregado com sucesso!' });
-    } catch (e) {
-        console.error('Erro ao recarregar DB:', e);
-        res.status(500).json({ success: false, error: e.message });
-    }
+    try { await db.reload(); res.json({ success: true, message: 'DB Recarregado!' }); }
+    catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
-/**
- * Admin: Rodar Crawler Manualmente
- */
 app.post('/admin/crawl', requireAuth, async (req, res) => {
     try {
         const { site } = req.body;
         const { triggerManualRun } = await import('../tasks/scheduler.js');
-
-        const success = triggerManualRun(site);
-        if (success) {
-            res.json({ success: true, message: `Crawler ${site} disparado no servidor.` });
-        } else {
-            res.status(400).json({ success: false, error: 'Crawler não encontrado ou inativo.' });
-        }
-    } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
-    }
+        if (triggerManualRun(site)) res.json({ success: true });
+        else res.status(400).json({ success: false, error: 'Crawler fail' });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
-/**
- * Admin: Ler logs do Crawler em tempo real
- */
 app.get('/admin/logs', requireAuth, (req, res) => {
-    try {
-        const logPath = path.resolve(process.cwd(), 'crawler.log');
-        if (!fs.existsSync(logPath)) {
-            return res.json({ success: true, logs: 'Aguardando início de log...' });
-        }
-
-        // Return latest 100 lines
-        const content = fs.readFileSync(logPath, 'utf8');
-        const lines = content.split('\n');
-        const tail = lines.slice(-100).join('\n');
-
-        res.json({ success: true, logs: tail });
-    } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
-    }
+    const logPath = path.resolve(process.cwd(), 'crawler.log');
+    if (!fs.existsSync(logPath)) return res.json({ success: true, logs: '' });
+    const content = fs.readFileSync(logPath, 'utf8').split('\n').slice(-100).join('\n');
+    res.json({ success: true, logs: content });
 });
 
-/**
- * Admin: Rodar TODOS Crawlers (Sequencial)
- */
 app.post('/admin/crawl-all', requireAuth, async (req, res) => {
-    try {
-        const { getSchedulerStatus } = await import('../tasks/scheduler.js');
-        const schedulerStatus = getSchedulerStatus();
-
-        if (schedulerStatus.running) {
-            return res.status(409).json({ success: false, error: 'Já existe uma coleta em andamento.' });
-        }
-
-        console.log('🚀 [Admin] Disparando coleta TOTAL!');
-        const logPath = path.resolve(process.cwd(), 'crawler.log');
-        fs.writeFileSync(logPath, `--- Coleta SEQUENCIAL Total Iniciada em ${new Date().toLocaleString()} ---\n`);
-
-        const scriptPath = path.resolve(process.cwd(), 'src/tasks/run_all.js');
-        const child = spawn('node', [scriptPath], {
-            cwd: process.cwd(),
-            detached: true,
-            stdio: ['ignore', 'pipe', 'pipe'],
-            shell: true
-        });
-
-        child.unref();
-        schedulerStatus.running = true;
-
-        res.json({ success: true, message: 'Coleta TOTAL iniciada em segundo plano.' });
-    } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
-    }
-});
-
-
-/**
- * Admin: Rodar AI Crawler
- */
-app.post('/admin/crawl-ai', requireAuth, async (req, res) => {
-    try {
-        const { name, url } = req.body;
-        if (!name || !url) return res.status(400).json({ success: false, error: 'Dados incompletos' });
-
-        console.log(`🚀 [Admin] Disparando AI Crawler para: ${name} (${url})`);
-
-        // We run a specialized script that imports createCrawler from generic/ai_crawler
-        // Since we need to pass args, using a temp script or modifying index.js of ai_crawler to read args is best.
-        // Let's create a runner script on the fly or use a dedicated one.
-
-        // Strategy: Create a runner script that imports GenericCrawler, inits DB, runs it.
-        const runnerScript = `
-        import createCrawler from './src/crawlers/ai_crawler/index.js';
-        import connectDatabase from './src/database/db.js';
-        
-        (async () => {
-            try {
-                const db = await connectDatabase();
-                const crawler = createCrawler(db);
-                const count = await crawler.crawlGeneric('${url}', '${name}');
-                console.log(JSON.stringify({ count }));
-                process.exit(0);
-            } catch(e) {
-                console.error(e);
-                process.exit(1);
-            }
-        })();
-        `;
-
-        // Write temp runner? Or just pass as -e arg?
-        // passing as -e string might be complex with quoting.
-        // Better: write to src/tasks/run_ai.js dynamically or statically.
-
-        // Let's write a static runner file once, or rely on a new file.
-        // For simplicity in this tool call, I'll create the file 'src/tasks/run_ai_on_demand.js' in a separate call? 
-        // No, I can write inline via fs here if I import fs, but I am replacing content.
-
-        // Alternative: Use the child_process to run a script I will create next. 
-        // I will assume 'src/tasks/run_ai.js' exists (I will create it next).
-
-        const child = spawn('node', ['src/tasks/run_ai.js', url, name], {
-            cwd: process.cwd(),
-            stdio: ['ignore', 'pipe', 'pipe']
-        });
-
-        let output = '';
-        let error = '';
-
-        child.stdout.on('data', c => output += c.toString());
-        child.stderr.on('data', c => error += c.toString());
-
-        child.on('close', (code) => {
-            // Parse output to find json
-            // The script should output the count
-            const match = output.match(/\{"count":\d+\}/);
-            const count = match ? JSON.parse(match[0]).count : 0;
-
-            if (code === 0) {
-                res.json({ success: true, count, message: 'AI Crawler finalizado' });
-            } else {
-                res.status(500).json({ success: false, error: error || 'Erro desconhecido no crawler' });
-            }
-        });
-
-    } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
-    }
-});
-
-// ============ MOCK AUTH ROUTES ============
-// Simple in-memory session for demonstration (replace with Passport/Session/JWT in production)
-// Note: This is a simplified auth for the frontend prototype.
-
-app.post('/auth/login', (req, res) => {
-    // Simulating Google Login success
-    // In real scenario, this would handle the Google OAuth callback
-    const user = {
-        name: 'Usuário Google',
-        email: 'user@gmail.com',
-        avatar: 'https://ui-avatars.com/api/?name=User+Google&background=random'
-    };
-
-    // Set a simple cookie (client-side capable for now) 
-    // real app should use httpOnly cookies
-    // real app should use httpOnly cookies
-    res.json({ success: true, user, token: AUTH_TOKEN });
-});
-
-app.post('/auth/logout', (req, res) => {
+    const status = getSchedulerStatus();
+    if (status.running) return res.status(409).json({ success: false, error: 'Running' });
+    spawn('node', ['src/tasks/run_all.js'], { detached: true, stdio: 'ignore', shell: true }).unref();
+    status.running = true;
     res.json({ success: true });
 });
 
-app.get('/auth/me', (req, res) => {
-    // For now, client manages state via simple storage/cookie simulation
-    // Ideally check server session here
-    res.json({ success: true });
-});
-
-// ============ START SERVER ============
-
-/**
- * Criar alerta de WhatsApp
- */
 app.post('/alerts', async (req, res) => {
     try {
-        const { veiculo, valor_max, whatsapp } = req.body;
-        if (!veiculo || !whatsapp) {
-            return res.status(400).json({ success: false, error: 'Dados obrigatórios ausentes' });
-        }
-
-        const alert = await db.saveAlert({
-            veiculo: veiculo.trim(),
-            valorMax: valor_max ? parseFloat(valor_max) : null,
-            whatsapp: whatsapp.trim().replace(/\D/g, '') // Save clean number
-        });
-
-        console.log(`[Alerts] Novo alerta criado para ${whatsapp}: ${veiculo}`);
-        res.json({ success: true, alert });
-    } catch (e) {
-        console.error('Erro ao salvar alerta:', e);
-        res.status(500).json({ success: false, error: e.message });
-    }
+        const { veiculo, whatsapp } = req.body;
+        await db.saveAlert({ veiculo, whatsapp: whatsapp.replace(/\D/g, '') });
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
 const startServer = async () => {
     await initDatabase();
 
-
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`\n🚀 API Integrador de Leilões rodando em port ${PORT}`);
-        console.log(`\n📋 Endpoints disponíveis:`);
-        console.log(`   GET  /health         - Status da API`);
-        console.log(`   GET  /stats          - Estatísticas gerais`);
-        console.log(`   GET  /sites          - Sites disponíveis`);
-        console.log(`   GET  /veiculos       - Listar veículos (com paginação)`);
-        console.log(`   POST /admin/clean    - Limpar expirados`);
-        console.log(`   POST /admin/crawl    - Rodar Crawler`);
-        console.log('');
-
-        // Start Scheduler safely after server is up with a delay
-        // IMPORTANT: Only auto-run crawlers if explicitly enabled via env var.
-        // On Railway, Puppeteer crawlers fail and corrupt the JSON data file.
-        const runOnStart = process.env.RUN_CRAWLER_ON_START === 'true';
-        if (runOnStart) {
-            console.log('⏳ [Scheduler] Aguardando 60s para iniciar coleta inicial...');
+    const server = app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 API rodando em ${PORT}`);
+        initScheduler(process.env.RUN_CRAWLER_ON_START === 'true');
+    }).on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`❌ Porta ${PORT} em uso. Tentando fechar processos antigos...`);
+            // Em ambientes locais, podemos tentar matar o processo (Windows)
+            if (process.platform === 'win32') {
+                spawn('taskkill', ['/F', '/IM', 'node.exe', '/FI', `WINDOWTITLE eq node  src/api/index.js`], { shell: true });
+            }
             setTimeout(() => {
-                initScheduler(true);
-            }, 60000);
+                console.log('🔄 Reiniciando servidor...');
+                startServer();
+            }, 2000);
         } else {
-            console.log('ℹ️ [Scheduler] Auto-start desativado. Defina RUN_CRAWLER_ON_START=true para ativar.');
-            initScheduler(false);
+            console.error('❌ Erro ao iniciar servidor:', err);
         }
     });
 };
 
 startServer();
-
 export default app;

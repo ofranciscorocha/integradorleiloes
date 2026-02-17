@@ -2,6 +2,7 @@ import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
 import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
+import { parseVehicleDetails } from '../../utils/vehicle-parser.js';
 
 dotenv.config();
 puppeteer.use(StealthPlugin());
@@ -16,81 +17,112 @@ const createCrawler = (db) => {
     const extractFromPage = async (page) => {
         return await page.evaluate((site, base) => {
             const items = [];
-            // VIP uses .itm-card for vehicle cards
-            const cards = document.querySelectorAll('div.itm-card');
+            // Try Desktop selectors first
+            let cards = document.querySelectorAll('div.itm-card');
+            let isMobile = false;
+
+            if (cards.length === 0) {
+                // Try Mobile selectors
+                cards = document.querySelectorAll('.card-anuncio');
+                if (cards.length > 0) isMobile = true;
+            }
 
             cards.forEach(card => {
                 try {
-                    const linkEl = card.querySelector('a.itm-cdlink');
-                    if (!linkEl) return;
+                    let linkUrl = '', veiculo = '', lote = '', local = '', precoText = '', imgUrl = '';
 
-                    const linkUrl = linkEl.getAttribute('href') || '';
-                    const registro = linkUrl.split('/').pop();
+                    if (isMobile) {
+                        // Mobile Logic
+                        const linkEl = card.querySelector('a.anc-body') || card.querySelector('.crd-image a');
+                        linkUrl = linkEl ? linkEl.href : '';
 
-                    const body = card.querySelector('div.itm-body');
-                    const firstline = body ? body.querySelectorAll('div.itm-firstline p.itm-info') : [];
+                        const nameEl = card.querySelector('.anc-title h1');
+                        veiculo = nameEl ? nameEl.textContent.trim().toUpperCase() : '';
 
-                    let lote = '', local = '';
-                    firstline.forEach(p => {
-                        const text = p.textContent;
-                        if (text.includes('Lote:')) lote = text.split(':')[1]?.trim() || '';
-                        if (text.includes('Local:')) local = text.split(':')[1]?.trim() || '';
-                    });
+                        const strongs = Array.from(card.querySelectorAll('strong'));
+                        const loteStrong = strongs.find(s => s.innerText.includes('Lote'));
+                        lote = loteStrong ? loteStrong.nextSibling.textContent.trim() : '';
 
-                    const nameEl = body ? body.querySelector('h4.itm-name') : null;
-                    const veiculo = nameEl ? nameEl.textContent.replace(/\n/g, ' ').trim().toUpperCase() : '';
+                        const localStrong = strongs.find(s => s.innerText.includes('Local'));
+                        local = localStrong ? localStrong.nextSibling.textContent.trim() : '';
 
-                    const priceEl = card.querySelector('.itm-price-val');
-                    const precoText = priceEl ? priceEl.textContent.replace(/[^0-9,]/g, '').replace(',', '.') : '0';
+                        const priceEl = card.querySelector('.valor-atual');
+                        precoText = priceEl ? priceEl.innerText.replace(/[^0-9,]/g, '').replace(',', '.') : '0';
 
-                    // Image - try multiple approaches
-                    let imgUrl = '';
-                    const imgEl = card.querySelector('.itm-img, img');
-                    if (imgEl) {
-                        imgUrl = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || imgEl.getAttribute('data-lazy') || '';
-                    }
-                    // Also check background-image
-                    if (!imgUrl) {
-                        const bgEl = card.querySelector('[style*="background-image"]');
-                        if (bgEl) {
-                            const match = bgEl.getAttribute('style')?.match(/url\(['"]?([^'")]+)['"]?\)/);
-                            if (match) imgUrl = match[1];
+                        const imgEl = card.querySelector('.crd-image img');
+                        imgUrl = imgEl ? (imgEl.getAttribute('src') || '') : '';
+
+                    } else {
+                        // Desktop Logic
+                        const linkEl = card.querySelector('a.itm-cdlink');
+                        if (!linkEl) return;
+                        linkUrl = linkEl.getAttribute('href') || '';
+
+                        const body = card.querySelector('div.itm-body');
+                        const firstline = body ? body.querySelectorAll('div.itm-firstline p.itm-info') : [];
+
+                        firstline.forEach(p => {
+                            const text = p.textContent;
+                            if (text.includes('Lote:')) lote = text.split(':')[1]?.trim() || '';
+                            if (text.includes('Local:')) local = text.split(':')[1]?.trim() || '';
+                        });
+
+                        const nameEl = body ? body.querySelector('h4.itm-name') : null;
+                        veiculo = nameEl ? nameEl.textContent.replace(/\n/g, ' ').trim().toUpperCase() : '';
+
+                        const priceEl = card.querySelector('.itm-price-val');
+                        precoText = priceEl ? priceEl.textContent.replace(/[^0-9,]/g, '').replace(',', '.') : '0';
+
+                        const imgEl = card.querySelector('.itm-img, img');
+                        if (imgEl) {
+                            imgUrl = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || imgEl.getAttribute('data-lazy') || '';
                         }
                     }
 
-                    if (imgUrl && !imgUrl.startsWith('http')) {
-                        imgUrl = `${base}${imgUrl}`;
+                    // Normalize URL
+                    if (linkUrl && !linkUrl.startsWith('http')) {
+                        if (base.endsWith('/') && linkUrl.startsWith('/')) linkUrl = base + linkUrl.substring(1);
+                        else if (!base.endsWith('/') && !linkUrl.startsWith('/')) linkUrl = base + '/' + linkUrl;
+                        else linkUrl = base + linkUrl;
                     }
 
-                    const fotos = imgUrl && !imgUrl.includes('placeholder') && !imgUrl.includes('no-image')
-                        ? [imgUrl] : [];
+                    const registro = linkUrl.split('/').pop();
 
-                    items.push({
-                        site,
-                        registro,
-                        link: linkUrl.startsWith('http') ? linkUrl : `${base}${linkUrl}`,
-                        veiculo: veiculo || 'VEÍCULO VIP',
-                        fotos,
-                        valor: parseFloat(precoText) || 0,
-                        localLeilao: local || 'Brasil',
-                        lote,
-                        modalidade: 'leilao',
-                        tipo: 'veiculo'
-                    });
+                    // Categorization
+                    let tipo = 'veiculo';
+                    const vUpper = veiculo;
+                    if (vUpper.includes('CASA') || vUpper.includes('APARTAMENTO') || vUpper.includes('TERRENO') || vUpper.includes('IMÓVEL') || vUpper.includes('IMOVEL') || vUpper.includes('GALPÃO') || vUpper.includes('SÍTIO') || vUpper.includes('CHÁCARA')) {
+                        tipo = 'imovel';
+                    } else if (vUpper.includes('SUCATA') || vUpper.includes('PEÇAS') || vUpper.includes('DIVERSOS') || vUpper.includes('LOTE') || vUpper.includes('MÓVEIS') || vUpper.includes('ELETRO')) {
+                        tipo = 'diversos';
+                    }
+
+                    if (veiculo) {
+                        items.push({
+                            site,
+                            registro, // ad_id
+                            link: linkUrl,
+                            veiculo, // titulo
+                            fotos: [imgUrl],
+                            valor: parseFloat(precoText) || 0,
+                            localLeilao: local || 'Brasil',
+                            lote,
+                            modalidade: 'leilao',
+                            tipo
+                        });
+                    }
                 } catch (e) { }
             });
-
             return items;
         }, SITE, BASE_URL);
     };
 
     const buscarTodos = async () => {
-        console.log(`🚀 [${SITE}] SUPERCRAWLER: Iniciando captura 100% Puppeteer...`);
+        console.log(`🚀 [${SITE}] SUPERCRAWLER PUPPETEER (Optimized): Iniciando captura...`);
 
         const browser = await puppeteer.launch({
             executablePath: getExecutablePath(),
             headless: true,
-            protocolTimeout: 240000,
             args: getCommonArgs()
         });
 
@@ -99,15 +131,18 @@ const createCrawler = (db) => {
 
         try {
             const page = await browser.newPage();
-            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
-            await page.setViewport({ width: 1920, height: 1080 });
+            // Block heavy resources
+            await page.setRequestInterception(true);
+            page.on('request', (req) => {
+                const type = req.resourceType();
+                if (['image', 'stylesheet', 'font', 'media'].includes(type)) req.abort();
+                else req.continue();
+            });
 
-            // Establish session
-            console.log(`   🔍 [${SITE}] Estabelecendo sessão...`);
-            await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
-            await new Promise(r => setTimeout(r, 3000));
+            await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1');
+            await page.setViewport({ width: 375, height: 667, isMobile: true, hasTouch: true });
 
-            // Categories: 3=Automóveis, 4=Caminhões, 5=Motos, 37=Utilitários
+            // Categories: 3=Automóveis, 4=Caminhões, 5=Motos, 37=Utilitários, Imóveis?
             const categorias = [3, 4, 5, 37];
 
             for (const cat of categorias) {
@@ -116,39 +151,49 @@ const createCrawler = (db) => {
 
                 console.log(`\n📂 [${SITE}] Categoria ${cat}...`);
 
-                while (hasMore && pagina <= 50) {
+                while (hasMore && pagina <= 30) {
                     const url = `${BASE_URL}/pesquisa?Pagina=${pagina}&Categorias=${cat}&OrdenacaoVeiculo=InicioLeilao`;
-                    console.log(`   📄 [${SITE}] Cat ${cat}, pág ${pagina}...`);
 
                     try {
-                        // Use domcontentloaded for speed, networkidle2 is too slow on Vip
                         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
-                        await new Promise(r => setTimeout(r, 4000)); // Manual wait for React hydration
-
                         await page.waitForSelector('div.itm-card', { timeout: 10000 }).catch(() => null);
 
                         const items = await extractFromPage(page);
 
                         if (items.length === 0) {
-                            console.log(`   🔸 [${SITE}] Cat ${cat} sem resultados na pág ${pagina}. Fim.`);
+                            console.log(`   🔸 [${SITE}] Cat ${cat} pág ${pagina}: Sem itens.`);
+                            const html = await page.content();
+                            console.log(`      DEBUG: HTML length: ${html.length}`);
+                            console.log(`      DEBUG: Title: ${await page.title()}`);
+                            // console.log(`      DEBUG: HTML Snippet: ${html.substring(0, 500)}`);
                             hasMore = false;
                             continue;
                         }
 
-                        // Deduplicate
                         const newItems = items.filter(item => {
                             if (seenIds.has(item.registro)) return false;
                             seenIds.add(item.registro);
                             return true;
+                        }).map(item => {
+                            const details = parseVehicleDetails(item.veiculo);
+                            return {
+                                ...item,
+                                ano: details.ano,
+                                condicao: details.condicao,
+                                combustivel: details.combustivel,
+                                km: details.km,
+                                cor: details.cor,
+                                cambio: details.cambio,
+                                blindado: details.blindado
+                            };
                         });
 
                         if (newItems.length > 0) {
                             await salvarLista(newItems);
                             totalCapturados += newItems.length;
-                            console.log(`   ✅ [${SITE}] +${newItems.length} veículos. Total: ${totalCapturados}`);
+                            console.log(`   ✅ [${SITE}] Pág ${pagina}: +${newItems.length} itens.`);
                         }
 
-                        // Check "Próxima" button or total pages logic
                         const totalText = await page.evaluate(() => {
                             const h4 = document.querySelector('div.col-md-12.tituloListagem h4');
                             return h4 ? h4.textContent.replace(/[^\d]/g, '') : '0';
@@ -156,21 +201,17 @@ const createCrawler = (db) => {
                         const total = parseInt(totalText) || 0;
                         const totalPaginas = Math.ceil(total / 12);
 
-                        if (pagina >= totalPaginas) {
-                            hasMore = false;
-                        } else {
-                            pagina++;
-                            await new Promise(r => setTimeout(r, 500));
-                        }
+                        if (pagina >= totalPaginas) hasMore = false;
+                        else pagina++;
 
                     } catch (e) {
-                        console.log(`   ⚠️ [${SITE}] Erro cat ${cat} pág ${pagina}: ${e.message}`);
+                        console.log(`   ⚠️ [${SITE}] Erro: ${e.message}`);
                         hasMore = false;
                     }
                 }
             }
 
-            console.log(`✅ [${SITE}] Finalizado! ${totalCapturados} veículos coletados.`);
+            console.log(`✅ [${SITE}] Finalizado! ${totalCapturados} itens coletados.`);
             return totalCapturados;
 
         } catch (e) {
