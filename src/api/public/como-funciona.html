@@ -85,8 +85,10 @@
                 <img src="/img/logo.png" alt="CARS LEILÕES" style="height: 40px; width: auto; object-fit: contain;">
             </a>
             <nav class="nav-menu">
-                <a href="/" class="nav-link">Página Inicial</a>
-                <a href="/admin.html" class="nav-link">Painel Admin</a>
+                <a href="/" class="nav-link">Início</a>
+                <a href="/placa.html" class="nav-link">Consulta por Placa</a>
+                <a href="/como-funciona.html" class="nav-link active">Como funciona</a>
+                <a href="/admin.html" class="nav-link">Painel</a>
             </nav>
         </div>
     </header>
@@ -139,6 +141,77 @@
                 <p>Salve seus veículos favoritos e receba alertas sempre que novos lotes similares entrarem no sistema.
                     Economize tempo e nunca perca uma oportunidade de negócio.</p>
             </div>
+        </div>
+
+        <!-- Calculator Section -->
+        <div id="calculadora" class="step-card"
+            style="display: block; border: 2px solid var(--primary-blue); background: #f0f7ff;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-dark);"><i class="fas fa-calculator"></i> Calculadora de Lucro do
+                    Arrematante</h2>
+                <p style="color: var(--text-muted);">Aprenda a calcular se um lote realmente vale a pena.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div
+                    style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <div style="margin-bottom: 1rem;">
+                        <label
+                            style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">Valor
+                            do Arremate (R$)</label>
+                        <input type="number" id="bid"
+                            style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;"
+                            value="50000" oninput="calc()">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label
+                            style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">Comissão
+                            (5%) + Taxas Fixas (R$)</label>
+                        <input type="number" id="fees"
+                            style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;"
+                            value="3500" oninput="calc()">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label
+                            style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">Custo
+                            de Reparos/Estética (R$)</label>
+                        <input type="number" id="repair"
+                            style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;"
+                            value="3000" oninput="calc()">
+                    </div>
+                </div>
+
+                <div
+                    style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; text-align: center;">
+                    <div style="margin-bottom: 1rem;">
+                        <label
+                            style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">Preço
+                            de Venda (FIPE/Mercado)</label>
+                        <input type="number" id="sale"
+                            style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-weight: 700; color: var(--primary-blue);"
+                            value="75000" oninput="calc()">
+                    </div>
+                    <div style="background: #f0fdf4; padding: 1.5rem; border-radius: 12px; border: 2px dashed #22c55e;">
+                        <span style="display: block; font-size: 0.8rem; color: #15803d; font-weight: 700;">LUCRO
+                            ESTIMADO</span>
+                        <h2 id="result" style="color: #166534; font-size: 2rem; margin: 0.5rem 0;">R$ 18.500,00</h2>
+                        <span id="margin" style="font-weight: 700; color: #15803d;">24.6% de margem</span>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function calc() {
+                    let b = parseFloat(document.getElementById('bid').value) || 0;
+                    let f = parseFloat(document.getElementById('fees').value) || 0;
+                    let r = parseFloat(document.getElementById('repair').value) || 0;
+                    let s = parseFloat(document.getElementById('sale').value) || 0;
+                    let cost = b + f + r;
+                    let profit = s - cost;
+                    let margin = s > 0 ? (profit / s) * 100 : 0;
+                    document.getElementById('result').innerText = profit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    document.getElementById('margin').innerText = margin.toFixed(1) + '% de margem';
+                }
+            </script>
         </div>
     </main>
 

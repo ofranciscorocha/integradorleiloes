@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
-import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
+import { getExecutablePath, getCommonArgs, getRandomUserAgent } from '../../utils/browser.js';
 
 dotenv.config();
 puppeteer.use(StealthPlugin());
@@ -19,7 +19,7 @@ const createCrawler = (db) => {
         const browser = await puppeteer.launch({
             executablePath: getExecutablePath(),
             headless: true,
-            protocolTimeout: 240000,
+            protocolTimeout: 300000,
             args: getCommonArgs()
         });
 
@@ -27,7 +27,7 @@ const createCrawler = (db) => {
 
         try {
             const page = await browser.newPage();
-            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+            await page.setUserAgent(getRandomUserAgent());
 
             // 1. Get Active Auctions
             console.log(`   🔍 [${SITE}] Acessando home para listar leilões...`);
@@ -61,17 +61,54 @@ const createCrawler = (db) => {
                     // Extract lots from auction page
                     const itens = await page.evaluate((site, baseUrl) => {
                         const batch = [];
-                        // Target lot cards (João Emílio often uses .lote-card or similar)
-                        document.querySelectorAll('.lote-card, .card-lote, .item-lote').forEach(card => {
-                            const titleEl = card.querySelector('h3, h4, .titulo, .descricao');
-                            const linkEl = card.querySelector('a');
-                            const priceEl = card.querySelector('.valor, .preco, .lance');
-                            const imgEl = card.querySelector('img');
+                        // Target lot cards
+                        const requestCards = document.querySelectorAll('.lote, .lote-card, .card-lote, .item-lote');
 
-                            if (linkEl && titleEl) {
-                                const title = titleEl.innerText.trim();
-                                if (!/veiculo|carro|moto|caminhao|utilitario/i.test(title) && !document.body.innerText.includes('veiculo')) {
-                                    // Skip if no vehicle keyword found in lot or page context nearby
+                        requestCards.forEach(card => {
+                            // Selectors based on verified HTML
+                            const titleEl = card.querySelector('h5, .titulo, .descricao');
+                            const descEl = card.querySelector('div[style*="text-align: justify"], .desc-lote');
+                            const linkEl = card.querySelector('a[href*="/item/"]');
+                            const priceEl = card.querySelector('.maior-lance h4, .valor, .preco');
+
+                            // Image can be an IMG tag or a background-image on an element
+                            let imgSrc = '';
+                            const valImg = card.querySelector('img');
+                            if (valImg) {
+                                imgSrc = valImg.src || valImg.getAttribute('data-src') || valImg.getAttribute('data-original');
+                            }
+
+                            if (!imgSrc || imgSrc.includes('transparent.gif')) {
+                                const bgEl = card.querySelector('a.rounded[style*="background"], div[style*="background-image"], .img-wrapper[style*="background-image"]');
+                                if (bgEl) {
+                                    const style = bgEl.getAttribute('style') || '';
+                                    const match = style.match(/url\(['"]?(.*?)['"]?\)/);
+                                    if (match) imgSrc = match[1];
+                                }
+                            }
+
+                            // Clean image URL
+                            if (imgSrc && imgSrc.startsWith('//')) imgSrc = 'https:' + imgSrc;
+                            if (imgSrc && imgSrc.startsWith('/')) imgSrc = baseUrl + imgSrc;
+
+                            if (linkEl && (titleEl || descEl)) {
+                                let title = titleEl ? titleEl.innerText.trim() : '';
+                                const description = descEl ? descEl.innerText.trim() : '';
+
+                                // Improve title if it's generic like "MATERIAIS" but there's a description
+                                if ((!title || title.length < 5 || title === 'MATERIAIS' || title === 'VEÍCULOS') && description) {
+                                    title = description.split('\n')[0].substring(0, 100);
+                                }
+
+                                // Basic cleanup
+                                title = title.replace(/\s+/g, ' ').trim();
+
+                                if (!/veiculo|carro|moto|caminhao|utilitario/i.test(title) &&
+                                    !/veiculo|carro|moto|caminhao|utilitario/i.test(description) &&
+                                    !document.title.match(/veiculo|carro|moto/i)) {
+                                    // Skip if absolutely no mention of vehicles
+                                    // But be careful, sometimes specific models are mentioned without "veiculo" keyword
+                                    // filtering is better done later or via specific model regex
                                 }
 
                                 const url = linkEl.href;
@@ -79,13 +116,14 @@ const createCrawler = (db) => {
 
                                 batch.push({
                                     site: site,
-                                    registro: url.split('/').pop(),
+                                    registro: url.split('/item/')[1]?.split('/')[0] || url.split('/').pop(),
                                     link: url,
                                     veiculo: title.toUpperCase(),
                                     valor: parseFloat(valorText) || 0,
-                                    fotos: imgEl ? [imgEl.src] : [],
+                                    fotos: imgSrc ? [imgSrc] : [],
                                     modalidade: 'leilao',
-                                    tipo: 'veiculo'
+                                    tipo: 'veiculo',
+                                    descricao: description
                                 });
                             }
                         });

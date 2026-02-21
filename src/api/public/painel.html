@@ -519,23 +519,103 @@
             }
         }
 
-        @keyframes pulse {
-            0% {
-                opacity: 1;
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
             }
 
-            50% {
-                opacity: 0.4;
-            }
-
-            100% {
+            to {
+                transform: translateX(0);
                 opacity: 1;
             }
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .toast.success {
+            border-left-color: var(--accent);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        .latest-results {
+            margin-top: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.8rem;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .latest-results.active {
+            display: block;
+        }
+
+        .latest-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .latest-item:last-child {
+            border-bottom: none;
+        }
+
+        .latest-item-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+            font-weight: 500;
+        }
+
+        .latest-item-meta {
+            color: var(--text-dim);
+            font-size: 0.7rem;
+        }
+
+        .crawler-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .crawler-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
 
 <body>
+    <div class="toast-container" id="toast-container"></div>
     <div class="mobile-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
     <div class="mobile-header">
@@ -549,7 +629,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo" style="margin-bottom: 2rem;">
             <img src="/img/logo.png" alt="CARS LEILÕES"
-                style="width: 100%; height: auto; max-height: 60px; object-fit: contain;">
+                style="width: 100%; height: auto; max-height: 90px; object-fit: contain;">
         </div>
         <ul class="nav-list">
             <li>
@@ -636,9 +716,39 @@
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                 <div class="widget-title" style="margin-bottom: 0;"><i class="fas fa-robot"></i> Gerenciamento de Coleta
                 </div>
-                <button class="btn btn-primary" onclick="runAllCrawlers()" id="btn-crawl-all">
-                    <i class="fas fa-play"></i> Iniciar Coleta Sequencial Total
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="runAllCrawlers()" id="btn-crawl-all">
+                        <i class="fas fa-play"></i> Iniciar Coleta Sequencial Total
+                    </button>
+                    <button class="btn btn-outline" onclick="loadData()">
+                        <i class="fas fa-sync"></i> Recarregar Status
+                    </button>
+                </div>
+            </div>
+
+            <div class="widget" style="margin-bottom: 2rem; background: rgba(0,0,0,0.3);">
+                <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 1.5rem; align-items: center;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div style="position: relative;">
+                            <i class="fas fa-search"
+                                style="position: absolute; left: 15px; top: 18px; color: var(--text-dim);"></i>
+                            <input type="text" id="crawler-search" class="btn btn-outline"
+                                style="width: 100%; text-align: left; padding-left: 45px; height: 50px; background: rgba(0,0,0,0.2);"
+                                placeholder="Pesquisar por leiloeiro, link ou ID..." oninput="handleCrawlerSearch()">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-outline crawler-filter active" onclick="filterCrawlers('all')"
+                            id="filter-all">Todos</button>
+                        <button class="btn btn-outline crawler-filter" onclick="filterCrawlers('specialized')"
+                            id="filter-specialized">Especializados</button>
+                        <button class="btn btn-outline crawler-filter" onclick="filterCrawlers('ai')"
+                            id="filter-ai">Auto (IA)</button>
+                    </div>
+                    <div id="crawler-count-label" style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">
+                        Carregando...
+                    </div>
+                </div>
             </div>
 
             <div class="widget" style="margin-bottom: 2rem; border-color: var(--primary);">
@@ -736,10 +846,14 @@
                 </div>
                 <div class="form-group"
                     style="margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 2rem;">
-                    <label>Fundo da Hero Principal (Wallpaper 1920x1080)</label>
-                    <input type="file" id="hero-input" class="form-control" style="margin-bottom: 1rem;">
-                    <button class="btn btn-primary" onclick="uploadBranding('hero')">Atualizar Wallpaper</button>
+                    <label>Logo do Filtro Sticky (Aparece ao rolar para baixo)</label>
+                    <input type="file" id="sticky-logo-input" class="form-control" style="margin-bottom: 1rem;">
+                    <button class="btn btn-primary" onclick="uploadStickyLogo()">Atualizar Logo do Filtro</button>
+                    <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;">Dica: Use uma logo
+                        horizontal (PNG transparente) para melhor visualização.</p>
                 </div>
+                <button class="btn btn-primary" onclick="uploadBranding('hero')">Atualizar Wallpaper</button>
+            </div>
             </div>
         </section>
     </main>
@@ -749,6 +863,10 @@
         if (!token) window.location.href = '/login.html';
 
         let chart = null;
+        let lastCrawlerData = null;
+        let lastSiteData = null;
+        let crawlerSearchQuery = '';
+        let crawlerFilterMode = 'all'; // all, specialized, ai
 
         async function init() {
             updateTime();
@@ -775,11 +893,25 @@
                 const data = await res.json();
                 if (data.success) {
                     renderStats(data);
-                    renderCrawlers(data.stats.scheduler || {}, data.stats.porSite || {});
-                    renderChart(data.stats.porSite || {});
-                    renderDistribution(data.stats.porSite || {});
+                    lastCrawlerData = data.stats.scheduler || {};
+                    lastSiteData = data.stats.porSite || {};
+                    renderCrawlers(lastCrawlerData, lastSiteData);
+                    renderChart(lastSiteData);
+                    renderDistribution(lastSiteData);
                 }
             } catch (e) { console.error('Data Load Error:', e); }
+        }
+
+        function handleCrawlerSearch() {
+            crawlerSearchQuery = document.getElementById('crawler-search').value.toLowerCase();
+            renderCrawlers(lastCrawlerData, lastSiteData);
+        }
+
+        function filterCrawlers(mode) {
+            crawlerFilterMode = mode;
+            document.querySelectorAll('.crawler-filter').forEach(b => b.classList.remove('active'));
+            document.getElementById('filter-' + mode).classList.add('active');
+            renderCrawlers(lastCrawlerData, lastSiteData);
         }
 
         function renderStats(data) {
@@ -793,11 +925,12 @@
 
             if (Object.keys(crawlers).length === 0) {
                 container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-dim); padding: 3rem;">Nenhum leiloeiro configurado.</div>';
+                document.getElementById('crawler-count-label').innerText = '0 Fontes';
                 return;
             }
 
             // 1. Calculate status and priority for all items first
-            const items = Object.entries(crawlers).map(([id, info]) => {
+            let items = Object.entries(crawlers).map(([id, info]) => {
                 const siteData = sites[id] || { count: 0 };
                 const count = siteData.count || 0;
                 const isRunning = info.status === 'running';
@@ -835,11 +968,32 @@
                 return { id, info, count, isRunning, hasItems, isError, priority, statusLabel, dotClass, cardClass };
             });
 
-            // 2. Sort by priority DESC
+            // 2. Filter by Search Query
+            if (crawlerSearchQuery) {
+                items = items.filter(i =>
+                    i.info.name.toLowerCase().includes(crawlerSearchQuery) ||
+                    i.id.toLowerCase().includes(crawlerSearchQuery)
+                );
+            }
+
+            // 3. Filter by mode
+            if (crawlerFilterMode === 'specialized') {
+                items = items.filter(i => i.info.implemented);
+            } else if (crawlerFilterMode === 'ai') {
+                items = items.filter(i => !i.info.implemented);
+            }
+
+            document.getElementById('crawler-count-label').innerText = `${items.length} Encontrados`;
+
+            // 4. Sort by priority DESC
             items.sort((a, b) => b.priority - a.priority);
 
-            // 3. Render sorted
-            container.innerHTML = items.map(item => {
+            // 5. Render sorted and limited for performance
+            // Limit to 40 for initial view if many
+            const totalToRender = items.length;
+            const displayItems = items.slice(0, 100);
+
+            container.innerHTML = displayItems.map(item => {
                 const { id, info, count, isRunning, hasItems, isError, statusLabel, dotClass, cardClass } = item;
 
                 const btnStyle = isRunning
@@ -871,6 +1025,12 @@
                             <button class="btn btn-outline" style="flex: 1; border-radius: 10px; font-size: 0.8rem; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);" onclick="clearSiteData('${id}')" title="Limpar Base para este leiloeiro">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
+                        </div>
+                        <div id="results-${id}" class="latest-results">
+                            <div style="font-weight: 700; margin-bottom: 8px; font-size: 0.75rem; color: var(--primary); text-transform: uppercase;">
+                                <i class="fas fa-list-check"></i> Últimos itens coletados:
+                            </div>
+                            <div id="results-list-${id}"></div>
                         </div>
                     </div>
                 `;
@@ -938,6 +1098,7 @@
 
         async function runCrawler(id) {
             switchSection('crawlers');
+            showToast(`Iniciando motor: ${id}`, 'info');
             appendTerminal(`🔄 Gatilho manual enviado para: ${id}...`, 'info');
             try {
                 const res = await fetch('/admin/crawl', {
@@ -950,9 +1111,13 @@
                     appendTerminal(`✅ Motor ${id} sincronizado. Abrindo canal de log...`, 'success');
                     startPolling();
                 } else {
+                    showToast(`Falha: ${data.error}`, 'error');
                     appendTerminal(`❌ Falha no motor: ${data.error}`, 'error');
                 }
-            } catch (e) { appendTerminal(`❌ Erro crítico de rede.`, 'error'); }
+            } catch (e) {
+                showToast('Erro de conexão ao iniciar motor.', 'error');
+                appendTerminal(`❌ Erro crítico de rede.`, 'error');
+            }
         }
 
         async function runAllCrawlers() {
@@ -991,9 +1156,17 @@
                     }).join('');
                     output.scrollTop = output.scrollHeight;
 
-                    if (data.logs.includes('All scheduled crawlers finished')) {
+                    if (data.logs.includes('All scheduled crawlers finished') || data.logs.includes('finished')) {
                         clearInterval(pollInterval);
                         loadData();
+                        showToast('Coleta finalizada com sucesso!', 'success');
+
+                        // Fetch results for all active crawlers that just finished
+                        document.querySelectorAll('.crawler-card').forEach(card => {
+                            const id = card.id.replace('card-', '');
+                            fetchLatestResults(id);
+                        });
+
                         document.getElementById('btn-crawl-all').disabled = false;
                         document.getElementById('btn-crawl-all').innerHTML = '<i class="fas fa-play"></i> Iniciar Coleta Sequencial Total';
                     }
@@ -1013,6 +1186,40 @@
 
             const titles = { dashboard: 'Painel Geral', crawlers: 'Motores de Busca', engine: 'Dados & Cache', branding: 'Identidade Visual' };
             document.getElementById('page-title').innerText = titles[id];
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-circle-exclamation' : 'fa-info-circle');
+            toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(20px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        async function fetchLatestResults(siteId) {
+            try {
+                const res = await fetch(`/admin/latest-items?siteId=${siteId}&limit=5`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success && data.items.length > 0) {
+                    const container = document.getElementById(`results-${siteId}`);
+                    const list = document.getElementById(`results-list-${siteId}`);
+                    container.classList.add('active');
+                    list.innerHTML = data.items.map(item => `
+                        <div class="latest-item">
+                            <span class="latest-item-title" title="${item.veiculo}">${item.veiculo}</span>
+                            <span class="latest-item-meta">${item.ano} | ${item.localLeilao || 'SP'}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) { console.error('Error fetching latest results:', e); }
         }
 
         function appendTerminal(msg, type) {
@@ -1058,6 +1265,13 @@
         async function clearSiteData(id) {
             if (!confirm(`Tem certeza que deseja apagar todos os veículos do leiloeiro "${id}"?`)) return;
 
+            // Optimistic UI update
+            const countEl = document.getElementById(`count-${id}`);
+            const originalCount = countEl.innerText;
+            countEl.innerText = '0';
+            countEl.style.color = 'var(--text-dim)';
+            showToast(`Limpando base de ${id}...`, 'info');
+
             appendTerminal(`🗑️ Solicitando limpeza de dados para: ${id}...`, 'info');
             try {
                 const res = await fetch('/admin/clear-site', {
@@ -1067,14 +1281,22 @@
                 });
                 const data = await res.json();
                 if (data.success) {
+                    showToast(`Base de ${id} limpa com sucesso!`, 'success');
                     appendTerminal(`✅ Sucesso: ${data.message}`, 'success');
-                    // Immediate visual feedback
-                    const countEl = document.getElementById(`count-${id}`);
-                    if (countEl) countEl.innerText = '0';
+                    // Hide any results
+                    document.getElementById(`results-${id}`).classList.remove('active');
                 } else {
+                    countEl.innerText = originalCount;
+                    countEl.style.color = 'inherit';
+                    showToast(`Erro ao limpar: ${data.error}`, 'error');
                     appendTerminal(`❌ Erro: ${data.error}`, 'error');
                 }
-            } catch (e) { appendTerminal(`❌ Falha na requisição de limpeza.`, 'error'); }
+            } catch (e) {
+                countEl.innerText = originalCount;
+                countEl.style.color = 'inherit';
+                showToast('Falha na comunicação com o servidor.', 'error');
+                appendTerminal(`❌ Falha na requisição de limpeza.`, 'error');
+            }
         }
 
         async function addSite() {
@@ -1106,6 +1328,18 @@
         function logout() { localStorage.removeItem('admin_token'); window.location.href = '/login.html'; }
 
         init();
+        const uploadStickyLogo = () => {
+            const input = document.getElementById('sticky-logo-input');
+            if (!input.files[0]) return showToast('Selecione um arquivo PNG primeiro', 'error');
+
+            const reader = new FileReader();
+            reader.readAsDataURL(input.files[0]);
+            reader.onload = () => {
+                localStorage.setItem('sticky_logo_url', reader.result);
+                showToast('Logo do filtro atualizada com sucesso!');
+                appendTerminal('✅ Logo do filtro (sticky) salva localmente.', 'success');
+            };
+        };
     </script>
 </body>
 

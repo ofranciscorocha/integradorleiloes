@@ -2,7 +2,9 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import dotenv from 'dotenv';
 import fs from 'fs';
-import { parseVehicleDetails } from '../../utils/vehicle-parser.js';
+import { parseVehicleDetails, classifyVehicle, cleanTitle } from '../../utils/vehicle-parser.js';
+import { standardizeStatus } from '../../utils/status.js';
+import { getRandomUserAgent } from '../../utils/browser.js';
 
 dotenv.config();
 
@@ -27,28 +29,41 @@ const createCrawler = (db) => {
     const BASE_URL = 'https://www.palaciodosleiloes.com.br';
 
     const dadosItem = (dado) => {
-        const { registro, veiculo, ano, descricao, link, fotos, valor, previsao, localLeilao, condicao, tipo, combustivel, cor, km, cambio, blindado } = dado;
+        const { registro, veiculo, ano, descricao, link, fotos, valor, previsao, localLeilao, condicao, tipo, combustivel, cor, km, cambio, blindado, situacaoRaw, chave, dataLeilao, localColisao, origem, comitente, debitoResponsabilidade, remarcado, anexos } = dado;
+
+        const previsaoObj = tratarDataHora(previsao);
 
         return {
             site: SITE,
             registro,
             link,
-            veiculo: veiculo || 'VEÍCULO PALÁCIO',
-            ano: parseInt(ano) || null,
+            veiculo: cleanTitle(veiculo),
+            ano: ano,
             descricao: descricao || '',
             fotos: fotos || [],
             valor: parseFloat(valor) || 0,
             valorInicial: parseFloat(valor) || 0,
-            previsao: tratarDataHora(previsao),
-            localLeilao: localLeilao || 'MG/SP/BA',
-            condicao: condicao || 'No estado',
+            previsao: previsaoObj,
+            dataLeilao: dataLeilao || (previsaoObj.date ? previsaoObj.date.toISOString() : null),
+            localLeilao: localLeilao || 'Palácio dos Leilões',
+            condicao: condicao || 'Conservado',
             modalidade: 'leilao',
             tipo: tipo || 'veiculo',
             combustivel,
             cor,
             km,
             cambio,
-            blindado
+            chave,
+            blindado,
+            situacao: standardizeStatus(situacaoRaw),
+
+            // NINJA ELITE DEEP FIELDS
+            localColisao,
+            origem,
+            comitente,
+            debitoResponsabilidade,
+            remarcado,
+            anexos: anexos || []
         };
     };
 
@@ -65,7 +80,7 @@ const createCrawler = (db) => {
                 {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+                        'User-Agent': getRandomUserAgent(),
                         'Referer': BASE_URL,
                         'X-Requested-With': 'XMLHttpRequest'
                     },
@@ -94,26 +109,50 @@ const createCrawler = (db) => {
                     if (catId == 5) tipo = 'diversos';
 
                     // Parse details
-                    const details = parseVehicleDetails(veiculo + ' ' + descricao);
+                    const details = parseVehicleDetails(veiculo + ' ' + (descricao || ''));
+
+                    // Attachments
+                    const anexos = [];
+                    $(el).find('a[href*=".pdf"]').each((i, a) => {
+                        const href = $(a).attr('href');
+                        const text = $(a).text().trim() || 'Documento';
+                        if (href) anexos.push({ name: text, url: href.startsWith('http') ? href : `${BASE_URL}${href}` });
+                    });
 
                     const item = {
                         registro: `${leilaoId}_${registroLote}`,
                         veiculo,
-                        ano: parseInt(anoFull.split(' ')[0]) || details.ano || null,
+                        ano: details.ano || (anoFull ? anoFull.split(' ')[0] : null),
                         descricao,
                         link: `${BASE_URL}/site/?opcao=exibir_lote&id_lote=${registroLote}&id_leilao=${leilaoId}`,
                         valor: parseFloat(valueStr) || 0,
                         previsao: '',
                         localLeilao: '',
-                        condicao: details.condicao || (descricao.includes('SUCATA') ? 'Sucata' : 'Recuperável'),
+                        condicao: details.condicao || 'Conservado',
                         fotos: [],
-                        tipo: tipo,
+                        tipo: classifyVehicle(veiculo + ' ' + (descricao || '')),
                         combustivel: details.combustivel,
                         cor: details.cor,
                         km: details.km,
                         cambio: details.cambio,
-                        blindado: details.blindado
+                        chave: details.chave,
+                        blindado: details.blindado,
+
+                        // NINJA ELITE
+                        localColisao: details.localColisao,
+                        origem: details.origem,
+                        comitente: details.comitente || '',
+                        debitoResponsabilidade: details.debitoResponsabilidade,
+                        remarcado: details.remarcado,
+                        anexos: anexos,
+
+                        situacaoRaw: 'Disponível'
                     };
+
+                    // Check if it's explicitly closed in descriptions
+                    if ($(el).find('.lote-encerrado, .badge-danger').length > 0 || descricao.includes('ENCERRADO')) {
+                        item.situacaoRaw = 'Encerrado';
+                    }
 
                     $(el).find('.inf').each((i, inf) => {
                         const t = $(inf).text();
@@ -124,9 +163,15 @@ const createCrawler = (db) => {
                     });
 
                     const img = $(el).find('img.i-p-l');
-                    const foto = img.attr('src');
+                    let foto = img.attr('src');
                     if (foto) {
-                        item.fotos = [foto.startsWith('http') ? foto : `${BASE_URL}/site/${foto}`];
+                        // Ensure no double /site/ if the path already starts with it or is relative
+                        if (foto.startsWith('http')) {
+                            item.fotos = [foto];
+                        } else {
+                            const cleanFoto = foto.startsWith('/') ? foto : `/${foto}`;
+                            item.fotos = [`${BASE_URL}${cleanFoto.startsWith('/site/') ? '' : '/site'}${cleanFoto}`];
+                        }
                     }
 
                     // FILTER: Only include if has photos

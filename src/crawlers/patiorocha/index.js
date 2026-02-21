@@ -52,15 +52,22 @@ const createCrawler = (db) => {
 
             const items = await page.evaluate((site) => {
                 const results = [];
-                const cards = document.querySelectorAll('.card');
+                // More generic selector list covering Soleon/standard patterns
+                const cards = document.querySelectorAll('.card, .lote, .lote-card, .card-lote, .item-lote');
 
                 cards.forEach((card) => {
                     try {
-                        const linkEl = card.querySelector('a');
-                        const titleEl = card.querySelector('h5, .card-title, h3');
-                        if (!linkEl || !titleEl) return;
+                        const linkEl = card.querySelector('a[href*="/lote/"], a[href*="/item/"]');
+                        // Fallback generic link
+                        const anyLink = card.querySelector('a');
+                        const finalLink = linkEl || anyLink;
 
-                        const imgEl = card.querySelector('a.rounded, .img-wrapper, img');
+                        const titleEl = card.querySelector('h5, .card-title, h3, .titulo, .descricao');
+                        const descEl = card.querySelector('.desc-lote, .body-lote, div[style*="text-align: justify"]');
+
+                        if (!finalLink) return;
+
+                        const imgEl = card.querySelector('a.rounded, .img-wrapper, img, div[style*="background-image"]');
                         let foto = '';
                         if (imgEl) {
                             if (imgEl.tagName === 'IMG') {
@@ -72,30 +79,41 @@ const createCrawler = (db) => {
                             }
                         }
 
-                        const textContent = card.innerText.toUpperCase();
+                        let title = titleEl ? titleEl.innerText.trim() : '';
+                        const description = descEl ? descEl.innerText.trim() : '';
+
+                        if (!title || title.length < 3 || title.includes('VEÍCULOS')) {
+                            if (description) title = description.split('\n')[0].substring(0, 100);
+                        }
+
+                        // Default to link text if still empty
+                        if (!title) title = finalLink.innerText.trim();
+
+                        const textContent = (title + ' ' + description).toUpperCase();
                         let condicao = 'Leilão';
                         if (textContent.includes('SUCATA')) condicao = 'Sucata';
                         else if (textContent.includes('SINISTRO')) condicao = 'Sinistrado';
 
-                        const anoMatch = textContent.match(/ANO\/MODELO:\s*(\d{4})/);
-                        const ano = anoMatch ? parseInt(anoMatch[1]) : null;
+                        const anoMatch = textContent.match(/ANO\/MODELO:\s*(\d{4})|(\d{4})\/(\d{4})/);
+                        const ano = anoMatch ? parseInt(anoMatch[1] || anoMatch[2]) : null;
 
-                        const valueEl = card.querySelector('h4, .price, .valor');
+                        const valueEl = card.querySelector('h4, .price, .valor, .lance, .maior-lance');
                         const valorText = valueEl ? valueEl.innerText.trim() : '0';
                         const valor = parseFloat(valorText.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
 
                         results.push({
-                            registro: linkEl.href.split('/').pop().split('?')[0],
+                            registro: finalLink.href.split('/').pop().split('?')[0],
                             site: site,
-                            link: linkEl.href,
-                            veiculo: titleEl.innerText.trim().toUpperCase(),
+                            link: finalLink.href,
+                            veiculo: title.toUpperCase(),
                             fotos: foto ? [foto] : [],
                             valor: valor,
                             condicao: condicao,
                             ano: ano,
                             localLeilao: 'PR / BR',
                             modalidade: 'leilao',
-                            tipo: 'veiculo'
+                            tipo: 'veiculo',
+                            descricao: description
                         });
                     } catch (e) { }
                 });

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta por Placa | CARS LEILÕES</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="style.css?v=1.0.5" rel="stylesheet">
+    <style>
+        .page-container {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 0 1rem;
+            text-align: center;
+        }
+
+        .search-card {
+            background: #fff;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .placa-input {
+            width: 100%;
+            padding: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-align: center;
+            border: 3px solid #cbd5e1;
+            border-radius: 12px;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .placa-input:focus {
+            border-color: var(--primary-blue);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-query {
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--primary-blue);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-query:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .results-card {
+            margin-top: 3rem;
+            display: none;
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: left;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .result-item {
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .result-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <a href="/" class="logo-area">
+                <img src="/img/logo.png" alt="CARS LEILÕES" style="height: 50px;">
+            </a>
+            <nav class="nav-menu">
+                <a href="/" class="nav-link">Início</a>
+                <a href="/placa.html" class="nav-link active">Consulta por Placa</a>
+                <a href="/como-funciona.html" class="nav-link">Como funciona</a>
+                <a href="/admin.html" class="nav-link">Painel</a>
+            </nav>
+        </div>
+    </header>
+
+    <div id="loading" class="loading-overlay">
+        <i class="fas fa-circle-notch fa-spin fa-3x" style="color: var(--primary-blue);"></i>
+        <p style="margin-top: 1rem; font-weight: 700;">Consultando Base de Dados...</p>
+    </div>
+
+    <main class="page-container">
+        <div class="search-card">
+            <i class="fas fa-search-dollar fa-3x" style="color: var(--primary-blue); margin-bottom: 1.5rem;"></i>
+            <h1 class="search-title">Consulta Veicular</h1>
+            <p style="color: var(--text-muted);">Consulte dados técnicos e preços FIPE via Placa, Chassi ou Motor.</p>
+
+            <div class="input-group">
+                <input type="text" id="placa-input" class="placa-input" placeholder="ABC-1234" maxlength="8">
+            </div>
+
+            <button class="btn-query" onclick="consultarPlaca()">CONSULTAR AGORA</button>
+            <p
+                style="margin-top: 1rem; font-size: 0.9rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="fas fa-shield-alt" style="color: #2563eb;"></i>
+                Base de Dados: DENATRAN / SENATRAN
+            </p>
+        </div>
+
+        <div id="results" class="results-card">
+            <div class="result-title">
+                <i class="fas fa-check-circle" style="color: #25d366;"></i>
+                DADOS DO VEÍCULO ENCONTRADO
+            </div>
+
+            <div class="result-grid">
+                <div class="result-item" style="grid-column: span 2;">
+                    <span class="result-label">MARCA / MODELO</span>
+                    <span id="res-modelo" class="result-value">---</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">ANO FABRICAÇÃO</span>
+                    <span id="res-ano-fab" class="result-value">---</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">ANO MODELO</span>
+                    <span id="res-ano-mod" class="result-value">---</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">MOTOR / CILINDRADA</span>
+                    <span id="res-motor" class="result-value">---</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">POTÊNCIA / SEGMENTO</span>
+                    <span id="res-potencia" class="result-value">---</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">COR / COMBUSTÍVEL</span>
+                    <span id="res-cor-comb" class="result-value">---</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">CIDADE / UF</span>
+                    <span id="res-local" class="result-value">---</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">CHASSI (PARCIAL)</span>
+                    <span id="res-chassi" class="result-value">---</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">VALOR TABELA FIPE</span>
+                    <span id="res-fipe" class="result-value" style="color: #25d366; font-size: 1.2rem;">R$ 0,00</span>
+                </div>
+                <div class="result-item" id="placa-antiga-box" style="display: none;">
+                    <span class="result-label">PLACA ANTIGA</span>
+                    <span id="res-placa-antiga" class="result-value">---</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; text-align: center;">
+                <button class="btn-query" style="background: #10b981;" onclick="location.href='/'">
+                    BUSCAR NOS LEILÕES
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const consultarPlaca = async () => {
+            const placa = document.getElementById('placa-input').value.trim();
+            if (placa.length < 7) {
+                alert('Informe uma placa válida');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('results').style.display = 'none';
+
+            try {
+                const res = await fetch(`/proxy-placa?placa=${encodeURIComponent(placa)}`);
+                const result = await res.json();
+
+                if (result.success) {
+                    const d = result.data;
+                    document.getElementById('res-modelo').textContent = (d.marca ? d.marca + ' ' : '') + (d.modelo || d.veiculo || '---');
+                    document.getElementById('res-ano-fab').textContent = d.ano || '---';
+                    document.getElementById('res-ano-mod').textContent = d.anoModelo || '---';
+                    document.getElementById('res-motor').textContent = (d.motor || '---') + (d.cilindrada ? ' / ' + d.cilindrada : '');
+                    document.getElementById('res-potencia').textContent = (d.potencia || '---') + (d.segmento ? ' / ' + d.segmento : '');
+                    document.getElementById('res-cor-comb').textContent = (d.cor || '---') + ' / ' + (d.combustivel || '---');
+                    document.getElementById('res-local').textContent = (d.municipio ? d.municipio + ' / ' : '') + (d.uf || '---');
+                    document.getElementById('res-chassi').textContent = d.chassi || '---';
+
+                    if (d.placaAnterior) {
+                        document.getElementById('placa-antiga-box').style.display = 'block';
+                        document.getElementById('res-placa-antiga').textContent = d.placaAnterior;
+                    } else {
+                        document.getElementById('placa-antiga-box').style.display = 'none';
+                    }
+
+                    document.getElementById('res-fipe').textContent = d.fipe || 'R$ 0,00';
+
+                    document.getElementById('results').style.display = 'block';
+                } else {
+                    alert(result.error || 'Placa não encontrada ou erro na consulta.');
+                }
+            } catch (error) {
+                console.error('Erro na consulta:', error);
+                alert('Falha ao conectar com o serviço de consulta.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        };
+
+        // Auto-format placa (AAA-1234 or ABC1D23)
+        document.getElementById('placa-input').addEventListener('input', (e) => {
+            let val = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            if (val.length > 3 && val.length <= 7) {
+                // simple mercosul or old format
+                // don't force hyphen if it's mercosul (3 letters, 1 number, 1 letter, 2 numbers)
+            }
+            e.target.value = val;
+        });
+    </script>
+</body>
+
+</html>

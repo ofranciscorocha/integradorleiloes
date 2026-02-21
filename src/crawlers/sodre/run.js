@@ -1,13 +1,19 @@
-import { execute } from './index.js';
+
+import createCrawler from './index.js';
 import connectDatabase from '../../database/db.js';
 
-(async () => {
+const run = async () => {
     try {
+        console.log('🚀 Iniciando crawler Sodré Santoro (Turbo API Mode)...\n');
         const db = await connectDatabase();
-        await execute(db);
+        const crawler = createCrawler(db);
+        await crawler.buscarTodos();
+        await db.close();
         process.exit(0);
     } catch (error) {
-        console.error('Erro crítico na execução do crawler:', error);
+        console.error('❌ Erro fatal no crawler Sodré Santoro:', error);
         process.exit(1);
     }
-})();
+};
+
+run();

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CARS LEILÕES - O Maior Integrador do Brasil</title>
+    <title>ARREMATE CLUB - O Maior Integrador do Brasil</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +14,13 @@
 
     <!-- Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
     <!-- CSS -->
     <link href="style.css?v=1.0.5" rel="stylesheet">
@@ -39,12 +46,14 @@
     <header class="main-header">
         <div class="header-content">
             <a href="/" class="logo-area">
-                <img src="/img/logo.png" alt="CARS LEILÕES" style="height: 50px; width: auto; object-fit: contain;">
+                <img src="/img/logo.png" alt="ARREMATE CLUB" style="height: 100px; width: auto; object-fit: contain;">
             </a>
 
             <nav class="nav-menu desktop-only">
-                <a href="/como-funciona.html" class="nav-link">Como funciona</a>
-                <a href="/admin.html" class="nav-link">Painel</a>
+                <a href="/" class="nav-link active">Início</a>
+                <a href="/precos.html" class="nav-link">Preços</a>
+                <a href="#" class="nav-link" id="nav-favorites" onclick="toggleFavoritesView(event)">Favoritos</a>
+                <a href="/videos.html" class="nav-link">Vídeos Explicativos</a>
             </nav>
 
             <div class="nav-menu desktop-only" id="auth-area">
@@ -75,10 +84,13 @@
         <div class="drawer-content">
             <nav class="drawer-nav">
                 <a href="/" class="drawer-link" onclick="toggleMobileMenu()"><i class="fas fa-home"></i> Início</a>
-                <a href="/como-funciona.html" class="drawer-link" onclick="toggleMobileMenu()"><i
-                        class="fas fa-info-circle"></i> Como funciona</a>
-                <a href="/admin.html" class="drawer-link" onclick="toggleMobileMenu()"><i
-                        class="fas fa-user-shield"></i> Painel Admin</a>
+                <a href="/precos.html" class="drawer-link" onclick="toggleMobileMenu()"><i class="fas fa-tag"></i>
+                    Preços</a>
+                <a href="#" class="drawer-link" onclick="toggleFavoritesView(event); toggleMobileMenu();">
+                    <i class="fas fa-star"></i> Favoritos
+                </a>
+                <a href="/videos.html" class="drawer-link" onclick="toggleMobileMenu()"><i class="fas fa-video"></i>
+                    Vídeos Explicativos</a>
             </nav>
             <div class="drawer-divider"></div>
             <div class="drawer-auth" id="mobile-auth-area">
@@ -97,121 +109,142 @@
 
     <!-- Hero Section -->
     <div class="hero-section">
-        <div class="hero-stats-floating">
-            <span class="stat-number" id="floating-count">00000</span>
-            <span style="font-size: 0.8rem; font-weight: 600;">VEÍCULOS DISPONÍVEIS AGORA</span>
-        </div>
 
         <div class="hero-content">
-            <h1 class="hero-title">CARS LEILÕES<br>O Maior Integrador do Brasil</h1>
-            <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">Encontre veículos de todos os leiloeiros em
-                um só lugar. Cadastre-se para ver detalhes exclusivos.</p>
+            <h1 class="hero-title">ARREMATE CLUB - O Maior Integrador do Brasil</h1>
+            <p>Encontre veículos de todos os leiloeiros em um só lugar.</p>
 
-            <!-- Search Widget -->
-            <div class="search-widget-container">
-                <div class="search-tabs">
-                    <div class="search-tab active" data-tipo="veiculo" onclick="setTipoTab(this)">
-                        <i class="fas fa-car"></i> Veículos
+            <!-- New Stats Header Row -->
+            <div class="header-stats-row">
+                <div class="stat-box">
+                    <span class="stat-val" id="count-leiloeiros">...</span>
+                    <span class="stat-lbl">LEILOEIROS</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-val" id="count-disponiveis">...</span>
+                    <span class="stat-lbl">VEÍCULOS DISPONÍVEIS</span>
+                </div>
+                <div class="stat-box accent">
+                    <span class="stat-val" id="count-encerrando">...</span>
+                    <span class="stat-lbl">ENCERRANDO HOJE</span>
+                </div>
+            </div>
+
+            <!-- Hero Mode Toggle: Documentáveis vs Sucatas (Now below stats) -->
+            <div class="mode-toggle-container hero-mode-toggle">
+                <div class="mode-toggle active" data-mode="documentavel" onclick="setSearchMode('documentavel')">
+                    <i class="fas fa-file-invoice"></i> Documentáveis
+                </div>
+                <div class="mode-toggle" data-mode="sucata" onclick="setSearchMode('sucata')">
+                    <i class="fas fa-recycle"></i> Sucatas
+                </div>
+            </div>
+
+            <!-- Search Widget Wrapper (for sticky behavior) -->
+            <div class="search-sticky-wrapper" id="sticky-filter-bar">
+                <div class="sticky-branding-area">
+                    <div class="logo-sticky">
+                        <img src="/img/logo-black.png" alt="ARREMATE CLUB">
                     </div>
-                    <div class="search-tab" data-tipo="imovel" onclick="setTipoTab(this)">
-                        <i class="fas fa-home"></i> Imóveis
-                    </div>
-                    <div class="search-tab" data-tipo="diversos" onclick="setTipoTab(this)">
-                        <i class="fas fa-boxes"></i> Diversos
+
+                    <!-- Mode Toggle: Documentáveis vs Sucatas (Sticky) -->
+                    <div class="mode-toggle-container sticky-mode-toggle">
+                        <div class="mode-toggle active" data-mode="documentavel"
+                            onclick="setSearchMode('documentavel')">
+                            <i class="fas fa-file-invoice"></i> Documentáveis
+                        </div>
+                        <div class="mode-toggle" data-mode="sucata" onclick="setSearchMode('sucata')">
+                            <i class="fas fa-recycle"></i> Sucatas
+                        </div>
                     </div>
                 </div>
+                <div class="search-widget-container">
+                    <div class="search-tabs">
+                        <div class="search-tab active" data-tipo="" onclick="setTipoTab(this)">
+                            <i class="fas fa-th-large"></i> Todos
+                        </div>
+                        <div class="search-tab" data-tipo="carro" onclick="setTipoTab(this)">
+                            <i class="fas fa-car"></i> Carros
+                        </div>
+                        <div class="search-tab" data-tipo="moto" onclick="setTipoTab(this)">
+                            <i class="fas fa-motorcycle"></i> Motos
+                        </div>
+                        <div class="search-tab" data-tipo="pesado" onclick="setTipoTab(this)">
+                            <i class="fas fa-truck"></i> Pesados
+                        </div>
+                    </div>
 
-                <div class="search-form" id="filter-form">
-                    <div class="form-group" style="flex: 2;">
-                        <input type="text" id="search-input" class="form-input"
-                            placeholder="Buscar por Marca, Modelo, Lote ou VIN...">
+                    <div class="search-form" id="filter-form">
+                        <div class="form-group search-input-group">
+                            <input type="text" id="search-input" class="form-input"
+                                placeholder="Buscar marca, modelo, lote...">
+                        </div>
+                        <div class="form-group">
+                            <select id="site-filter" class="form-select" onchange="buscarVeiculos(1)">
+                                <option value="">Todos os Sites</option>
+                                <option value="freitas">Freitas</option>
+                                <option value="sodre">Sodré Santoro</option>
+                                <option value="palacio">Palácio</option>
+                                <option value="guariglia">Guariglia</option>
+                                <option value="copart">Copart</option>
+                                <option value="vipleiloes">VIP Leilões</option>
+                                <option value="rogeriomenezes">Rogério Menezes</option>
+                                <option value="mgl">MGL Leilões</option>
+                                <option value="claudiokuss">Claudio Kuss</option>
+                                <option value="superbid">Superbid</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select id="estado-filter" class="form-select" onchange="buscarVeiculos(1)">
+                                <option value="">Estado (UF)</option>
+                                <option value="AC">AC</option>
+                                <option value="AL">AL</option>
+                                <option value="AP">AP</option>
+                                <option value="AM">AM</option>
+                                <option value="BA">BA</option>
+                                <option value="CE">CE</option>
+                                <option value="DF">DF</option>
+                                <option value="ES">ES</option>
+                                <option value="GO">GO</option>
+                                <option value="MA">MA</option>
+                                <option value="MT">MT</option>
+                                <option value="MS">MS</option>
+                                <option value="MG">MG</option>
+                                <option value="PA">PA</option>
+                                <option value="PB">PB</option>
+                                <option value="PR">PR</option>
+                                <option value="PE">PE</option>
+                                <option value="PI">PI</option>
+                                <option value="RJ">RJ</option>
+                                <option value="RN">RN</option>
+                                <option value="RS">RS</option>
+                                <option value="RO">RO</option>
+                                <option value="RR">RR</option>
+                                <option value="SC">SC</option>
+                                <option value="SP">SP</option>
+                                <option value="SE">SE</option>
+                                <option value="TO">TO</option>
+                            </select>
+                        </div>
+                        <div class="form-group year-group">
+                            <input type="number" id="ano-min" class="form-input" placeholder="Ano De">
+                            <input type="number" id="ano-max" class="form-input" placeholder="Até">
+                        </div>
+                        <div class="form-group cond-group">
+                            <select id="condicao-filter" class="form-select" onchange="buscarVeiculos(1)">
+                                <option value="">Condição</option>
+                                <option value="sinistro">Sinistro</option>
+                                <option value="financiamento">Financiamento</option>
+                                <option value="sucata">Sucata</option>
+                            </select>
+                        </div>
+                        <div class="form-group btn-group">
+                            <button class="btn-search" onclick="buscarVeiculos(1)"
+                                style="width: 100%; height: 38px; border-radius: 6px; font-weight: 700;">
+                                <i class="fas fa-search"></i> BUSCAR
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <select id="site-filter" class="form-select" onchange="buscarVeiculos(1)">
-                            <option value="">Todos os Sites</option>
-                            <option value="freitas">Freitas Leiloeiro</option>
-                            <option value="sodre">Sodré Santoro</option>
-                            <option value="palacio">Palácio dos Leilões</option>
-                            <option value="guariglia">Guariglia Leilões</option>
-                            <option value="copart">Copart</option>
-                            <option value="vipleiloes">VIP Leilões</option>
-                            <option value="rogeriomenezes">Rogério Menezes</option>
-                            <option value="leilo">Leilo</option>
-                            <option value="milan">Milan Leilões</option>
-                            <option value="sumare">Sumaré Leilões</option>
-                            <option value="sato">Sato Leilões</option>
-                            <option value="joaoemilio">João Emílio</option>
-                            <option value="mgl">MGL Leilões</option>
-                            <option value="claudiokuss">Claudio Kuss</option>
-                            <option value="pestana">Pestana Leilões</option>
-                            <option value="patiorocha">Pátio Rocha</option>
-                            <option value="superbid">Superbid</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <select id="condicao-filter" class="form-select" onchange="buscarVeiculos(1)">
-                            <option value="">Qualquer Condição</option>
-                            <option value="sinistro">Sinistro</option>
-                            <option value="financiamento">Financiamento</option>
-                            <option value="sucata">Sucata</option>
-                            <option value="transito">Trânsito</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <button class="btn-search" onclick="buscarVeiculos(1)"
-                            style="width: 100%; height: 45px; border-radius: 8px;">
-                            <i class="fas fa-search"></i> BUSCAR
-                        </button>
-                    </div>
-                </div>
-
-                <!-- More Filters Row -->
-                <div class="search-form" style="padding-top: 0;">
-                    <div class="form-group">
-                        <input type="number" id="ano-min" class="form-input" placeholder="Ano De">
-                    </div>
-                    <div class="form-group">
-                        <input type="number" id="ano-max" class="form-input" placeholder="Ano Até">
-                    </div>
-                    <div class="form-group">
-                        <select id="estado-filter" class="form-select" onchange="buscarVeiculos(1)">
-                            <option value="">Estado (UF)</option>
-                            <option value="AC">Acre</option>
-                            <option value="AL">Alagoas</option>
-                            <option value="AP">Amapá</option>
-                            <option value="AM">Amazonas</option>
-                            <option value="BA">Bahia</option>
-                            <option value="CE">Ceará</option>
-                            <option value="DF">Distrito Federal</option>
-                            <option value="ES">Espírito Santo</option>
-                            <option value="GO">Goiás</option>
-                            <option value="MA">Maranhão</option>
-                            <option value="MT">Mato Grosso</option>
-                            <option value="MS">Mato Grosso do Sul</option>
-                            <option value="MG">Minas Gerais</option>
-                            <option value="PA">Pará</option>
-                            <option value="PB">Paraíba</option>
-                            <option value="PR">Paraná</option>
-                            <option value="PE">Pernambuco</option>
-                            <option value="PI">Piauí</option>
-                            <option value="RJ">Rio de Janeiro</option>
-                            <option value="RN">Rio Grande do Norte</option>
-                            <option value="RS">Rio Grande do Sul</option>
-                            <option value="RO">Rondônia</option>
-                            <option value="RR">Roraima</option>
-                            <option value="SC">Santa Catarina</option>
-                            <option value="SP">São Paulo</option>
-                            <option value="SE">Sergipe</option>
-                            <option value="TO">Tocantins</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Action Button Row -->
-                <div class="search-actions">
-                    <button class="btn-search" onclick="buscarVeiculos(1)">
-                        VER VEÍCULOS
-                    </button>
                 </div>
             </div>
         </div>
@@ -223,6 +256,7 @@
         <div class="results-header">
             <div class="results-count">
                 <i class="fas fa-search"></i> <span id="count-value">...</span> itens encontrados
+                <span id="results-summary" class="results-summary"></span>
             </div>
 
             <div class="results-center-action">
@@ -270,15 +304,31 @@
         <div class="pagination-container" id="pagination-bottom">
             <!-- Optional: keep bottom pagination too if needed, but user said "logo no inicio" -->
         </div>
+
+        <!-- Interactive Map Section -->
+        <section class="map-section" style="margin-top: 3rem; margin-bottom: 2rem;">
+            <div class="section-header" style="margin-bottom: 1.5rem;">
+                <h2
+                    style="font-size: 1.8rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 0.8rem;">
+                    <i class="fas fa-map-marked-alt" style="color: var(--primary-blue);"></i>
+                    Explore pelo Mapa
+                </h2>
+                <p style="color: var(--text-muted);">Visualize a localização dos veículos em tempo real em todo o
+                    Brasil.</p>
+            </div>
+            <div id="vehicle-map"
+                style="height: 500px; width: 100%; border-radius: 15px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 1;">
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-content">
             <div class="footer-col" style="flex: 1.5;">
-                <div class="logo-area" style="margin-bottom: 1.5rem;">
-                    <img src="/img/logo.png" alt="CARS LEILÕES"
-                        style="height: 60px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+                <div class="logo-area" style="margin-bottom: 2rem;">
+                    <img src="/img/logo.png" alt="ARREMATE CLUB" class="footer-logo"
+                        style="height: 140px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
                 </div>
                 <p style="line-height: 1.6; margin-bottom: 1.5rem;">O maior portal integrador de leilões do Brasil.
                     Encontre veículos de mais de 10 sites de leilão em uma única plataforma robusta e rápida.</p>
@@ -300,11 +350,11 @@
             </div>
 
             <div class="footer-col">
-                <h3>Suporte</h3>
+                <h3>Ferramentas</h3>
                 <ul class="footer-links">
-                    <li><a href="/suporte.html#sites-falsos">Sites Falsos</a></li>
-                    <li><a href="/suporte.html#como-participar">Como participar de Leilões</a></li>
-                    <li><a href="/suporte.html#frete">Frete para Veiculos de Leilão</a></li>
+                    <li><a href="/placa.html">Consulta por Placa</a></li>
+                    <li><a href="#" onclick="setSearchMode('sucata')">Filtro de Sucatas</a></li>
+                    <li><a href="/admin.html">Painel Admin</a></li>
                     <li><a href="/suporte.html#faq">FAQ</a></li>
                 </ul>
             </div>
@@ -331,7 +381,7 @@
         </div>
 
         <div class="footer-bottom">
-            <div>&copy; 2025-2026 CARS LEILÕES. Todos os direitos reservados.</div>
+            <div>&copy; 2025-2026 ARREMATE CLUB. Todos os direitos reservados.</div>
             <div style="display: flex; gap: 1.5rem;">
                 <a href="#" style="color: inherit; text-decoration: none;">Privacidade</a>
                 <a href="#" style="color: inherit; text-decoration: none;">Termos de Uso</a>
@@ -345,7 +395,7 @@
             <!-- Login View -->
             <div id="login-view">
                 <button class="modal-close" onclick="closeLoginModal()">&times;</button>
-                <h2 style="margin-bottom: 0.5rem; color: var(--primary-dark);">Entrar no CARS LEILÕES</h2>
+                <h2 style="margin-bottom: 0.5rem; color: var(--primary-dark);">Entrar no ARREMATE CLUB</h2>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Acesse leilões exclusivos e
                     monitore seus veículos favoritos.</p>
 
@@ -481,8 +531,54 @@
         </div>
     </div>
 
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profile-modal">
+        <div class="profile-modal">
+            <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+            <div class="profile-header">
+                <div class="profile-user-info">
+                    <img id="profile-avatar" src="" class="profile-avatar-large">
+                    <div>
+                        <h2 id="profile-name">Nome do Usuário</h2>
+                        <p id="profile-email" style="color: var(--text-muted);">email@exemplo.com</p>
+                    </div>
+                </div>
+                <div class="profile-badges">
+                    <span class="badge badge-site">Membro Free</span>
+                </div>
+            </div>
+
+            <div class="profile-tabs">
+                <button class="profile-tab active" data-tab="favorites" onclick="toggleProfileTab('favorites')">
+                    <i class="fas fa-star"></i> Meus Favoritos (<span id="fav-count">0</span>)
+                </button>
+                <button class="profile-tab" data-tab="alerts" onclick="toggleProfileTab('alerts')">
+                    <i class="fas fa-bell"></i> Meus Alertas (<span id="alert-count-profile">0</span>)
+                </button>
+            </div>
+
+            <div class="profile-tab-content active" id="tab-favorites">
+                <div id="favorites-container" class="favorites-list">
+                    <!-- Favorites injected via JS -->
+                    <div class="empty-state">Você ainda não favoritou nenhum veículo.</div>
+                </div>
+            </div>
+
+            <!-- Marketplace content removed -->
+
+            <div class="profile-tab-content" id="tab-alerts">
+                <div id="profile-alerts-container" class="alerts-list">
+                    <!-- Alerts injected via JS -->
+                    <div class="empty-state">Você ainda não configurou nenhum alerta.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal removed -->
+
     <!-- Script -->
-    <script src="app.js?v=2.1"></script>
+    <script src="app.js?v=3.0"></script>
 </body>
 
 </html>

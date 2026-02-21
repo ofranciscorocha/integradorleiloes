@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preços | ARREMATE CLUB</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- CSS -->
+    <link href="style.css?v=1.0.6" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <a href="/" class="logo-area">
+                <img src="/img/logo.png" alt="ARREMATE CLUB" style="height: 100px; width: auto; object-fit: contain;">
+            </a>
+            <nav class="nav-menu desktop-only">
+                <a href="/" class="nav-link">Início</a>
+                <a href="/precos.html" class="nav-link active">Preços</a>
+                <a href="#" class="nav-link" id="nav-favorites" onclick="toggleFavoritesView(event)">Favoritos</a>
+                <a href="/videos.html" class="nav-link">Vídeos Explicativos</a>
+            </nav>
+            <div class="nav-menu desktop-only">
+                <button class="btn-header-login" onclick="window.location.href='/'">Entrar</button>
+                <button class="btn-header-signup" onclick="window.location.href='/'">Começar Agora</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-wrapper">
+        <section class="pricing-section">
+            <div class="pricing-header">
+                <h1>Escolha o seu Plano</h1>
+                <p>Tenha acesso ilimitado ao maior integrador de leilões do Brasil e multiplique suas chances de bons
+                    negócios.</p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Monthly Plan -->
+                <div class="pricing-card">
+                    <div class="plan-name">Plano Mensal</div>
+                    <div class="plan-price"><span>R$</span> 24,90<span>/mês</span></div>
+                    <span class="plan-economy">Acesso flexível</span>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check-circle"></i> Acesso a todos os leiloeiros</li>
+                        <li><i class="fas fa-check-circle"></i> Filtros inteligentes</li>
+                        <li><i class="fas fa-check-circle"></i> Consulta FIPE real</li>
+                        <li><i class="fas fa-check-circle"></i> Alertas no WhatsApp</li>
+                        <li><i class="fas fa-check-circle"></i> Histórico de Preços</li>
+                    </ul>
+                    <button class="btn-pricing btn-pricing-monthly" onclick="openPayment('monthly')">Assinar
+                        Mensal</button>
+                </div>
+
+                <!-- Annual Plan -->
+                <div class="pricing-card popular">
+                    <div class="badge-popular">MAIS VANTAJOSO</div>
+                    <div class="plan-name">Plano Anual</div>
+                    <div class="plan-price"><span>R$</span> 19,90<span>/mês</span></div>
+                    <span class="plan-economy">TOTAL ANUAL: R$ 238,80</span>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check-circle"></i> <strong>Tudo do Mensal</strong></li>
+                        <li><i class="fas fa-check-circle"></i> Prioridade no Suporte</li>
+                        <li><i class="fas fa-check-circle"></i> Acesso antecipado a novos sites</li>
+                        <li><i class="fas fa-check-circle"></i> Relatórios de Oportunidades</li>
+                        <li><i class="fas fa-check-circle"></i> Garantia de Renovação</li>
+                    </ul>
+                    <button class="btn-pricing btn-pricing-annual" onclick="openPayment('annual')">Assinar
+                        Anual</button>
+                </div>
+            </div>
+
+            <div class="guarantee-box">
+                <div class="guarantee-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Pagamento Seguro</span>
+                </div>
+                <div class="guarantee-item">
+                    <i class="fas fa-undo"></i>
+                    <span>7 Dias de Garantia</span>
+                </div>
+                <div class="guarantee-item">
+                    <i class="fas fa-headset"></i>
+                    <span>Suporte VIP</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-col" style="flex: 1.5;">
+                <div class="logo-area" style="margin-bottom: 2rem;">
+                    <img src="/img/logo.png" alt="ARREMATE CLUB"
+                        style="height: 100px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+                </div>
+                <p>O maior portal integrador de leilões do Brasil. Encontre veículos de mais de 10 sites de leilão em
+                    uma única plataforma.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Ferramentas</h3>
+                <ul class="footer-links">
+                    <li><a href="/placa.html">Consulta por Placa</a></li>
+                    <li><a href="/">Filtro de Sucatas</a></li>
+                    <li><a href="/admin.html">Painel Admin</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Conta</h3>
+                <ul class="footer-links">
+                    <li><a href="/">Login</a></li>
+                    <li><a href="/">Criar Conta</a></li>
+                    <li><a href="/">Favoritos</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>&copy; 2025-2026 ARREMATE CLUB. Todos os direitos reservados.</div>
+        </div>
+    </footer>
+
+    <script>
+        function openPayment(plan) {
+            alert('Redirecionando para o checkout do plano ' + plan + '...');
+            // Here you would redirect to Stripe/MercadoPago
+        }
+    </script>
+</body>
+
+</html>

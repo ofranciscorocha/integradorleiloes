@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "177152836533971d3g",
+    "criadoEm": "2026-02-19T19:12:45.339Z",
+    "userId": "usuario.google@gmail.com",
+    "registro": "1081151",
+    "site": "copart.com.br",
+    "dataFavoritado": "2026-02-19T19:12:45.332Z",
+    "log": [
+      {
+        "momento": "2026-02-19T19:12:45.340Z",
+        "acao": "insert"
+      }
+    ]
+  },
+  {
+    "_id": "1771528366567y6fst",
+    "criadoEm": "2026-02-19T19:12:46.567Z",
+    "userId": "usuario.google@gmail.com",
+    "registro": "1021895",
+    "site": "copart.com.br",
+    "dataFavoritado": "2026-02-19T19:12:46.565Z",
+    "log": [
+      {
+        "momento": "2026-02-19T19:12:46.567Z",
+        "acao": "insert"
+      }
+    ]
+  }
+]

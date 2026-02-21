@@ -1,10 +1,12 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
-import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
+import { getExecutablePath, getCommonArgs, getRandomUserAgent } from '../../utils/browser.js';
 
 dotenv.config();
 puppeteer.use(StealthPlugin());
+import { standardizeStatus } from '../../utils/status.js';
+import { classifyVehicle } from '../../utils/vehicle-parser.js';
 
 const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 90000;
 
@@ -35,7 +37,7 @@ const createCrawler = (db) => {
         const browser = await puppeteer.launch({
             executablePath: getExecutablePath(),
             headless: true,
-            protocolTimeout: 240000,
+            protocolTimeout: 300000,
             args: getCommonArgs()
         });
 
@@ -45,24 +47,53 @@ const createCrawler = (db) => {
         try {
             const page = await browser.newPage();
             await page.setViewport({ width: 1920, height: 1080 });
-            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+            await page.setUserAgent(getRandomUserAgent());
 
-            // Navigate to busca page with category 1 (Veículos)
-            console.log(`   🔍 [${SITE}] Navegando para /busca/?categoria=1 ...`);
-            await page.goto(`${BASE_URL}/busca/?categoria=1`, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+            // TURBO MODE: Bloqueio de recursos inúteis e Interceptação de API
+            await page.setRequestInterception(true);
+            page.on('request', (req) => {
+                const type = req.resourceType();
+                const url = req.url();
 
-            // Handle cookie modal
-            try {
-                await page.evaluate(() => {
-                    const btns = Array.from(document.querySelectorAll('button, a, span'));
-                    const okBtn = btns.find(b => b.innerText.toLowerCase().includes('entendi'));
-                    if (okBtn) okBtn.click();
-                });
-                await new Promise(r => setTimeout(r, 2000));
-            } catch (e) { }
+                // Bloqueia Pesos Mortos
+                if (['image', 'stylesheet', 'font', 'media'].includes(type)) {
+                    req.abort();
+                } else {
+                    // Log de possíveis APIs (Diagnóstico em runtime)
+                    if (url.includes('api') || url.includes('search') || url.includes('graphql') || req.method() === 'POST') {
+                        if (!url.includes('google') && !url.includes('facebook')) {
+                            console.log(`📡 [${SITE}] Possível API Detectada: ${req.method()} ${url}`);
+                        }
+                    }
+                    req.continue();
+                }
+            });
 
-            await new Promise(r => setTimeout(r, 5000));
-            await new Promise(r => setTimeout(r, 3000));
+            // Navigate to busca page with category 1 (Veículos) e 2 (Motos)
+            const categories = [1, 2, 4]; // Veículos, Motos, Caminhões
+            for (const cat of categories) {
+                console.log(`   🔍 [${SITE}] Navegando para Categoria ${cat} ...`);
+                try {
+                    await page.goto(`${BASE_URL}/busca/?categoria=${cat}`, { waitUntil: 'networkidle0', timeout: TIMEOUT });
+                    await new Promise(r => setTimeout(r, 2000));
+
+                    // Captura itens da página de busca
+                    const items = await extractVehiclesFromPage(page, SITE, BASE_URL);
+                    if (items.length > 0) {
+                        const filtered = filterVehicles(items, BLACKLIST, BRANDS);
+                        const newItems = filtered.filter(v => {
+                            if (seenIds.has(v.registro)) return false;
+                            seenIds.add(v.registro);
+                            return true;
+                        });
+                        if (newItems.length > 0) {
+                            await salvarLista(newItems);
+                            totalCapturados += newItems.length;
+                            console.log(`   ✅ [${SITE}] +${newItems.length} da categoria ${cat}. Total: ${totalCapturados}`);
+                        }
+                    }
+                } catch (e) { console.log(`   ⚠️ [${SITE}] Erro na categoria ${cat}: ${e.message}`); }
+            }
 
             // Find all auction links
             const auctionLinks = await page.evaluate((base) => {
@@ -308,9 +339,8 @@ async function extractVehiclesFromPage(page, site, baseUrl) {
                 }
 
                 // Year
-                const yearMatch = text.match(/\b(19[89]\d|20[0-2]\d)\b/);
-
-                const registro = href.match(/\/(\d+)/)?.[1] || href.split('/').filter(Boolean).pop()?.split('?')[0] || '';
+                const statusRaw = card.querySelector('[class*="status"], [class*="badge"], [class*="situacao"]')?.textContent.trim() || '';
+                const situacao = standardizeStatus(statusRaw || (text.includes('VENDIDO') ? 'Vendido' : 'Disponível'));
 
                 items.push({
                     registro,
@@ -322,12 +352,13 @@ async function extractVehiclesFromPage(page, site, baseUrl) {
                     ano: yearMatch ? parseInt(yearMatch[0]) : null,
                     localLeilao: 'MG / BR',
                     modalidade: 'leilao',
-                    tipo: 'veiculo'
+                    tipo: classifyVehicle(title),
+                    situacao: situacao
                 });
             } catch (e) { }
         });
 
-        return items;
+        return items.filter(item => item && item.fotos && item.fotos.length > 0);
     }, site, baseUrl);
 }
 

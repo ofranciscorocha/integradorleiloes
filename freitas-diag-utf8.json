@@ -1,0 +1,69 @@
+﻿ÔÜá´©Å [Browser] Nenhum Chrome detectado na lista padr├úo (win32). Usando default.
+--- NAVIGATING TO FREITAS SEARCH ---
+Cards Snapshot: [
+  {
+    "index": 0,
+    "hasImgTag": true,
+    "imgSrc": "https://cdn3.freitasleiloeiro.com.br/Assets/LogosClientes/85.JPG",
+    "imgDataSrc": null,
+    "divImgStyle": null,
+    "html": "\n\n    <div class=\"cardlote-header\">\n        <div class=\"cardLote-lote\">\n001        </div>\n        <div class=\"\">\n                <img src=\"https://cdn3.freitasleiloeiro.com.br/Assets/LogosClientes/85.JPG\" width=\"90\" alt=\"Logo Cliente\" class=\"cardLote-logoCliente\" onerror=\"validateImage(this, staticsUri,'logo_indisponivel.jpg')\">\n        </div>\n    </div>\n\n\n    <div class=\"\">\n        <a href=\"/Leiloes/LoteDetalhes?leilaoId=7648&amp;loteNumero=1\" target=\"_blank\">\n            <img src=\"https://cdn3"
+  },
+  {
+    "index": 1,
+    "hasImgTag": true,
+    "imgSrc": "https://cdn3.freitasleiloeiro.com.br/Assets/LogosClientes/65.JPG",
+    "imgDataSrc": null,
+    "divImgStyle": null,
+    "html": "\n\n    <div class=\"cardlote-header\">\n        <div class=\"cardLote-lote\">\n002        </div>\n        <div class=\"\">\n                <img src=\"https://cdn3.freitasleiloeiro.com.br/Assets/LogosClientes/65.JPG\" width=\"90\" alt=\"Logo Cliente\" class=\"cardLote-logoCliente\" onerror=\"validateImage(this, staticsUri,'logo_indisponivel.jpg')\">\n        </div>\n    </div>\n\n\n    <div class=\"\">\n        <a href=\"/Leiloes/LoteDetalhes?leilaoId=7648&amp;loteNumero=2\" target=\"_blank\">\n            <img src=\"https://cdn3"
+  },
+  {
+    "index": 2,
+    "hasImgTag": true,
+    "imgSrc": "https://cdn3.freitasleiloeiro.com.br/Assets/LogosClientes/65.JPG",
+    "imgDataSrc": null,
+    "divImgStyle": null,
+    "html": "\n\n    <div class=\"cardlote-header\">\n        <div class=\"cardLote-lote\">\n003        </div>\n        <div class=\"\">\n                <img src=\"https://cdn3.freitasleiloeiro.com.br/Assets/LogosClientes/65.JPG\" width=\"90\" alt=\"Logo Cliente\" class=\"cardLote-logoCliente\" onerror=\"validateImage(this, staticsUri,'logo_indisponivel.jpg')\">\n        </div>\n    </div>\n\n\n    <div class=\"\">\n        <a href=\"/Leiloes/LoteDetalhes?leilaoId=7648&amp;loteNumero=3\" target=\"_blank\">\n            <img src=\"https://cdn3"
+  },
+  {
+    "index": 3,
+    "hasImgTag": true,
+    "imgSrc": "https://cdn3.freitasleiloeiro.com.br/Assets/LogosClientes/1162.JPG",
+    "imgDataSrc": null,
+    "divImgStyle": null,
+    "html": "\n\n    <div class=\"cardlote-header\">\n        <div class=\"cardLote-lote\">\n004        </div>\n        <div class=\"\">\n                <img src=\"https://cdn3.freitasleiloeiro.com.br/Assets/LogosClientes/1162.JPG\" width=\"90\" alt=\"Logo Cliente\" class=\"cardLote-logoCliente\" onerror=\"validateImage(this, staticsUri,'logo_indisponivel.jpg')\">\n        </div>\n    </div>\n\n\n    <div class=\"\">\n        <a href=\"/Leiloes/LoteDetalhes?leilaoId=7648&amp;loteNumero=4\" target=\"_blank\">\n            <img src=\"https://cd"
+  }
+]
+--- NAVIGATING TO LOT DETAIL: https://www.freitasleiloeiro.com.br/Leiloes/LoteDetalhes?leilaoId=7648&loteNumero=1
+Detail Snapshot: {
+  "title": "Carro ├á venda em leil├úo",
+  "photos": [
+    {
+      "src": "https://cdn3.freitasleiloeiro.com.br/Assets/Imagens/Logo-Freitas-F-Branco.png",
+      "class": "",
+      "parent": "navbar-brand text-white"
+    },
+    {
+      "src": "https://cdn3.freitasleiloeiro.com.br/Assets/Imagens/SocialIcons/facebook-icon.png",
+      "class": "",
+      "parent": ""
+    },
+    {
+      "src": "https://cdn3.freitasleiloeiro.com.br/Assets/Imagens/SocialIcons/tiktok-icon.png",
+      "class": "",
+      "parent": ""
+    },
+    {
+      "src": "https://cdn3.freitasleiloeiro.com.br/Assets/Imagens/SocialIcons/insta-icon.png",
+      "class": "",
+      "parent": ""
+    },
+    {
+      "src": "https://cdn3.freitasleiloeiro.com.br/Assets/Imagens/SocialIcons/Linkedin-icon.png",
+      "class": "",
+      "parent": ""
+    }
+  ],
+  "bodyHtml": "\n    <header b-vtkc96lrut=\"\">\n        <nav b-vtkc96lrut=\"\" class=\"navbar navbar-expand-lg navbar-toggleable-lg navbar-dark fixed-top py-0\" style=\"border-bottom: 4px solid var(--gold-metallic); outline-style: solid; outline-width: 1px; outline-color: var(--oxford-blue); background-color: var(--oxford-blue) !important; padding-right: 0px;\">\n\n\n            <div b-vtkc96lrut=\"\" class=\"container\">\n\n                <a b-vtkc96lrut=\"\" class=\"navbar-brand text-white\" href=\"/Home/Index\"><img b-vtkc96lrut=\"\" src=\"https://cdn3.freitasleiloeiro.com.br/Assets/Imagens/Logo-Freitas-F-Branco.png\" width=\"35\" alt=\"Logo Freitas Leiloeiro\"> </a>\n\n                <button b-vtkc96lrut=\"\" class=\"navbar-toggler \" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#navbarHeader\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">\n                    <span b-vtkc96lrut=\"\" class=\"navbar-toggler-icon  text-white\"></span>\n                </button>\n\n                <div "
+}
+

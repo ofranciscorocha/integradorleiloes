@@ -1,10 +1,12 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import dotenv from 'dotenv';
-import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
+import { getExecutablePath, getCommonArgs, getRandomUserAgent } from '../../utils/browser.js';
 
 dotenv.config();
 puppeteer.use(StealthPlugin());
+import { standardizeStatus } from '../../utils/status.js';
+import { classifyVehicle } from '../../utils/vehicle-parser.js';
 
 const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 60000;
 const CONCURRENCY = 3;
@@ -17,12 +19,22 @@ const createCrawler = (db) => {
     const crawlAuction = async (browser, auctionLink) => {
         const url = auctionLink.startsWith('http') ? auctionLink : `${BASE}${auctionLink}`;
         const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
+        await page.setUserAgent(getRandomUserAgent());
+
+        // TURBO MODE: Bloqueio de recursos inúteis
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
 
         const auctionVehicles = [];
         try {
             console.log(`   📋 [${idFromUrl(url)}] Acessando leilão...`);
-            await page.goto(url, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+            await page.goto(url, { waitUntil: 'networkidle0', timeout: TIMEOUT });
             await autoScroll(page);
 
             const items = await page.evaluate((site) => {
@@ -70,17 +82,25 @@ const createCrawler = (db) => {
                             }
                         }
 
+                        const imgUrl = imgEl && imgEl.src && !imgEl.src.includes('sem_foto') ? imgEl.src : null;
+                        if (!imgUrl) return; // REQUIREMENT: Skip if no photos
+
+                        const statusEl = el.querySelector('.lance-status, .msg-encerrado, .badge');
+                        const statusRaw = statusEl?.innerText.trim() || (lance?.includes('Vendido') ? 'Vendido' : 'Disponível');
+
                         found.push({
                             site: site,
                             registro: loteNum || linkEl.href.split('/').pop(),
                             link: linkEl.href,
                             veiculo: titulo,
-                            fotos: imgEl && imgEl.src && !imgEl.src.includes('sem_foto') ? [imgEl.src] : [],
+                            fotos: [imgUrl],
                             valor: parseFloat(lance?.replace(/[^0-9,]/g, '').replace(',', '.')) || 0,
                             descricao: details,
                             localLeilao: 'RJ / MG / SP',
                             condicao: cond,
-                            modalidade: 'leilao'
+                            modalidade: 'leilao',
+                            tipo: classifyVehicle(titulo),
+                            situacao: standardizeStatus(statusRaw)
                         });
                     } catch (err) { }
                 });
@@ -103,7 +123,7 @@ const createCrawler = (db) => {
         const browser = await puppeteer.launch({
             executablePath: getExecutablePath(),
             headless: true,
-            protocolTimeout: 240000,
+            protocolTimeout: 300000,
             args: getCommonArgs()
         });
 

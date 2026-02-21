@@ -1,0 +1,49 @@
+﻿ÔÜá´©Å [Browser] Nenhum Chrome detectado na lista padr├úo (win32). Usando default.
+Fetching Copart lot details: https://www.copart.com.br/lot/1072701
+Live HTML saved to scripts/test_copart_live.html
+--- EXTRACTED DATA ---
+Photos Count: 12
+First Photo: https://brimages.copart.com.br/Repository/Fotos/9fca3eed-7094-4957-9dc7-3a9bcc41ebee
+Lance Atual Text: 
+Incremento Text: 
+Specs Keys: [
+  'Marca',             'Modelo',
+  'Vers├úo',            'Ano de Fabrica├º├úo',
+  'Ano Modelo',        'Blindado',
+  'Tipo de Documento', 'Comitente',
+  'Tipo de Monta',     'Condi├º├úo',
+  'Valor FIPE',        'Chassi',
+  'Tipo de Chassi',    'Achar Pe├ºas',
+  'Categoria',         'Condi├º├úo de Func.',
+  'Final de Placa',    'Combust├¡vel',
+  'Chave',             'Complemento',
+  'P├ítio do Leil├úo',   'P├ítio Ve├¡culo',
+  'Lote/Vaga',         'Data da Venda'
+]
+Full Specs: {
+  "Marca": "FIAT",
+  "Modelo": "TORO",
+  "Vers├úo": "Toro Ranch AT9 2.0 MultiJet Turbo",
+  "Ano de Fabrica├º├úo": "2019",
+  "Ano Modelo": "2019",
+  "Blindado": "N├úo",
+  "Tipo de Documento": "Recuperavel",
+  "Comitente": "TOKIO MARINE SEGURADORA S A VEICULOS TMS NOVO",
+  "Tipo de Monta": "M├®dia Monta",
+  "Condi├º├úo": "COLIS├âO",
+  "Valor FIPE": "R$┬á107.678,00 BRL",
+  "Chassi": "988226******",
+  "Tipo de Chassi": "Normal",
+  "Achar Pe├ºas": "FIAT TORO 2019 / 2019",
+  "Categoria": "Picapes Grandes",
+  "Condi├º├úo de Func.": "Desconhecido",
+  "Final de Placa": "2",
+  "Combust├¡vel": "Diesel",
+  "Chave": "Sim",
+  "Complemento": "POSSIVEL AUSENCIA DE PECAS",
+  "P├ítio do Leil├úo": "ITAQUAQUECETUBA - SP",
+  "P├ítio Ve├¡culo": "ITAQUAQUECETUBA - SP",
+  "Lote/Vaga": "250/172",
+  "Data da Venda": "Quinta | 19.02.2026 | 12:00 BRT"
+}
+--- END ---

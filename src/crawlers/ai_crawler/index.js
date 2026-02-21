@@ -44,45 +44,50 @@ const createCrawler = (db) => {
             });
 
             // AI / Heuristic Analysis
-            // 1. Identificar containers repetitivos (Cards)
             const items = await page.evaluate((site) => {
                 const results = [];
+                const cards = document.querySelectorAll('.card, .item, .lot-item, .product-item, div[class*="card"], div[class*="lote"], article, section > div');
 
-                // Heuristica: Elementos que contém Preço e Ano
-                // Buscamos todos os elementos 'a' ou 'div' que tenham estrutura de cartão
-                const candidates = document.querySelectorAll('div, a, li');
-
-                // Filtrar os que parecem ser cards de veículos
-                // Devem ter texto contendo R$ e (ano 20..) e nome de carro
-
-                // Simplificação: Pegar imagens + links que estejam próximos
-                // Melhor: Usar seletor genérico de card framework
-                const cards = document.querySelectorAll('.card, .item, .lot-item, .product-item, div[class*="card"], div[class*="lote"]');
+                const brazilianStates = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
 
                 cards.forEach(card => {
                     const text = card.innerText || '';
                     if (text.length < 20) return;
 
-                    // Check for Price pattern
-                    const priceMatch = text.match(/R\$\s?[\d\.,]+/);
-                    // Check for Year pattern
-                    const yearMatch = text.match(/20[0-2][0-9]/);
+                    // Regex Patterns
+                    const priceMatch = text.match(/R\$\s?[\d\.]+,\d{2}/) || text.match(/R\$\s?[\d\.]+/);
+                    const yearMatch = text.match(/\b(19|20)\d{2}\b/);
 
-                    if (priceMatch || yearMatch) {
+                    // Location Detection (UF)
+                    let uf = null;
+                    brazilianStates.forEach(state => {
+                        if (text.includes(` - ${state}`) || text.includes(`/${state}`) || text.includes(` ${state} `)) {
+                            uf = state;
+                        }
+                    });
+
+                    // Filtering: Ensure it's likely a vehicle
+                    const vehicleKeywords = ['km', 'marchas', 'flex', 'diesel', 'gasolina', 'portas', 'conversível', 'manual', 'automático'];
+                    const isVehicle = vehicleKeywords.some(key => text.toLowerCase().includes(key)) || yearMatch;
+
+                    if ((priceMatch || yearMatch) && isVehicle) {
                         const linkEl = card.querySelector('a') || card.closest('a');
                         const imgEl = card.querySelector('img');
 
-                        if (linkEl) {
+                        if (linkEl && linkEl.href && !linkEl.href.includes('javascript:')) {
+                            const title = (text.split('\n').find(l => l.trim().length > 10) || 'Veículo Detectado').trim();
+
                             results.push({
-                                registro: linkEl.href.split('/').pop() + Math.random().toString(36).substr(2, 3), // Fallback ID
+                                registro: linkEl.href.split('/').pop().replace(/[^a-z0-9]/gi, '_') + '_' + Math.random().toString(36).substr(2, 5),
                                 site: site,
                                 link: linkEl.href,
-                                veiculo: (text.split('\n')[0] || 'Veículo Detectado').substring(0, 100),
-                                fotos: imgEl ? [imgEl.src] : [],
-                                descricao: text.substring(0, 200) + '...',
+                                veiculo: title.substring(0, 100).replace(/\n/g, ' '),
+                                fotos: imgEl && imgEl.src.startsWith('http') ? [imgEl.src] : [],
+                                localLeilao: uf ? `Local: ${uf}` : 'Consultar',
                                 valor: priceMatch ? parseFloat(priceMatch[0].replace('R$', '').replace(/\./g, '').replace(',', '.')) : 0,
                                 ano: yearMatch ? parseInt(yearMatch[0]) : null,
-                                modalidade: 'leilao' // Default
+                                condicao: text.toLowerCase().includes('sucata') ? 'Sucata' : 'Documentável',
+                                modalidade: 'leilao'
                             });
                         }
                     }
@@ -92,7 +97,7 @@ const createCrawler = (db) => {
                 const unique = [];
                 const links = new Set();
                 for (const i of results) {
-                    if (!links.has(i.link)) {
+                    if (i.link && !links.has(i.link)) {
                         links.add(i.link);
                         unique.push(i);
                     }

@@ -1,0 +1,92 @@
+[
+  {
+    "id": "palacio",
+    "name": "Palácio dos Leilões",
+    "domain": "palaciodosleiloes.com.br"
+  },
+  {
+    "id": "vip",
+    "name": "VIP Leilões",
+    "domain": "vipleiloes.com.br"
+  },
+  {
+    "id": "guariglia",
+    "name": "Guariglia Leilões",
+    "domain": "guariglialeiloes.com.br"
+  },
+  {
+    "id": "freitas",
+    "name": "Freitas Leiloeiro",
+    "domain": "freitasleiloeiro.com.br"
+  },
+  {
+    "id": "sodre",
+    "name": "Sodré Santoro",
+    "domain": "sodresantoro.com.br"
+  },
+  {
+    "id": "parque",
+    "name": "Parque dos Leilões",
+    "domain": "parquedosleiloes.com.br"
+  },
+  {
+    "id": "rogeriomenezes",
+    "name": "Rogério Menezes",
+    "domain": "rogeriomenezes.com.br"
+  },
+  {
+    "id": "copart",
+    "name": "Copart",
+    "domain": "copart.com.br"
+  },
+  {
+    "id": "leilo",
+    "name": "Leilo.com.br",
+    "domain": "leilo.com.br"
+  },
+  {
+    "id": "milan",
+    "name": "Milan Leilões",
+    "domain": "milanleiloes.com.br"
+  },
+  {
+    "id": "sumare",
+    "name": "Sumaré Leilões",
+    "domain": "sumareleiloes.com.br"
+  },
+  {
+    "id": "sato",
+    "name": "Sato Leilões",
+    "domain": "satoleiloes.com.br"
+  },
+  {
+    "id": "danielgarcia",
+    "name": "Daniel Garcia",
+    "domain": "danielgarcialeiloes.com.br"
+  },
+  {
+    "id": "joaoemilio",
+    "name": "João Emílio",
+    "domain": "joaoemilio.com.br"
+  },
+  {
+    "id": "mgl",
+    "name": "MGL Leilões",
+    "domain": "mgl.com.br"
+  },
+  {
+    "id": "claudiokuss",
+    "name": "Claudio Kuss",
+    "domain": "claudiokussleiloes.com.br"
+  },
+  {
+    "id": "pestana",
+    "name": "Pestana Leilões",
+    "domain": "pestanaleiloes.com.br"
+  },
+  {
+    "id": "superbid",
+    "name": "Superbid",
+    "domain": "superbid.net"
+  }
+]

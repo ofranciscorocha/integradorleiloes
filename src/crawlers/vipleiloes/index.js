@@ -1,228 +1,249 @@
+
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import dotenv from 'dotenv';
-import { getExecutablePath, getCommonArgs } from '../../utils/browser.js';
-import { parseVehicleDetails } from '../../utils/vehicle-parser.js';
+import * as cheerio from 'cheerio';
+import { getExecutablePath, getCommonArgs, getRandomUserAgent } from '../../utils/browser.js';
 
-dotenv.config();
 puppeteer.use(StealthPlugin());
+import { standardizeStatus } from '../../utils/status.js';
+import { classifyVehicle, parseVehicleDetails, cleanTitle } from '../../utils/vehicle-parser.js';
 
-const TIMEOUT = parseInt(process.env.CRAWLER_TIMEOUT_MS) || 90000;
+const SITE = 'vipleiloes.com.br';
+const BASE_URL = 'https://www.vipleiloes.com.br';
 
 const createCrawler = (db) => {
     const { salvarLista } = db;
-    const SITE = 'vipleiloes.com.br';
-    const BASE_URL = 'https://www.vipleiloes.com.br';
 
-    const extractFromPage = async (page) => {
-        return await page.evaluate((site, base) => {
-            const items = [];
-            // Try Desktop selectors first
-            let cards = document.querySelectorAll('div.itm-card');
-            let isMobile = false;
-
-            if (cards.length === 0) {
-                // Try Mobile selectors
-                cards = document.querySelectorAll('.card-anuncio');
-                if (cards.length > 0) isMobile = true;
-            }
-
-            cards.forEach(card => {
-                try {
-                    let linkUrl = '', veiculo = '', lote = '', local = '', precoText = '', imgUrl = '';
-
-                    if (isMobile) {
-                        // Mobile Logic
-                        const linkEl = card.querySelector('a.anc-body') || card.querySelector('.crd-image a');
-                        linkUrl = linkEl ? linkEl.href : '';
-
-                        const nameEl = card.querySelector('.anc-title h1');
-                        veiculo = nameEl ? nameEl.textContent.trim().toUpperCase() : '';
-
-                        const strongs = Array.from(card.querySelectorAll('strong'));
-                        const loteStrong = strongs.find(s => s.innerText.includes('Lote'));
-                        lote = loteStrong ? loteStrong.nextSibling.textContent.trim() : '';
-
-                        const localStrong = strongs.find(s => s.innerText.includes('Local'));
-                        local = localStrong ? localStrong.nextSibling.textContent.trim() : '';
-
-                        const priceEl = card.querySelector('.valor-atual');
-                        precoText = priceEl ? priceEl.innerText.replace(/[^0-9,]/g, '').replace(',', '.') : '0';
-
-                        const imgEl = card.querySelector('.crd-image img');
-                        imgUrl = imgEl ? (imgEl.getAttribute('src') || '') : '';
-
-                    } else {
-                        // Desktop Logic
-                        const linkEl = card.querySelector('a.itm-cdlink');
-                        if (!linkEl) return;
-                        linkUrl = linkEl.getAttribute('href') || '';
-
-                        const body = card.querySelector('div.itm-body');
-                        const firstline = body ? body.querySelectorAll('div.itm-firstline p.itm-info') : [];
-
-                        firstline.forEach(p => {
-                            const text = p.textContent;
-                            if (text.includes('Lote:')) lote = text.split(':')[1]?.trim() || '';
-                            if (text.includes('Local:')) local = text.split(':')[1]?.trim() || '';
-                        });
-
-                        const nameEl = body ? body.querySelector('h4.itm-name') : null;
-                        veiculo = nameEl ? nameEl.textContent.replace(/\n/g, ' ').trim().toUpperCase() : '';
-
-                        const priceEl = card.querySelector('.itm-price-val');
-                        precoText = priceEl ? priceEl.textContent.replace(/[^0-9,]/g, '').replace(',', '.') : '0';
-
-                        const imgEl = card.querySelector('.itm-img, img');
-                        if (imgEl) {
-                            imgUrl = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || imgEl.getAttribute('data-lazy') || '';
-                        }
-                    }
-
-                    // Normalize URL
-                    if (linkUrl && !linkUrl.startsWith('http')) {
-                        if (base.endsWith('/') && linkUrl.startsWith('/')) linkUrl = base + linkUrl.substring(1);
-                        else if (!base.endsWith('/') && !linkUrl.startsWith('/')) linkUrl = base + '/' + linkUrl;
-                        else linkUrl = base + linkUrl;
-                    }
-
-                    const registro = linkUrl.split('/').pop();
-
-                    // Categorization
-                    let tipo = 'veiculo';
-                    const vUpper = veiculo;
-                    if (vUpper.includes('CASA') || vUpper.includes('APARTAMENTO') || vUpper.includes('TERRENO') || vUpper.includes('IMÓVEL') || vUpper.includes('IMOVEL') || vUpper.includes('GALPÃO') || vUpper.includes('SÍTIO') || vUpper.includes('CHÁCARA')) {
-                        tipo = 'imovel';
-                    } else if (vUpper.includes('SUCATA') || vUpper.includes('PEÇAS') || vUpper.includes('DIVERSOS') || vUpper.includes('LOTE') || vUpper.includes('MÓVEIS') || vUpper.includes('ELETRO')) {
-                        tipo = 'diversos';
-                    }
-
-                    if (veiculo) {
-                        items.push({
-                            site,
-                            registro, // ad_id
-                            link: linkUrl,
-                            veiculo, // titulo
-                            fotos: [imgUrl],
-                            valor: parseFloat(precoText) || 0,
-                            localLeilao: local || 'Brasil',
-                            lote,
-                            modalidade: 'leilao',
-                            tipo
-                        });
-                    }
-                } catch (e) { }
-            });
-            return items;
-        }, SITE, BASE_URL);
+    const extractBasicInfo = (html) => {
+        const $ = cheerio.load(html);
+        const items = [];
+        $('.card-anuncio').each((i, el) => {
+            try {
+                const card = $(el);
+                const titleEl = card.find('.anc-title h1');
+                const veiculo = titleEl.text().trim();
+                const linkUrl = card.find('.anc-title a').attr('href');
+                const link = linkUrl ? (linkUrl.startsWith('http') ? linkUrl : `${BASE_URL}${linkUrl}`) : '';
+                if (veiculo && link) {
+                    const matchId = link.match(/\/veiculo\/(\d+)/);
+                    const registro = matchId ? matchId[1] : (link.split('/').filter(p => p).pop() || Date.now().toString());
+                    const localLeilao = card.find('.anc-info-local span').text().trim();
+                    const ano = card.find('.anc-info-detalhes p').first().text().trim();
+                    items.push({
+                        site: SITE, registro, link, veiculo, ano,
+                        localLeilao, tipo: classifyVehicle(veiculo), modalidade: 'leilao'
+                    });
+                }
+            } catch (e) { }
+        });
+        return { items, hasItems: items.length > 0 };
     };
 
-    const buscarTodos = async () => {
-        console.log(`🚀 [${SITE}] SUPERCRAWLER PUPPETEER (Optimized): Iniciando captura...`);
-
-        const browser = await puppeteer.launch({
-            executablePath: getExecutablePath(),
-            headless: true,
-            args: getCommonArgs()
-        });
-
-        let totalCapturados = 0;
-        const seenIds = new Set();
-
+    const crawlDetails = async (page, url) => {
         try {
-            const page = await browser.newPage();
-            // Block heavy resources
-            await page.setRequestInterception(true);
-            page.on('request', (req) => {
-                const type = req.resourceType();
-                if (['image', 'stylesheet', 'font', 'media'].includes(type)) req.abort();
-                else req.continue();
-            });
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+            // Wait for data binding to populate
+            await new Promise(r => setTimeout(r, 4000));
 
-            await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1');
-            await page.setViewport({ width: 375, height: 667, isMobile: true, hasTouch: true });
+            return await page.evaluate(() => {
+                const photos = [];
+                document.querySelectorAll('.carousel-item img, .offer-thumb').forEach(img => {
+                    const src = img.src || img.getAttribute('data-src');
+                    if (src && src.startsWith('http') && !photos.includes(src)) {
+                        photos.push(src);
+                    }
+                });
 
-            // Categories: 3=Automóveis, 4=Caminhões, 5=Motos, 37=Utilitários, Imóveis?
-            const categorias = [3, 4, 5, 37];
+                const v = (sel) => document.querySelector(sel)?.innerText?.trim() || '';
+                const lanceAtual = v('[data-bind-valoratual]') || v('.offer-value h2');
+                const incremento = v('[data-bind-incremento]');
+                const status = v('[data-bind-situacaonome]');
 
-            for (const cat of categorias) {
-                let pagina = 1;
-                let hasMore = true;
+                // Attachments (Catalogs, Edicts, Reports)
+                const attachments = [];
+                document.querySelectorAll('a[href*=".pdf"], a[href*="Download"], .anc-edital a').forEach(a => {
+                    const href = a.href;
+                    const text = a.innerText.trim() || 'Documento';
+                    if (href && !attachments.find(at => at.url === href)) {
+                        attachments.push({ name: text, url: href });
+                    }
+                });
 
-                console.log(`\n📂 [${SITE}] Categoria ${cat}...`);
-
-                while (hasMore && pagina <= 30) {
-                    const url = `${BASE_URL}/pesquisa?Pagina=${pagina}&Categorias=${cat}&OrdenacaoVeiculo=InicioLeilao`;
-
-                    try {
-                        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
-                        await page.waitForSelector('div.itm-card', { timeout: 10000 }).catch(() => null);
-
-                        const items = await extractFromPage(page);
-
-                        if (items.length === 0) {
-                            console.log(`   🔸 [${SITE}] Cat ${cat} pág ${pagina}: Sem itens.`);
-                            const html = await page.content();
-                            console.log(`      DEBUG: HTML length: ${html.length}`);
-                            console.log(`      DEBUG: Title: ${await page.title()}`);
-                            // console.log(`      DEBUG: HTML Snippet: ${html.substring(0, 500)}`);
-                            hasMore = false;
-                            continue;
-                        }
-
-                        const newItems = items.filter(item => {
-                            if (seenIds.has(item.registro)) return false;
-                            seenIds.add(item.registro);
-                            return true;
-                        }).map(item => {
-                            const details = parseVehicleDetails(item.veiculo);
-                            return {
-                                ...item,
-                                ano: details.ano,
-                                condicao: details.condicao,
-                                combustivel: details.combustivel,
-                                km: details.km,
-                                cor: details.cor,
-                                cambio: details.cambio,
-                                blindado: details.blindado
-                            };
-                        });
-
-                        if (newItems.length > 0) {
-                            await salvarLista(newItems);
-                            totalCapturados += newItems.length;
-                            console.log(`   ✅ [${SITE}] Pág ${pagina}: +${newItems.length} itens.`);
-                        }
-
-                        const totalText = await page.evaluate(() => {
-                            const h4 = document.querySelector('div.col-md-12.tituloListagem h4');
-                            return h4 ? h4.textContent.replace(/[^\d]/g, '') : '0';
-                        });
-                        const total = parseInt(totalText) || 0;
-                        const totalPaginas = Math.ceil(total / 12);
-
-                        if (pagina >= totalPaginas) hasMore = false;
-                        else pagina++;
-
-                    } catch (e) {
-                        console.log(`   ⚠️ [${SITE}] Erro: ${e.message}`);
-                        hasMore = false;
+                // Attempt to capture Auction Date for Countdown
+                let dataLeilaoISO = null;
+                const dateText = v('.offer-info-auction p') || v('.offer-data-leilao') || v('.auction-date');
+                if (dateText) {
+                    // VIP usually shows: "25/02/2026 14:00"
+                    const match = dateText.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})/);
+                    if (match) {
+                        dataLeilaoISO = `${match[3]}-${match[2]}-${match[1]}T${match[4]}:${match[5]}:00`;
                     }
                 }
-            }
 
-            console.log(`✅ [${SITE}] Finalizado! ${totalCapturados} itens coletados.`);
-            return totalCapturados;
+                const specs = {};
+                document.querySelectorAll('.offer-two-columns table tr').forEach(tr => {
+                    const th = tr.querySelector('th');
+                    const td = tr.querySelector('td');
+                    if (th && td) specs[th.innerText.trim()] = td.innerText.trim();
+                });
 
+                return { photos, lanceAtual, incremento, status, specs, dataLeilaoISO, attachments };
+            });
         } catch (e) {
-            console.error(`❌ [${SITE}] Erro:`, e.message);
-            return 0;
-        } finally {
-            await browser.close();
+            console.error(`      ⚠️ Erro nos detalhes (${url}): ${e.message}`);
+            return null;
         }
     };
 
-    return { buscarTodos, SITE };
+    const buscarTodos = async () => {
+        console.log(`🚀 [${SITE}] TURBO PUPPETEER MODE: Iniciando captura por categorias...`);
+        const browser = await puppeteer.launch({
+            executablePath: getExecutablePath(),
+            headless: 'new',
+            protocolTimeout: 300000,
+            args: [...getCommonArgs(), '--disable-web-security']
+        });
+
+        try {
+            const page = await browser.newPage();
+            await page.setRequestInterception(true);
+            page.on('request', (req) => {
+                const type = req.resourceType();
+                if (['image', 'stylesheet', 'font', 'media'].includes(type) || req.url().includes('google-analytics')) {
+                    req.abort();
+                } else {
+                    req.continue();
+                }
+            });
+
+            await page.setUserAgent(getRandomUserAgent());
+            await page.setViewport({ width: 1366, height: 768 });
+
+            let totalCapturados = 0;
+            const seenIds = new Set();
+            const categories = [
+                { id: 'Carro', label: 'Carros' },
+                { id: 'Moto', label: 'Motos' },
+                { id: 'Caminhao', label: 'Caminhões' },
+                { id: 'Utilitario', label: 'Utilitários' },
+                { id: 'Pesado', label: 'Pesados' },
+                { id: 'Agricola', label: 'Agrícola' },
+                { id: 'Maquinas', label: 'Máquinas' },
+                { id: 'Sucata', label: 'Sucata' },
+                { id: 'Nautica', label: 'Náutica' }
+            ];
+
+            for (const cat of categories) {
+                console.log(`🔍 [${SITE}] Categoria: ${cat.label}`);
+                let consecutiveEmptyPages = 0;
+
+                for (let pageNum = 1; pageNum <= 100; pageNum++) {
+                    const url = `${BASE_URL}/pesquisa?Filtro.TipoVeiculos=${cat.id}&Filtro.CurrentPage=${pageNum}&OrdenacaoVeiculo=DataInicio&Filtro.ItemsPerPage=48`;
+                    try {
+                        let success = false;
+                        for (let retry = 0; retry < 3; retry++) {
+                            try {
+                                await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+                                success = true; break;
+                            } catch (e) {
+                                console.log(`      ⚠️ Retry ${retry + 1} for page ${pageNum}`);
+                                await new Promise(r => setTimeout(r, 2000));
+                            }
+                        }
+                        if (!success) continue;
+
+                        // Quick check for results
+                        const hasResults = await page.evaluate(() => {
+                            return document.querySelectorAll('.card-anuncio').length > 0;
+                        });
+
+                        if (!hasResults) {
+                            if ((await page.content()).includes('resultado encontrado')) {
+                                console.log(`   ⏹️ [${cat.label}] No more results found at page ${pageNum}.`);
+                                break;
+                            }
+                            consecutiveEmptyPages++;
+                            if (consecutiveEmptyPages > 3) break;
+                            continue;
+                        }
+                        consecutiveEmptyPages = 0;
+
+                        const { items, hasItems } = extractBasicInfo(await page.content());
+                        if (!hasItems) break;
+
+                        const newItems = items.filter(i => {
+                            if (seenIds.has(i.registro)) return false;
+                            seenIds.add(i.registro);
+                            return true;
+                        });
+
+                        if (newItems.length > 0) {
+                            console.log(`   💎 [Capturando detalhes de ${newItems.length} novos itens...]`);
+                            for (const item of newItems) {
+                                const details = await crawlDetails(page, item.link);
+                                if (details) {
+                                    item.fotos = details.photos;
+                                    // REQUIREMENT: Skip if no photos
+                                    if (!item.fotos || item.fotos.length === 0) continue;
+
+                                    item.valor = parseFloat(details.lanceAtual.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    item.incremento = details.incremento;
+                                    item.situacao = standardizeStatus(details.status);
+
+                                    // Ninja Standards: Data/Hora for Countdown
+                                    item.dataLeilao = details.dataLeilaoISO || null;
+                                    item.anexos = details.attachments || [];
+
+                                    const s = details.specs;
+                                    // Use the enhanced parser
+                                    const parsedDetails = parseVehicleDetails(item.veiculo + ' ' + item.descricao, s);
+
+                                    item.ano = parsedDetails.ano;
+                                    item.cor = s['Cor'];
+                                    item.combustivel = s['Combustível'];
+                                    item.cambio = s['Câmbio'];
+                                    item.km = s['KM'] ? parseInt(s['KM'].replace(/[^0-9]/g, '')) : null;
+                                    item.blindado = parsedDetails.blindado;
+                                    item.chave = parsedDetails.chave;
+                                    item.condicao = parsedDetails.condicao;
+
+                                    // NINJA ELITE DEEP FIELDS
+                                    item.localColisao = parsedDetails.localColisao;
+                                    item.origem = parsedDetails.origem;
+                                    item.comitente = parsedDetails.comitente;
+                                    item.debitoResponsabilidade = parsedDetails.debitoResponsabilidade;
+                                    item.remarcado = parsedDetails.remarcado;
+
+                                    // Clean the title for Brand/Model standard
+                                    item.veiculo = cleanTitle(item.veiculo);
+
+                                    item.descricao = Object.entries(details.specs).map(([k, v]) => `${k}: ${v}`).join(' | ');
+                                }
+
+                                // Now salvarLista is async-friendly (marks for enrichment)
+                                await salvarLista([item]);
+                                totalCapturados++;
+
+                                // Small delay between detail captures to avoid hammering
+                                await new Promise(r => setTimeout(r, 500));
+                            }
+                            console.log(`   ✅ [${cat.label}] Pág ${pageNum}: +${newItems.length} (Total VIP: ${totalCapturados})`);
+                        } else {
+                            // If we see many already captured items in a row, we might be reaching the end of "new" items
+                            if (pageNum > 50) {
+                                console.log(`   ⏭️ [${cat.label}] High overlap at page ${pageNum}, skipping category.`);
+                                break;
+                            }
+                        }
+                    } catch (e) { console.error(`   ❌ [${SITE}] Erro na página ${pageNum}: ${e.message}`); }
+                }
+            }
+            console.log(`✅ [${SITE}] Finalizado! ${totalCapturados} itens enriquecidos coletados.`);
+            return totalCapturados;
+        } finally { await browser.close(); }
+    };
+
+    return { buscarTodos };
 };
 
 export default createCrawler;

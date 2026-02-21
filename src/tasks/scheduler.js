@@ -21,6 +21,7 @@ const schedulerStatus = {
 export const getSchedulerStatus = () => schedulerStatus;
 
 const SITES_FILE = path.join(__dirname, '../../data/sites.json');
+const LEILOEIROS_FILE = path.join(__dirname, '../../data/leiloeiros_extracted.json');
 
 // Priority Ordered List of all available crawlers
 const crawlerScripts = [
@@ -59,6 +60,23 @@ try {
             }
         });
     }
+
+    // Sync with Hundreds of Extracted Auctioneers for Total Visibility
+    if (fs.existsSync(LEILOEIROS_FILE)) {
+        const extraction = JSON.parse(fs.readFileSync(LEILOEIROS_FILE, 'utf8'));
+        extraction.forEach(item => {
+            const id = item.domain.split('.')[0];
+            if (!schedulerStatus.crawlers[id]) {
+                schedulerStatus.crawlers[id] = {
+                    name: item.company || item.auctioneer,
+                    status: 'idle',
+                    lastRun: null,
+                    lastCode: null,
+                    implemented: false
+                };
+            }
+        });
+    }
 } catch (e) { console.error('Error syncing sites in scheduler:', e); }
 
 // Initialize remaining status map for implemented scripts
@@ -84,17 +102,35 @@ const logToFile = (message) => {
     } catch (e) { console.error('Error writing log:', e); }
 };
 
+const AI_CRAWLER_PATH = path.join(__dirname, '../crawlers/ai_crawler/run.js');
+
 const runCrawler = (crawler) => {
-    const { id, path: scriptPath, name } = crawler;
+    const { id, path: scriptPath, name, url, implemented } = crawler;
     return new Promise((resolve, reject) => {
-        logToFile(`Starting ${name}`);
+        logToFile(`Starting ${name} (${id}) - Mode: ${implemented ? 'Specialized' : 'AI-Auto'}`);
+
+        if (!schedulerStatus.crawlers[id]) {
+            schedulerStatus.crawlers[id] = { name, status: 'idle', lastRun: null, lastCode: null, implemented };
+        }
+
         schedulerStatus.crawlers[id].status = 'running';
         schedulerStatus.crawlers[id].lastRun = new Date();
 
-        const child = spawn('node', [scriptPath], {
+        const finalPath = implemented ? scriptPath : AI_CRAWLER_PATH;
+
+        // Prepare environment for AI crawler
+        const env = {
+            ...process.env,
+            FORCE_COLOR: '1',
+            SITE_ID: id,
+            SITE_URL: url,
+            SITE_NAME: name
+        };
+
+        const child = spawn('node', [finalPath], {
             stdio: 'pipe',
             shell: true,
-            env: { ...process.env, FORCE_COLOR: '1' }
+            env
         });
 
         child.stdout.on('data', (data) => {
@@ -110,18 +146,20 @@ const runCrawler = (crawler) => {
             try { fs.appendFileSync(LOG_FILE, `[${name} ERROR] ${output}\n`); } catch (e) { }
         });
 
-        // Hard timeout: 15 minutes per crawler to prevent hanging forever
+        // Timeout: 15m for specialized, 5m for AI auto (faster)
+        const timeoutMs = implemented ? 15 * 60 * 1000 : 5 * 60 * 1000;
+
         const timeout = setTimeout(() => {
-            logToFile(`⚠️ ${name} timed out after 15m. Killing process.`);
+            logToFile(`⚠️ ${name} timed out. Killing process.`);
             child.kill('SIGKILL');
             resolve(1);
-        }, 15 * 60 * 1000);
+        }, timeoutMs);
 
         child.on('close', (code) => {
             clearTimeout(timeout);
             logToFile(`${name} finished with code ${code}`);
             schedulerStatus.history.push({ name, code, time: new Date() });
-            if (schedulerStatus.history.length > 30) schedulerStatus.history.shift();
+            if (schedulerStatus.history.length > 50) schedulerStatus.history.shift();
 
             schedulerStatus.crawlers[id].status = code === 0 ? 'idle' : 'error';
             schedulerStatus.crawlers[id].lastCode = code;
@@ -163,6 +201,49 @@ const runPool = async (scripts, concurrency) => {
     logToFile('✅ All scheduled crawlers finished.');
 };
 
+const getAllCrawlers = () => {
+    const list = [...crawlerScripts.map(c => ({ ...c, implemented: true }))];
+    const existingIds = new Set(list.map(c => c.id));
+
+    // Add dynamic sites
+    try {
+        if (fs.existsSync(SITES_FILE)) {
+            const sites = JSON.parse(fs.readFileSync(SITES_FILE, 'utf8'));
+            sites.forEach(s => {
+                if (!existingIds.has(s.id)) {
+                    list.push({ id: s.id, name: s.name, url: s.domain, implemented: false });
+                    existingIds.add(s.id);
+                } else {
+                    // Update URL for implemented ones
+                    const item = list.find(i => i.id === s.id);
+                    if (item) item.url = s.domain;
+                }
+            });
+        }
+    } catch (e) { }
+
+    // Add extracted ones
+    try {
+        if (fs.existsSync(LEILOEIROS_FILE)) {
+            const extraction = JSON.parse(fs.readFileSync(LEILOEIROS_FILE, 'utf8'));
+            extraction.forEach(item => {
+                const id = item.domain.split('.')[0];
+                if (!existingIds.has(id)) {
+                    list.push({
+                        id,
+                        name: (item.empresa && item.empresa !== '-') ? item.empresa : item.leiloeiro,
+                        url: item.domain,
+                        implemented: false
+                    });
+                    existingIds.add(id);
+                }
+            });
+        }
+    } catch (e) { }
+
+    return list;
+};
+
 const initScheduler = async (runImmediate = false) => {
     // Audit environment on startup
     const envCheckPath = path.join(__dirname, '../utils/env-check.js');
@@ -173,26 +254,42 @@ const initScheduler = async (runImmediate = false) => {
         audit.stderr.on('data', (data) => logToFile(`[AUDIT ERROR] ${data.toString().trim()}`));
     }
 
+    const allCrawlers = getAllCrawlers();
+
+    // Pre-initialize status for all so they show up in admin panel immediately
+    allCrawlers.forEach(c => {
+        if (!schedulerStatus.crawlers[c.id]) {
+            schedulerStatus.crawlers[c.id] = {
+                name: c.name,
+                status: 'idle',
+                lastRun: null,
+                lastCode: null,
+                implemented: c.implemented
+            };
+        }
+    });
+
     if (runImmediate) {
-        console.log('🚀 [Scheduler] Iniciando coleta TOTAL (Modo POOL Dynamic)...');
+        console.log(`🚀 [Scheduler] Iniciando coleta NACIONAL (${allCrawlers.length} fontes)...`);
         // Run in background
-        runPool(crawlerScripts, CONCURRENCY).catch(console.error);
+        runPool(allCrawlers, CONCURRENCY).catch(console.error);
     }
 
     // Schedule: every 12 hours
     cron.schedule('0 */12 * * *', async () => {
-        logToFile('⏰ [Scheduler] Running Automatic Cycle');
-        await runPool(crawlerScripts, CONCURRENCY);
+        const currentList = getAllCrawlers();
+        logToFile(`⏰ [Scheduler] Running Automatic Cycle (${currentList.length} targets)`);
+        await runPool(currentList, CONCURRENCY);
     });
 
-    console.log('📅 [Scheduler] Daily Cycles: Every 12h');
+    console.log(`📅 [Scheduler] Daily Cycles: Every 12h. Targets: ${allCrawlers.length}`);
 };
 
 export const triggerManualRun = (siteId) => {
-    const crawler = crawlerScripts.find(c => c.id === siteId);
+    const all = getAllCrawlers();
+    const crawler = all.find(c => c.id === siteId);
     if (!crawler) return null;
 
-    // We don't await this, it runs in background
     runCrawler(crawler).catch(err => logToFile(`Manual run error for ${siteId}: ${err.message}`));
     return true;
 };

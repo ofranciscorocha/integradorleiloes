@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { MongoClient } from 'mongodb';
 import 'dotenv/config';
+import { enrichmentService } from '../utils/enrichment.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,27 +18,97 @@ console.log('📂 Data Directory:', path.resolve(DATA_DIR));
 
 const getFilePath = (collection) => path.join(DATA_DIR, `${collection}.json`);
 
+// Memory Cache for JSON mode
+const jsonCache = {};
+
 const readData = (collection) => {
+    // Return from cache if available
+    if (jsonCache[collection]) return jsonCache[collection];
+
     const filePath = getFilePath(collection);
     if (!fs.existsSync(filePath)) {
+        jsonCache[collection] = [];
         return [];
     }
     try {
         const data = fs.readFileSync(filePath, 'utf-8');
-        if (!data.trim()) return [];
-        return JSON.parse(data);
+        if (!data.trim()) {
+            jsonCache[collection] = [];
+            return [];
+        }
+        const parsed = JSON.parse(data);
+        jsonCache[collection] = parsed;
+        return parsed;
     } catch (e) {
         console.error(`❌ Erro crítico ao ler ${collection}:`, e.message);
+        if (e instanceof SyntaxError) {
+            console.log(`⚠️ Database ${collection} parece corrompido. Tentando recuperar...`);
+            jsonCache[collection] = [];
+            return [];
+        }
         throw new Error(`Falha ao ler banco de dados ${collection}. Operação abortada para evitar perda de dados.`);
     }
 };
 
 const writeData = (collection, data) => {
+    // Update cache first
+    jsonCache[collection] = data;
+
     const filePath = getFilePath(collection);
+    const tempPath = `${filePath}.tmp`;
     try {
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+        // Atomic write: write to temp file then rename
+        fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf-8');
+        fs.renameSync(tempPath, filePath);
     } catch (e) {
         console.error(`Erro ao salvar ${collection}:`, e);
+    }
+};
+
+/**
+ * File-based lock to prevent race conditions in JSON mode
+ */
+const acquireLock = async (collection) => {
+    const lockPath = path.join(DATA_DIR, `${collection}.lock`);
+    const maxRetries = 200;
+    const retryDelay = 150;
+
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            // mkdir is atomic in the OS
+            fs.mkdirSync(lockPath);
+            return true;
+        } catch (e) {
+            if (e.code === 'EEXIST') {
+                // If lock exists but is very old (e.g. 5 mins), force release it
+                try {
+                    const stats = fs.statSync(lockPath);
+                    const now = Date.now();
+                    const age = now - stats.mtimeMs;
+                    if (age > 1000 * 60 * 5) {
+                        console.log(`⚠️ Lock para ${collection} expirado (${Math.round(age / 1000)}s). Forçando liberação.`);
+                        fs.rmdirSync(lockPath);
+                        continue;
+                    }
+                } catch (stErr) { }
+
+                await new Promise(r => setTimeout(r, retryDelay));
+            } else {
+                throw e;
+            }
+        }
+    }
+    throw new Error(`Timeout ao tentar adquirir lock para ${collection}`);
+};
+
+const releaseLock = (collection) => {
+    const lockPath = path.join(DATA_DIR, `${collection}.lock`);
+    try {
+        if (fs.existsSync(lockPath)) {
+            fs.rmdirSync(lockPath);
+        }
+    } catch (e) {
+        console.error(`Erro ao liberar lock para ${collection}:`, e.message);
     }
 };
 
@@ -55,27 +126,19 @@ export const matchesFilter = (item, filtro) => {
             continue;
         }
 
-        // Handle $or array (search text across multiple fields)
-        if (key === '$or' && Array.isArray(val)) {
-            const matchOne = val.some(cond => {
-                const k = Object.keys(cond)[0];
-                const v = cond[k];
-                const itemVal = String(item[k] || '');
-                if (v instanceof RegExp) return v.test(itemVal);
-                // Handle {$regex, $options} objects
-                if (typeof v === 'object' && v !== null && v.$regex) {
-                    try {
-                        const re = new RegExp(v.$regex, v.$options || '');
-                        return re.test(itemVal);
-                    } catch { return false; }
-                }
-                return itemVal === v;
-            });
-            if (!matchOne) return false;
+        // Handle $and array (All conditions must match)
+        if (key === '$and' && Array.isArray(val)) {
+            if (!val.every(cond => matchesFilter(item, cond))) return false;
             continue;
         }
 
-        if (typeof val === 'object' && val !== null) {
+        // Handle $or array (At least one condition must match)
+        if (key === '$or' && Array.isArray(val)) {
+            if (!val.some(cond => matchesFilter(item, cond))) return false;
+            continue;
+        }
+
+        if (typeof val === 'object' && val !== null && !(val instanceof Date)) {
             // Handle {$regex, $options} pattern
             if (val.$regex !== undefined) {
                 try {
@@ -84,6 +147,26 @@ export const matchesFilter = (item, filtro) => {
                 } catch { return false; }
                 continue;
             }
+
+            // Handle $in
+            if (val.$in && Array.isArray(val.$in)) {
+                if (!val.$in.includes(item[key])) return false;
+                continue;
+            }
+
+            // Handle $nin
+            if (val.$nin && Array.isArray(val.$nin)) {
+                if (val.$nin.includes(item[key])) return false;
+                continue;
+            }
+
+            // Handle $not (can be a regex or another condition)
+            if (val.$not) {
+                const subFilter = { [key]: val.$not };
+                if (matchesFilter(item, subFilter)) return false;
+                continue;
+            }
+
             // Handle range comparisons ($gte, $lte, $gt, $lt)
             let itemVal = item[key];
             if (key === 'criadoEm' && typeof itemVal === 'string') itemVal = new Date(itemVal).getTime();
@@ -194,10 +277,24 @@ const connectDatabase = async () => {
                 let inseridos = 0;
                 let atualizados = 0;
                 let semAlteracao = 0;
+                let rejeitadosSemFoto = 0;
 
                 // Bulk operations would be better, but keeping it simple for compatibility
-                for (const item of lista) {
+                for (const rawItem of lista) {
+                    // REQUIREMENT: No photos = No save
+                    if (!rawItem.fotos || rawItem.fotos.length === 0 || !rawItem.fotos[0]) {
+                        rejeitadosSemFoto++;
+                        continue;
+                    }
+
+                    // ROBO ENRICHMENT: Only for new items or if fipe missing
+                    let item = rawItem;
                     const existing = await col.findOne({ registro: item.registro, site: item.site });
+
+                    if (!existing || !existing.valorFipe) {
+                        item.needsEnrichment = true;
+                    }
+
                     if (existing) {
                         // Check if changed
                         const { _id, criadoEm, log, atualizadoEm, ...oldData } = existing;
@@ -222,8 +319,8 @@ const connectDatabase = async () => {
                         inseridos++;
                     }
                 }
-                console.log(`\n📊 Resumo MongoDB: ${inseridos} inseridos, ${atualizados} atualizados, ${semAlteracao} sem alteração`);
-                return { inseridos, atualizados, semAlteracao };
+                console.log(`\n📊 Resumo MongoDB: ${inseridos} inseridos, ${atualizados} atualizados, ${semAlteracao} sem alteração, ${rejeitadosSemFoto} rejeitados (sem foto)`);
+                return { inseridos, atualizados, semAlteracao, rejeitadosSemFoto };
             };
 
             const paginate = async ({ colecao = 'veiculos', filtro = {}, page = 1, limit = 20, sort = { criadoEm: -1 } }) => {
@@ -360,44 +457,54 @@ const connectDatabase = async () => {
     };
 
     const insert = async ({ colecao = 'veiculos', dados }) => {
-        const items = readData(colecao);
-        const newItem = {
-            _id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-            criadoEm: new Date(),
-            ...dados,
-            log: [{
-                momento: new Date(),
-                acao: 'insert'
-            }]
-        };
-        items.push(newItem);
-        writeData(colecao, items);
-        return newItem._id;
+        await acquireLock(colecao);
+        try {
+            const items = readData(colecao);
+            const newItem = {
+                _id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                criadoEm: new Date(),
+                ...dados,
+                log: [{
+                    momento: new Date(),
+                    acao: 'insert'
+                }]
+            };
+            items.push(newItem);
+            writeData(colecao, items);
+            return newItem._id;
+        } finally {
+            releaseLock(colecao);
+        }
     };
 
     const update = async ({ colecao = 'veiculos', registro, site, set, debugUpdate = false }) => {
-        const items = readData(colecao);
-        const regStr = typeof registro === 'object' ? JSON.stringify(registro) : registro;
-        const index = items.findIndex(item => {
-            const itemRegStr = typeof item.registro === 'object' ? JSON.stringify(item.registro) : item.registro;
-            return itemRegStr === regStr && (!site || item.site === site);
-        });
+        await acquireLock(colecao);
+        try {
+            const items = readData(colecao);
+            const regStr = typeof registro === 'object' ? JSON.stringify(registro) : registro;
+            const index = items.findIndex(item => {
+                const itemRegStr = typeof item.registro === 'object' ? JSON.stringify(item.registro) : item.registro;
+                return itemRegStr === regStr && (!site || item.site === site);
+            });
 
-        if (index === -1) return false;
+            if (index === -1) return false;
 
-        const item = items[index];
-        const updatedItem = { ...item, ...set, atualizadoEm: new Date() };
+            const item = items[index];
+            const updatedItem = { ...item, ...set, atualizadoEm: new Date() };
 
-        updatedItem.log = (item.log || []).concat([{
-            momento: new Date(),
-            acao: 'update'
-        }]);
+            updatedItem.log = (item.log || []).concat([{
+                momento: new Date(),
+                acao: 'update'
+            }]);
 
-        items[index] = updatedItem;
-        writeData(colecao, items);
+            items[index] = updatedItem;
+            writeData(colecao, items);
 
-        if (debugUpdate) console.log('UPDATE JSON:', registro);
-        return true;
+            if (debugUpdate) console.log('UPDATE JSON:', registro);
+            return true;
+        } finally {
+            releaseLock(colecao);
+        }
     };
 
     const count = async ({ colecao = 'veiculos', filtro = {} }) => {
@@ -413,91 +520,131 @@ const connectDatabase = async () => {
     };
 
     const saveAlert = async (alertData) => {
-        const alerts = readData('alerts');
-        const newAlert = {
-            id: Date.now().toString(),
-            ...alertData,
-            createdAt: new Date().toISOString()
-        };
-        alerts.push(newAlert);
-        writeData('alerts', alerts);
-        return newAlert;
+        const col = 'alerts';
+        await acquireLock(col);
+        try {
+            const alerts = readData(col);
+            const newAlert = {
+                id: Date.now().toString(),
+                ...alertData,
+                createdAt: new Date().toISOString()
+            };
+            alerts.push(newAlert);
+            writeData(col, alerts);
+            return newAlert;
+        } finally {
+            releaseLock(col);
+        }
     };
 
     const deleteItems = async ({ colecao, filtro }) => {
-        let items = readData(colecao);
-        const initialCount = items.length;
+        await acquireLock(colecao);
+        try {
+            let items = readData(colecao);
+            const initialCount = items.length;
 
-        // Filtra para manter somente quem NÃO bate com o filtro de deleção
-        items = items.filter(item => !matchesFilter(item, filtro));
+            // Filtra para manter somente quem NÃO bate com o filtro de deleção
+            items = items.filter(item => !matchesFilter(item, filtro));
 
-        writeData(colecao, items);
-        return initialCount - items.length;
+            writeData(colecao, items);
+            return initialCount - items.length;
+        } finally {
+            releaseLock(colecao);
+        }
     };
 
     const deleteBySite = async ({ site }) => {
-        let items = readData('veiculos');
-        const initialCount = items.length;
-        items = items.filter(item => item.site !== site);
-        writeData('veiculos', items);
-        const removed = initialCount - items.length;
-        console.log(`🗑️ [JSON] Erased ${removed} items for site: ${site}`);
-        return removed;
+        const col = 'veiculos';
+        await acquireLock(col);
+        try {
+            let items = readData(col);
+            const initialCount = items.length;
+            items = items.filter(item => item.site !== site);
+            writeData(col, items);
+            const removed = initialCount - items.length;
+            console.log(`🗑️ [JSON] Erased ${removed} items for site: ${site}`);
+            return removed;
+        } finally {
+            releaseLock(col);
+        }
     };
 
 
     const salvarLista = async (lista, debugUpdate = false) => {
         const colecao = 'veiculos';
-        const items = readData(colecao);
-        let inseridos = 0;
-        let atualizados = 0;
-        let semAlteracao = 0;
+        await acquireLock(colecao);
+        try {
+            const items = readData(colecao);
+            let inseridos = 0;
+            let atualizados = 0;
+            let semAlteracao = 0;
+            let rejeitadosSemFoto = 0;
 
-        for (const novoItem of lista) {
-            const regStr = typeof novoItem.registro === 'object' ? JSON.stringify(novoItem.registro) : novoItem.registro;
-            const index = items.findIndex(i => {
-                const itemRegStr = typeof i.registro === 'object' ? JSON.stringify(i.registro) : i.registro;
-                return itemRegStr === regStr && i.site === novoItem.site;
-            });
-
-            if (index !== -1) {
-                const itemBanco = items[index];
-                // Simple update if any data changed
-                const { _id, criadoEm, log, atualizadoEm, ...oldData } = itemBanco;
-                const { ...newData } = novoItem;
-
-                if (JSON.stringify(oldData) !== JSON.stringify(newData)) {
-                    items[index] = { ...itemBanco, ...novoItem, atualizadoEm: new Date() };
-                    atualizados++;
-                } else {
-                    semAlteracao++;
+            for (const novoItemRaw of lista) {
+                // REQUIREMENT: No photos = No save
+                if (!novoItemRaw.fotos || novoItemRaw.fotos.length === 0 || !novoItemRaw.fotos[0]) {
+                    rejeitadosSemFoto++;
+                    continue;
                 }
-            } else {
-                items.push({
-                    _id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                    criadoEm: new Date(),
-                    ...novoItem,
-                    log: []
+
+                let novoItem = novoItemRaw;
+                const regStr = typeof novoItem.registro === 'object' ? JSON.stringify(novoItem.registro) : novoItem.registro;
+                const index = items.findIndex(i => {
+                    const itemRegStr = typeof i.registro === 'object' ? JSON.stringify(i.registro) : i.registro;
+                    return itemRegStr === regStr && i.site === novoItem.site;
                 });
-                inseridos++;
+
+                // ROBO ENRICHMENT for JSON mode
+                if (index === -1 || !items[index].valorFipe) {
+                    novoItem.needsEnrichment = true;
+                }
+
+                if (index !== -1) {
+                    const itemBanco = items[index];
+                    // Simple update if any data changed
+                    const { _id, criadoEm, log, atualizadoEm, ...oldData } = itemBanco;
+                    const { ...newData } = novoItem;
+
+                    if (JSON.stringify(oldData) !== JSON.stringify(newData)) {
+                        items[index] = { ...itemBanco, ...novoItem, atualizadoEm: new Date() };
+                        atualizados++;
+                    } else {
+                        semAlteracao++;
+                    }
+                } else {
+                    items.push({
+                        _id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        criadoEm: new Date(),
+                        ...novoItem,
+                        log: []
+                    });
+                    inseridos++;
+                }
             }
+
+            writeData(colecao, items);
+            console.log(`\n📊 Resumo JSON: ${inseridos} inseridos, ${atualizados} atualizados, ${semAlteracao} sem alteração, ${rejeitadosSemFoto} rejeitados (sem foto)`);
+
+            if (lista.length > 0) {
+                const currentSite = lista[0].site;
+                const totalSite = items.filter(i => i.site === currentSite).length;
+                console.log(`📈 [${currentSite || 'Geral'}] Total de veículos no banco: ${totalSite}`);
+            }
+
+            return { inseridos, atualizados, semAlteracao, rejeitadosSemFoto };
+        } finally {
+            releaseLock(colecao);
         }
-
-        writeData(colecao, items);
-        console.log(`\n📊 Resumo JSON: ${inseridos} inseridos, ${atualizados} atualizados, ${semAlteracao} sem alteração`);
-
-        if (lista.length > 0) {
-            const currentSite = lista[0].site;
-            const totalSite = items.filter(i => i.site === currentSite).length;
-            console.log(`📈 [${currentSite || 'Geral'}] Total de veículos no banco: ${totalSite}`);
-        }
-
-        return { inseridos, atualizados, semAlteracao };
     };
 
     const overwrite = async ({ colecao = 'veiculos', data }) => {
-        writeData(colecao, data);
-        console.log(`♻️ Coleção ${colecao} sobrescrita com ${data.length} itens.`);
+        await acquireLock(colecao);
+        try {
+            writeData(colecao, data);
+            console.log(`♻️ Coleção ${colecao} sobrescrita com ${data.length} itens.`);
+        } finally {
+            releaseLock(colecao);
+        }
     };
 
 
@@ -506,7 +653,14 @@ const connectDatabase = async () => {
 
         // 1. Filter
         if (filtro) {
+            // FORCE: Photos must exist
+            if (!filtro.fotos && !filtro["fotos.0"]) {
+                filtro["fotos.0"] = { $exists: true };
+            }
             items = items.filter(item => matchesFilter(item, filtro));
+        } else {
+            // Global default filter for photos even if no filter object
+            items = items.filter(item => item.fotos && item.fotos.length > 0 && item.fotos[0]);
         }
 
         // 2. Interleave Logic (Special handling for variant auctioneers)

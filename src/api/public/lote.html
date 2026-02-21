@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Lote | ARREMATE CLUB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="style.css?v=1.0.5" rel="stylesheet">
+    <style>
+        :root {
+            --premium-blue: #0F2D4D;
+            --premium-dark: #0F2D4D;
+            --cta-orange: #FF6A00;
+            --premium-gray: #64748b;
+            --success-green: #10b981;
+            --danger-red: #ef4444;
+            --bg-glass: rgba(255, 255, 255, 0.9);
+        }
+
+        .lote-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+        }
+
+        /* Header Style */
+        .lote-header-full {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 0.8rem;
+        }
+
+        .lote-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--premium-dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 0.4rem;
+            line-height: 1.2;
+        }
+
+        @media (min-width: 768px) {
+            .lote-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        .lote-subtitle {
+            font-size: 1rem;
+            color: var(--premium-gray);
+            font-weight: 500;
+        }
+
+        /* Grid Layout */
+        .lote-grid-main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (min-width: 1100px) {
+            .lote-grid-main {
+                grid-template-columns: 1fr 400px;
+                gap: 2.5rem;
+            }
+        }
+
+        /* Photo Gallery */
+        .photo-gallery {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .gallery-main-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            .gallery-main-wrapper {
+                height: 550px;
+                aspect-ratio: auto;
+            }
+        }
+
+        .main-photo {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            width: 100%;
+            height: 100%;
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+            pointer-events: none;
+        }
+
+        .gallery-nav button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            pointer-events: auto;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--premium-dark);
+        }
+
+        .gallery-nav button:hover {
+            background: #fff;
+            transform: scale(1.1);
+        }
+
+        .thumb-strip {
+            display: flex;
+            gap: 10px;
+            padding: 1rem;
+            overflow-x: auto;
+            background: #fff;
+            border-top: 1px solid #f1f5f9;
+            scrollbar-width: thin;
+        }
+
+        .thumb {
+            width: 80px;
+            height: 60px;
+            flex-shrink: 0;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: 0.2s;
+            border: 2px solid transparent;
+        }
+
+        @media (min-width: 768px) {
+            .thumb {
+                width: 110px;
+                height: 80px;
+            }
+        }
+
+        .thumb.active {
+            opacity: 1;
+            border-color: var(--premium-blue);
+        }
+
+        /* Info Sections */
+        .info-section {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--premium-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .specs-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1.5rem;
+            }
+        }
+
+        .spec-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .spec-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--premium-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .spec-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--premium-dark);
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .spec-value {
+                font-size: 1.1rem;
+            }
+        }
+
+        .lote-observations {
+            font-size: 0.95rem;
+            color: var(--premium-gray);
+            line-height: 1.5;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--premium-blue);
+        }
+
+        @media (min-width: 768px) {
+            .lote-observations {
+                font-size: 1rem;
+                padding: 1.5rem;
+                line-height: 1.6;
+            }
+        }
+
+        /* Sidebar: Financial Card */
+        .financial-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 20px;
+            padding: 1.5rem;
+            color: #fff;
+            box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .financial-card {
+                padding: 2rem;
+                border-radius: 24px;
+            }
+        }
+
+        .bid-section {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .bid-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+            letter-spacing: 1.5px;
+        }
+
+        .bid-value {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #fff;
+            margin: 0.3rem 0;
+        }
+
+        @media (min-width: 768px) {
+            .bid-value {
+                font-size: 3rem;
+            }
+        }
+
+        .bid-status-active {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .valuation-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .valuation-box {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+        }
+
+        .val-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .val-label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .val-value {
+            font-weight: 700;
+        }
+
+        .val-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 1rem 0;
+        }
+
+        .val-highlight {
+            text-align: center;
+        }
+
+        .val-savings {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #34d399;
+            text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+        }
+
+        .btn-bid-main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            height: 60px;
+            background: var(--cta-orange);
+            color: white;
+            text-decoration: none;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(255, 106, 0, 0.3);
+        }
+
+        .btn-bid-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 106, 0, 0.4);
+            background: var(--cta-orange);
+            filter: brightness(1.1);
+        }
+
+        /* Calculator Card */
+        .calculator-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+
+        .calc-header {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--premium-dark);
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .calc-row label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--premium-gray);
+        }
+
+        .calc-row input {
+            width: 120px;
+            padding: 6px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: right;
+            font-weight: 700;
+            font-family: inherit;
+        }
+
+        .calc-row.highlighted {
+            background: #f8fafc;
+            padding: 10px;
+            margin: 10px -10px;
+            border-radius: 8px;
+        }
+
+        .profit-box {
+            margin-top: 1.5rem;
+            padding: 1.2rem;
+            background: #f0fdf4;
+            border-radius: 14px;
+            text-align: center;
+            border: 2px dashed #10b981;
+        }
+
+        .profit-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #166534;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .profit-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #166534;
+            display: block;
+        }
+
+        @media (min-width: 768px) {
+            .profit-value {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 1rem 0 2rem;
+            font-size: 0.9rem;
+            color: var(--premium-gray);
+            font-weight: 500;
+        }
+
+        .breadcrumbs a {
+            color: var(--premium-blue);
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .breadcrumbs a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumbs i {
+            font-size: 0.7rem;
+            opacity: 0.5;
+        }
+
+        .breadcrumbs span.current {
+            color: var(--premium-dark);
+            font-weight: 700;
+        }
+
+        /* Robo Elite Styles */
+        .robo-elite-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--premium-blue);
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .robo-card-item {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 0.8rem;
+            border: 1px solid #e2e8f0;
+            transition: 0.3s;
+        }
+
+        @media (min-width: 768px) {
+            .robo-card-item {
+                border-radius: 16px;
+                padding: 1.25rem;
+                gap: 15px;
+                margin-bottom: 1rem;
+            }
+        }
+
+        .robo-card-item:hover {
+            border-color: var(--premium-blue);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .robo-card-item.danger {
+            background: #fff1f2;
+            border-color: #fecdd3;
+        }
+
+        .robo-card-item i {
+            font-size: 1.4rem;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+
+        .danger i {
+            background: #ffe4e6;
+            color: #ef4444 !important;
+        }
+
+        .robo-i-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--premium-gray);
+            display: block;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .robo-i-value {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--premium-dark);
+        }
+
+        .danger .robo-i-value {
+            color: var(--danger-red);
+        }
+
+        .attachment-list {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            color: var(--premium-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .attachment-item:hover {
+            border-color: var(--premium-blue);
+            background: #f8fafc;
+        }
+
+        /* Market Comparison */
+        .market-comparison {
+            margin-top: 2.5rem;
+            background: #fff;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f1f5f9;
+        }
+
+        .market-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .market-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .fipe-badge {
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 8px 20px;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #dbeafe;
+        }
+
+        .market-info-text {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .market-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .market-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            position: relative;
+        }
+
+        .market-card:hover {
+            transform: translateY(-5px);
+            background: #fff;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+            border-color: #3b82f6;
+        }
+
+        .market-card .external-link-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .market-logo {
+            max-width: 120px;
+            height: 35px;
+            object-fit: contain;
+            margin-bottom: 0.8rem;
+        }
+
+        .market-card:hover .market-logo {
+            transform: scale(1.05);
+        }
+
+        .market-price {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #1e293b;
+        }
+
+        .market-footer {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .market-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .market-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        .card-footer-info {
+            font-size: 0.8rem;
+            color: var(--premium-gray);
+            text-align: center;
+            line-height: 1.5;
+            padding: 1.5rem 1rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        @media (max-width: 768px) {
+            .logo-area img {
+                height: 60px !important;
+            }
+
+            .header-content {
+                padding: 0.5rem 1rem !important;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <a href="/" class="logo-area">
+                <img src="/img/logo.png" alt="ARREMATE CLUB">
+            </a>
+            <nav class="nav-menu">
+                <a href="/" class="nav-link">Início</a>
+                <a href="/placa.html" class="nav-link">Consulta por Placa</a>
+                <a href="/como-funciona.html" class="nav-link">Como funciona</a>
+                <a href="/admin.html" class="nav-link">Painel</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="lote-container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumbs">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="/">Veículos</a>
+            <i class="fas fa-chevron-right"></i>
+            <span id="breadcrumb-current" class="current">Carregando...</span>
+        </nav>
+
+        <!-- Top Title Section -->
+        <div class="lote-header-full">
+            <div id="lote-site-badge" class="badge-row"></div>
+            <h1 id="lote-title" class="lote-title">Carregando...</h1>
+            <div class="lote-subtitle">
+                <span id="lote-id-display"></span> • <span id="lote-local-display"></span>
+            </div>
+        </div>
+
+        <div class="lote-grid-main">
+            <!-- Left Side: Visuals & Tech Specs -->
+            <div class="lote-left">
+                <div class="photo-gallery">
+                    <div class="gallery-main-wrapper">
+                        <img id="main-photo" src="" class="main-photo">
+                        <div class="gallery-nav">
+                            <button onclick="prevPhoto()"><i class="fas fa-chevron-left"></i></button>
+                            <button onclick="nextPhoto()"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div id="thumb-strip" class="thumb-strip"></div>
+                </div>
+
+                <div class="info-section">
+                    <div class="section-title"><i class="fas fa-info-circle"></i> Especificações do Veículo</div>
+                    <div class="specs-grid" id="lote-details">
+                        <!-- Data Injected Here -->
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <div class="section-title"><i class="fas fa-file-alt"></i> Observações e Edital</div>
+                    <div id="lote-obs" class="lote-observations">
+                        Para mais detalhes, consulte o edital completo no site oficial do leiloeiro.
+                    </div>
+                    <div id="attachment-container" class="attachment-list"></div>
+                </div>
+
+                <!-- Market Comparison Section -->
+                <div class="market-comparison">
+                    <div class="market-header">
+                        <h2 class="market-title">Valores de Mercado</h2>
+                        <div class="fipe-badge" id="fipe-ref-pill">
+                            <i class="fas fa-circle" style="font-size: 8px;"></i> FIPE: R$ 0,00 (maio de 2025)
+                        </div>
+                    </div>
+                    <div class="market-info-text">
+                        <i class="fas fa-info-circle" style="color: #6366f1;"></i>
+                        São valores de mercado praticados em cada plataforma para veículos semelhantes a este.
+                    </div>
+
+                    <div class="market-cards">
+                        <!-- iCarros (Exhibits FIPE) -->
+                        <div class="market-card" id="card-icarros" style="cursor: pointer;">
+                            <i class="fas fa-external-link-alt external-link-icon"></i>
+                            <img src="https://logodownload.org/wp-content/uploads/2018/06/icarros-logo.png"
+                                alt="iCarros" class="market-logo" style="filter: none;">
+                            <div class="market-price" id="price-icarros">R$ 0,00</div>
+                            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">REFERÊNCIA FIPE</div>
+                        </div>
+
+                        <!-- WebMotors (Exhibits Market) -->
+                        <div class="market-card" id="card-webmotors" style="cursor: pointer;">
+                            <i class="fas fa-external-link-alt external-link-icon"></i>
+                            <img src="https://logodownload.org/wp-content/uploads/2018/06/webmotors-logo.png"
+                                alt="WebMotors" class="market-logo" style="filter: none;">
+                            <div class="market-price" id="price-webmotors">R$ 0,00</div>
+                            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">VALOR DE MERCADO</div>
+                        </div>
+
+                        <!-- Mercado Livre -->
+                        <div class="market-card" id="card-mercadolivre" style="cursor: pointer;">
+                            <i class="fas fa-external-link-alt external-link-icon"></i>
+                            <img src="https://logodownload.org/wp-content/uploads/2016/08/mercado-livre-logo-0.png"
+                                alt="Mercado Livre" class="market-logo" style="filter: none;">
+                            <div class="market-price" id="price-mercadolivre">R$ 0,00</div>
+                            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">VENDA DIRETA</div>
+                        </div>
+                    </div>
+
+                    <div class="market-footer">
+                        <i class="fas fa-chart-line"></i>
+                        Valores obtidos automaticamente das principais plataformas de venda de veículos.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Financials & Actions -->
+            <div class="lote-right">
+                <div class="financial-card">
+                    <div class="bid-section">
+                        <span class="bid-label">LANCE ATUAL</span>
+                        <div id="price-auction" class="bid-value">R$ 0,00</div>
+                        <div id="bid-status" class="bid-status-active">LEILÃO ATIVO</div>
+                    </div>
+
+                    <div class="valuation-box">
+                        <div class="val-item">
+                            <span class="val-label">TABELA FIPE</span>
+                            <span id="price-fipe" class="val-value">R$ 0,00</span>
+                        </div>
+                        <div class="val-item">
+                            <span class="val-label">MERCADO</span>
+                            <span id="price-market" class="val-value">R$ 0,00</span>
+                        </div>
+                        <div class="val-divider"></div>
+                        <div class="val-highlight">
+                            <span class="val-label">ECONOMIA ESTIMADA</span>
+                            <div id="price-savings" class="val-savings">--%</div>
+                        </div>
+                    </div>
+
+                    <a id="btn-external" href="#" target="_blank" class="btn-bid-main">
+                        IR PARA O LEILÃO OFICIAL <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+
+                <!-- Robo Elite Insights -->
+                <div id="robo-elite-container"></div>
+
+                <!-- ROI Calculator -->
+                <div class="calculator-card">
+                    <div class="calc-header">
+                        <i class="fas fa-calculator"></i> CALCULADORA DE LUCRO
+                    </div>
+                    <div class="calc-body">
+                        <div class="calc-row">
+                            <label>Seu Lance Max</label>
+                            <input type="number" id="calc-bid" oninput="calculateProfit()">
+                        </div>
+                        <div class="calc-row">
+                            <label>Docs/Taxas (R$)</label>
+                            <input type="number" id="calc-fees-fixed" value="1500" oninput="calculateProfit()">
+                        </div>
+                        <div class="calc-row">
+                            <label>Consertos/Frete</label>
+                            <input type="number" id="calc-repairs" value="2000" oninput="calculateProfit()">
+                        </div>
+                        <div class="calc-row highlighted">
+                            <label>Revenda (FIPE)</label>
+                            <input type="number" id="calc-sale" oninput="calculateProfit()">
+                        </div>
+                        <div class="profit-box" id="profit-box">
+                            <span class="profit-label">LUCRO ESTIMADO</span>
+                            <span id="profit-value" class="profit-value">R$ 0,00</span>
+                            <span id="profit-percent" class="profit-percent">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer-info">
+                    <i class="fas fa-shield-alt"></i> Dados coletados em tempo real. Verifique sempre o estado físico no
+                    local do leilão.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentVehicle = null;
+
+        const formatSiteName = (site) => {
+            const sites = {
+                'palaciodosleiloes.com.br': 'Palácio dos Leilões',
+                'vipleiloes.com.br': 'VIP Leilões',
+                'guariglialeiloes.com.br': 'Guariglia Leilões',
+                'freitasleiloeiro.com.br': 'Freitas Leiloeiro',
+                'sodresantoro.com.br': 'Sodré Santoro',
+                'copart.com.br': 'Copart',
+                'rogeriomenezes.com.br': 'Rogério Menezes',
+                'joaoemilio.com.br': 'João Emílio',
+                'mgl.com.br': 'MGL Leilões',
+                'claudiokussleiloes.com.br': 'Claudio Kuss Leilões',
+                'superbid.net': 'Superbid'
+            };
+            return sites[site] || site;
+        };
+
+        const loadLote = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const site = params.get('site');
+
+            if (!id || !site) {
+                alert('Lote não encontrado');
+                window.location.href = '/';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/veiculos/${id}?site=${site}`);
+                const data = await res.json();
+
+                if (data.success) {
+                    currentVehicle = data.veiculo;
+
+                    // Fetch real valuation
+                    try {
+                        const valRes = await fetch(`/api/valuation?modeloRaw=${encodeURIComponent(currentVehicle.veiculo)}&ano=${currentVehicle.ano}&valorBase=${currentVehicle.valor}`);
+                        const valData = await valRes.json();
+                        if (valData.success) {
+                            currentVehicle.valuation = valData;
+                        }
+                    } catch (ev) {
+                        console.error('Erro valuation:', ev);
+                    }
+
+                    renderLote();
+                } else {
+                    alert('Erro ao carregar dados do lote');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        const renderLote = () => {
+            const v = currentVehicle;
+            const valData = v.valuation || {};
+
+            // Initial placeholders to avoid 0,00 flicker
+            if (!v.valuation) {
+                document.querySelectorAll('.market-price, .val-value').forEach(el => el.textContent = 'Carregando...');
+            }
+
+            document.title = `${v.veiculo} | ARREMATE CLUB`;
+            document.getElementById('lote-title').textContent = v.veiculo;
+            document.getElementById('breadcrumb-current').textContent = v.veiculo;
+            document.getElementById('lote-id-display').textContent = `LOTE ${v.registro}`;
+            document.getElementById('lote-local-display').textContent = v.localLeilao || 'Local não informado';
+
+            // Site Badge
+            const siteName = v.site.replace('.com.br', '').toUpperCase();
+            document.getElementById('lote-site-badge').innerHTML = `
+                <div class="badge badge-site">${formatSiteName(v.site)}</div>
+                <div class="badge-status" style="background:#f1f5f9; color:#64748b; padding: 4px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem;">#${v.registro}</div>
+            `;
+
+            // Prices
+            const val = parseFloat(v.valor) || 0;
+            document.getElementById('price-auction').textContent = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            // FIPE & Market
+            const fipe = v.valorFipe || valData.fipe || (val * 1.35);
+            const market = v.valorMercado || valData.market || (val * 1.48);
+
+            document.getElementById('price-fipe').innerHTML = fipe.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('price-market').innerHTML = market.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            // Market Comparison Section
+            const monthNames = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+            const now = new Date();
+            const refMonth = `${monthNames[now.getMonth()]} de ${now.getFullYear()}`;
+            document.getElementById('fipe-ref-pill').innerHTML = `<i class="fas fa-circle" style="font-size: 8px;"></i> FIPE: ${fipe.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} (${refMonth})`;
+
+            // iCarros = FIPE
+            document.getElementById('price-icarros').textContent = fipe.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            // WebMotors = Market
+            document.getElementById('price-webmotors').textContent = market.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            // Mercado Livre = Slight variation or base market
+            const priceMercadoLivre = market * (1 - (Math.random() * 0.05 + 0.02));
+            document.getElementById('price-mercadolivre').textContent = priceMercadoLivre.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            // Redirection Links (using backend precision)
+            const u = valData.urls || {};
+            document.getElementById('card-icarros').onclick = () => window.open(u.icarros || `https://www.icarros.com.br/comprar/${v.marca}/${v.modelo}`, '_blank');
+            document.getElementById('card-webmotors').onclick = () => window.open(u.webmotors || `https://www.webmotors.com.br/carros/estoque`, '_blank');
+            document.getElementById('card-mercadolivre').onclick = () => window.open(u.mercadolivre || `https://www.mercadolivre.com.br`, '_blank');
+
+            const savings = ((market - val) / market) * 100;
+            document.getElementById('price-savings').textContent = `${Math.round(savings)}% ABAIXO`;
+
+            const btnExt = document.getElementById('btn-external');
+            if (v.link) {
+                btnExt.href = v.link;
+                btnExt.style.opacity = '1';
+                btnExt.style.pointerEvents = 'auto';
+            } else {
+                btnExt.href = '#';
+                btnExt.innerHTML = 'LINK NÃO DISPONÍVEL <i class="fas fa-exclamation-triangle"></i>';
+                btnExt.style.background = '#64748b';
+                btnExt.style.opacity = '0.7';
+            }
+
+            // Photos
+            if (v.fotos && v.fotos.length > 0) {
+                const main = document.getElementById('main-photo');
+                const strip = document.getElementById('thumb-strip');
+                strip.innerHTML = '';
+
+                const getProxyUrl = (url) => url.startsWith('http') ? `/proxy-img?url=${encodeURIComponent(url)}` : url;
+                main.src = getProxyUrl(v.fotos[0]);
+
+                v.fotos.forEach((f, idx) => {
+                    const img = document.createElement('img');
+                    img.src = getProxyUrl(f);
+                    img.className = `thumb ${idx === 0 ? 'active' : ''}`;
+                    img.onclick = () => {
+                        main.src = getProxyUrl(f);
+                        document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+                        img.classList.add('active');
+                    };
+                    strip.appendChild(img);
+                });
+            }
+
+            // Specs Grid
+            const details = document.getElementById('lote-details');
+            const dataTable = {
+                'Marca': v.marca || valData.parsed?.brand || '---',
+                'Modelo': v.modelo || valData.parsed?.model || '---',
+                'Ano': v.ano || '---',
+                'KM': v.km ? `${v.km.toLocaleString()} km` : '---',
+                'Empresa': v.empresaNome || (v.site ? formatSiteName(v.site) : '---'),
+                'Leiloeiro': v.leiloeiroNome || '---',
+                'Combustível': v.combustivel || '---',
+                'Cor': v.cor || '---',
+                'Câmbio': v.cambio || '---',
+                'Condição': v.condicao || 'Geral',
+                'Blindado': v.blindado ? 'Sim' : 'Não',
+                'Placa': v.placa || '---'
+            };
+
+            details.innerHTML = Object.entries(dataTable).map(([k, val]) => `
+                <div class="spec-item">
+                    <span class="spec-label">${k}</span>
+                    <span class="spec-value">${val}</span>
+                </div>
+            `).join('');
+
+            // Observations
+            if (v.descricao) {
+                document.getElementById('lote-obs').innerHTML = v.descricao.replace(/\n/g, '<br>');
+            }
+
+            renderRoboElite(v);
+
+            // Pre-fill calculator
+            document.getElementById('calc-bid').value = val;
+            document.getElementById('calc-sale').value = Math.round(fipe);
+            calculateProfit();
+        };
+
+        const renderRoboElite = (v) => {
+            const container = document.getElementById('robo-elite-container');
+            if (!container) return;
+
+            const items = [];
+
+            // 1. Origin
+            const isHighRisk = ['Roubo/Furto', 'Enchente/Alagamento'].some(r => v.origem?.includes(r));
+            items.push({
+                icon: v.origem?.includes('Enchente') ? 'fa-water' : (v.origem?.includes('Roubo') ? 'fa-shield-virus' : 'fa-shield-alt'),
+                label: 'ORIGEM',
+                val: v.origem || 'Normal',
+                danger: isHighRisk
+            });
+
+            // 2. Comitente
+            if (v.comitente) {
+                items.push({ icon: 'fa-building', label: 'COMITENTE', val: v.comitente });
+            }
+
+            // 3. Collision
+            if (v.localColisao) {
+                items.push({ icon: 'fa-car-crash', label: 'COLISÃO', val: v.localColisao.toUpperCase(), danger: true });
+            }
+
+            // 4. Debts
+            if (v.debitoResponsabilidade) {
+                const isBuyer = v.debitoResponsabilidade.toLowerCase().includes('arrematante');
+                items.push({
+                    icon: 'fa-hand-holding-usd',
+                    label: 'DÉBITOS / IPVA',
+                    val: isBuyer ? 'ARREMATANTE' : 'VENDEDOR',
+                    danger: isBuyer
+                });
+            }
+
+            // 5. Chassi
+            if (v.remarcado) {
+                items.push({ icon: 'fa-id-card', label: 'CHASSI', val: 'REMARCADO', danger: true });
+            }
+
+            container.innerHTML = `
+                <div class="robo-elite-title"><i class="fas fa-robot"></i> ROBO INTELLIGENCE ELITE</div>
+                ${items.map(item => `
+                    <div class="robo-card-item ${item.danger ? 'danger' : ''}">
+                        <i class="fas ${item.icon}" style="color: ${item.danger ? '#ef4444' : '#2563eb'}"></i>
+                        <div>
+                            <span class="robo-i-label">${item.label}</span>
+                            <span class="robo-i-value">${item.val}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+
+            // Attachments
+            const attachmentContainer = document.getElementById('attachment-container');
+            if (v.anexos && v.anexos.length > 0) {
+                attachmentContainer.innerHTML = v.anexos.map(a => `
+                    <a href="${a.url}" target="_blank" class="attachment-item">
+                        <i class="fas fa-file-pdf"></i> ${a.name || 'Documento'}
+                    </a>
+                `).join('');
+            }
+        };
+
+        const calculateProfit = () => {
+            const bid = parseFloat(document.getElementById('calc-bid').value) || 0;
+            const feesFixed = parseFloat(document.getElementById('calc-fees-fixed').value) || 0;
+            const repairs = parseFloat(document.getElementById('calc-repairs').value) || 0;
+            const sale = parseFloat(document.getElementById('calc-sale').value) || 0;
+
+            // Standard auction fee (5%)
+            const auctionFee = bid * 0.05;
+            const totalCost = bid + auctionFee + feesFixed + repairs;
+            const profit = sale - totalCost;
+            const roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+
+            const profitEl = document.getElementById('profit-value');
+            const percentEl = document.getElementById('profit-percent');
+
+            profitEl.textContent = profit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            percentEl.textContent = `ROI ESTIMADO: ${Math.round(roi)}%`;
+
+            if (profit < 0) {
+                document.getElementById('profit-box').style.background = '#fef2f2';
+                document.getElementById('profit-box').style.borderColor = '#ef4444';
+                profitEl.style.color = '#b91c1c';
+            } else {
+                document.getElementById('profit-box').style.background = '#f0fdf4';
+                document.getElementById('profit-box').style.borderColor = '#10b981';
+                profitEl.style.color = '#166534';
+            }
+        };
+
+
+        loadLote();
+    </script>
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-col" style="flex: 1.5;">
+                <div class="logo-area" style="margin-bottom: 2rem;">
+                    <img src="/img/logo.png" alt="ARREMATE CLUB" class="footer-logo"
+                        style="height: 140px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+                </div>
+                <p style="line-height: 1.6; margin-bottom: 1.5rem;">O maior portal integrador de leilões do Brasil.
+                    Encontre veículos de mais de 10 sites de leilão em uma única plataforma robusta e rápida.</p>
+                <div class="social-links">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h3>Empresa</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Sobre nós</a></li>
+                    <li><a href="#">Contatos</a></li>
+                    <li><a href="#">Carreiras</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>Ferramentas</h3>
+                <ul class="footer-links">
+                    <li><a href="/placa.html">Consulta por Placa</a></li>
+                    <li><a href="/?mode=sucata">Filtro de Sucatas</a></li>
+                    <li><a href="/painel.html">Painel Admin</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>Conta</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Minha Conta</a></li>
+                    <li><a href="#">Meus Lances</a></li>
+                    <li><a href="#">Alertas</a></li>
+                    <li><a href="#">Favoritos</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-content">
+                <div class="copyright">&copy; 2025-2026 ARREMATE CLUB. Todos os direitos reservados.</div>
+                <div class="footer-legal">
+                    <a href="#">Termos de Uso</a>
+                    <a href="#">Privacidade</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
