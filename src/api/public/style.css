@@ -261,6 +261,19 @@ body {
     border-bottom: 2px solid var(--cta-orange);
 }
 
+@media (max-width: 768px) {
+    .search-sticky-wrapper.sticky {
+        position: relative !important;
+        box-shadow: none !important;
+        border-bottom: none !important;
+        padding: 0 !important;
+    }
+
+    .sticky-branding-area {
+        display: none !important;
+    }
+}
+
 .search-sticky-wrapper.sticky .search-widget-container {
     max-width: var(--max-width);
     margin: 0 auto;

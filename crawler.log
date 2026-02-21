@@ -22870,3 +22870,122 @@ Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB,
 [MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/api/GetLogin
 [MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/apiplugin/GetMenuV3
 [MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub/negotiate?negotiateVersion=1
+[Freitas Leiloeiro ERROR]    ⚠️ [freitasleiloeiro.com.br] Erro ao ler Agenda: autoScroll is not defined
+
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 1...
+[Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 1...
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://mpc2-prod-28-is5qnl632q-ue.a.run.app/events?cee=no
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub/negotiate?negotiateVersion=1
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub?id=Tr8qVlSciTtLUJUVri_LhA
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/challenge-platform/h/g/jsd/oneshot/60138c04e6b2/0.49424869510323133:1771655253:pruCjedBpcPsMm1csTlLGxL7b53ZSJ1KMqN2oaBbO8Q/9d1493449be58a83
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://stats.g.doubleclick.net/g/collect?v=2&tid=G-SVB3JJTM93&cid=1290051900.1771659454&gtm=45je62i1v873076939za200zb9103642477zd9103642477&aip=1&dma=0&gcs=G1--&gcd=13l3l3R3l5l1&npa=0&frm=0&tag_exp=103116026~103200004~104527906~104528501~104684208~104684211~115938465~115938468~117455676~117455678
+[Rogério Menezes] ✅ [rogeriomenezes.com.br] 21 leilões encontrados. Processando em paralelo...
+[Rogério Menezes] 📋 [1414] Acessando leilão...
+[Sumaré Leilões] 🤖 [AI-Crawler] Encontrados 0 prováveis veículos com heurística.
+[MGL] ⚠️ [mgl.com.br] Erro na categoria 1: Navigation timeout of 60000 ms exceeded
+[MGL] 🔍 [mgl.com.br] Navegando para Categoria 2 ...
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[Daniel Garcia ERROR] ❌ Erro no AI Crawler: Navigation timeout of 60000 ms exceeded
+
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/api/GetLogin
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/apiplugin/GetMenuV3
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub/negotiate?negotiateVersion=1
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://mpc2-prod-28-is5qnl632q-ue.a.run.app/events?cee=no
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://stats.g.doubleclick.net/g/collect?v=2&tid=G-ZQ6VT30XKY&cid=1290051900.1771659454&gtm=45je62i1v9116943312z89103642477za20gzb9103642477zd9103642477&aip=1&dma=0&gcs=G1--&gcd=13l3l3R3l5l1&npa=0&frm=0&tag_exp=103116026~103200004~104527906~104528501~104684208~104684211~115616985~115938466~115938469~117455676~117455678
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub/negotiate?negotiateVersion=1
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub?id=gDdsK69S6TwtNXunDN_rhg
+[Rogério Menezes] 📋 [1403] Acessando leilão...
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://pageview-notify.rdstation.com.br/send
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 2...
+[Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 2...
+[MGL] 📡 [mgl.com.br] Possível API Detectada: OPTIONS https://api.wts.chat/core/v1/widget/track
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://api.wts.chat/core/v1/widget/track
+[Rogério Menezes] 📋 [1409] Acessando leilão...
+[Sumaré Leilões] ✅ [AI-Runner] Coleta finalizada. 0 itens processados.
+
+--- [21/02/2026, 04:38:01] Sumaré Leilões finished with code 0 ---
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub?id=gDdsK69S6TwtNXunDN_rhg
+[Daniel Garcia] ✅ [AI-Runner] Coleta finalizada. 0 itens processados.
+
+--- [21/02/2026, 04:38:05] Daniel Garcia finished with code 0 ---
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 3...
+[Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 3...
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub?id=gDdsK69S6TwtNXunDN_rhg
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub?id=gDdsK69S6TwtNXunDN_rhg
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 4...
+[Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 4...
+[MGL] ⚠️ [mgl.com.br] Erro na categoria 2: Navigation timeout of 60000 ms exceeded
+[MGL] 🔍 [mgl.com.br] Navegando para Categoria 4 ...
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/api/GetLogin
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/apiplugin/GetMenuV3
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub/negotiate?negotiateVersion=1
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://mpc2-prod-28-is5qnl632q-ue.a.run.app/events?cee=no
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://pageview-notify.rdstation.com.br/send
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[Rogério Menezes] ⚠️ [1403] Erro: Navigation timeout of 60000 ms exceeded
+[MGL] 📡 [mgl.com.br] Possível API Detectada: OPTIONS https://api.wts.chat/core/v1/widget/track
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://api.wts.chat/core/v1/widget/track
+[MGL] 📋 [mgl.com.br] 0 links de interesse encontrados
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/api/GetLogin
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/apiplugin/GetMenuV3
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub/negotiate?negotiateVersion=1
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://mpc2-prod-28-is5qnl632q-ue.a.run.app/events?cee=no
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://pageview-notify.rdstation.com.br/send
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[Rogério Menezes] ⚠️ [1409] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] 🔸 [Pool] Bloco 1-3 concluído. Total: 0
+[MGL] 📡 [mgl.com.br] Possível API Detectada: OPTIONS https://api.wts.chat/core/v1/widget/track
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://api.wts.chat/core/v1/widget/track
+[Rogério Menezes] 📋 [1496] Acessando leilão...
+[Rogério Menezes] 📋 [1418] Acessando leilão...
+[Rogério Menezes] 📋 [173] Acessando leilão...
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 5...
+[Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 5...
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/api/GetLogin
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/apiplugin/GetMenuV3
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://mpc2-prod-28-is5qnl632q-ue.a.run.app/events?cee=no
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://mpc2-prod-28-is5qnl632q-ue.a.run.app/events?cee=no
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://pageview-notify.rdstation.com.br/send
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[MGL] 📡 [mgl.com.br] Possível API Detectada: OPTIONS https://api.wts.chat/core/v1/widget/track
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://api.wts.chat/core/v1/widget/track
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 6...
+[Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 6...
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/api/GetLogin
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/apiplugin/GetMenuV3
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://mpc2-prod-28-is5qnl632q-ue.a.run.app/events?cee=no
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://pageview-notify.rdstation.com.br/send
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[MGL] 📡 [mgl.com.br] Possível API Detectada: OPTIONS https://api.wts.chat/core/v1/widget/track
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://api.wts.chat/core/v1/widget/track
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://mpc2-prod-28-is5qnl632q-ue.a.run.app/events?cee=no
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/api/GetLogin
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/apiplugin/GetMenuV3
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub/negotiate?negotiateVersion=1
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://mpc2-prod-28-is5qnl632q-ue.a.run.app/events?cee=no
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/cdn-cgi/rum?
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://pageview-notify.rdstation.com.br/send
+[MGL] 📡 [mgl.com.br] Possível API Detectada: OPTIONS https://api.wts.chat/core/v1/widget/track
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://api.wts.chat/core/v1/widget/track
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 7...
+[Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 7...
+[Rogério Menezes] ⚠️ [1496] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] ⚠️ [1418] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] ⚠️ [173] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] 🔸 [Pool] Bloco 4-6 concluído. Total: 0
+[Rogério Menezes] 📋 [1494] Acessando leilão...
+[Rogério Menezes] 📋 [1503] Acessando leilão...
+[Rogério Menezes] 📋 [1505] Acessando leilão...
+[MGL] ✅ [mgl.com.br] Finalizado! 0 veículos coletados.
+[MGL] ✅ Crawler MGL finalizado.
+[MGL] JSON DB fechado
+
+--- [21/02/2026, 04:40:08] MGL finished with code 0 ---
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 8...
+[Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 8...
