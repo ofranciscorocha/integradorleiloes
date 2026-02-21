@@ -135,6 +135,11 @@ const runCrawler = (crawler) => {
 
         child.stdout.on('data', (data) => {
             const output = data.toString();
+            // Detect blocking
+            if (output.includes('403') || output.includes('Forbidden') || output.includes('blocked') || output.includes('Access Denied')) {
+                logToFile(`🚨 [${name}] POSSÍVEL BLOQUEIO DE IP DETECTADO (403/Forbidden)`);
+                schedulerStatus.crawlers[id].status = 'blocked';
+            }
             const prefixed = output.trim().split('\n').map(line => `[${name}] ${line}`).join('\n');
             console.log(prefixed);
             try { fs.appendFileSync(LOG_FILE, prefixed + '\n'); } catch (e) { }
@@ -142,6 +147,9 @@ const runCrawler = (crawler) => {
 
         child.stderr.on('data', (data) => {
             const output = data.toString();
+            if (output.includes('403') || output.includes('Forbidden')) {
+                schedulerStatus.crawlers[id].status = 'blocked';
+            }
             console.error(`[${name} ERROR] ${output}`);
             try { fs.appendFileSync(LOG_FILE, `[${name} ERROR] ${output}\n`); } catch (e) { }
         });

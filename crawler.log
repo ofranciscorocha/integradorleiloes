@@ -22989,3 +22989,52 @@ Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB,
 --- [21/02/2026, 04:40:08] MGL finished with code 0 ---
 [Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 8...
 [Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 8...
+[Freitas Leiloeiro ERROR] ❌ [freitasleiloeiro.com.br] Erro Fatal no Freitas: allAuctionIds is not defined
+
+[Freitas Leiloeiro] JSON DB fechado
+
+--- [21/02/2026, 04:40:55] Freitas Leiloeiro finished with code 0 ---
+[Rogério Menezes] ⚠️ [1494] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] ⚠️ [1505] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] 🔸 [Pool] Bloco 7-9 concluído. Total: 0
+[Rogério Menezes] 📋 [1328] Acessando leilão...
+[Rogério Menezes] 📋 [1502] Acessando leilão...
+[Rogério Menezes]    📋 [1095] Acessando leilão...
+[Rogério Menezes] ⚠️ [1328] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] ⚠️ [1502] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] 🔸 [Pool] Bloco 10-12 concluído. Total: 0
+[Rogério Menezes] 📋 [751] Acessando leilão...
+[Rogério Menezes] 📋 [1504] Acessando leilão...
+[Rogério Menezes] 📋 [1443] Acessando leilão...
+[Rogério Menezes] ⚠️ [751] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] ⚠️ [1504] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] ⚠️ [1443] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] 🔸 [Pool] Bloco 13-15 concluído. Total: 0
+[Rogério Menezes] 📋 [779] Acessando leilão...
+[Rogério Menezes] 📋 [1415] Acessando leilão...
+[Rogério Menezes] 📋 [1495] Acessando leilão...
+[Rogério Menezes] ⚠️ [779] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] ⚠️ [1415] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] ⚠️ [1495] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] 🔸 [Pool] Bloco 16-18 concluído. Total: 0
+[Rogério Menezes] 📋 [1270] Acessando leilão...
+[Rogério Menezes] 📋 [1332] Acessando leilão...
+[Rogério Menezes] 📋 [399] Acessando leilão...
+[Rogério Menezes] ⚠️ [1332] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] ⚠️ [399] Erro: Navigation timeout of 60000 ms exceeded
+[Rogério Menezes] 🔸 [Pool] Bloco 19-21 concluído. Total: 0
+
+--- [21/02/2026, 04:45:08] Rogério Menezes finished with code 0 ---
+
+--- [21/02/2026, 04:51:35] 🕵️ Running Environment Audit... ---
+
+--- [21/02/2026, 04:51:35] [AUDIT] 🌍 [ENV CHECK] Diagnosticando ambiente... ---
+
+--- [21/02/2026, 04:51:35] [AUDIT] Platform: win32
+Node Version: v24.13.0
+CWD: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes
+❌ MONGODB_URI NOT detected or INVALID format!
+CHROME_PATH: Not set
+PORT: Not set
+Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB, PATHEXT
+--- ENV CHECK END --- ---
