@@ -33,14 +33,16 @@ const readData = (collection) => {
     try {
         const data = fs.readFileSync(filePath, 'utf-8');
         if (!data.trim()) {
+            console.log(`ℹ️ [JSON] Arquivo ${collection} está vazio.`);
             jsonCache[collection] = [];
             return [];
         }
         const parsed = JSON.parse(data);
+        console.log(`📦 [JSON] Sucesso: ${collection} leu ${parsed.length} itens do disco.`);
         jsonCache[collection] = parsed;
         return parsed;
     } catch (e) {
-        console.error(`❌ Erro crítico ao ler ${collection}:`, e.message);
+        console.error(`❌ Erro crítico ao ler ${collection} em ${filePath}:`, e.message);
         if (e instanceof SyntaxError) {
             console.log(`⚠️ Database ${collection} parece corrompido. Tentando recuperar...`);
             jsonCache[collection] = [];
@@ -206,9 +208,10 @@ const connectDatabase = async () => {
             const veiculos = db.collection('veiculos');
             const alerts = db.collection('alerts');
 
-            // Seed/Migration from JSON if empty
+            // Seed/Migration from JSON if empty or very low count (e.g. initial deploy)
             const totalInMongo = await veiculos.countDocuments();
-            if (totalInMongo === 0) {
+            if (totalInMongo < 100) {
+                console.log(`🚚 MongoDB tem apenas ${totalInMongo} itens. Verificando JSON para migração...`);
                 console.log('🚚 MongoDB vazio. Iniciando migração do JSON...');
                 const jsonData = readData('veiculos');
                 if (jsonData.length > 0) {
