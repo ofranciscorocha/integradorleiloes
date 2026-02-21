@@ -343,12 +343,17 @@ app.get(['/painel', '/admin.html'], (req, res) => {
 app.get('/health', async (req, res) => {
     try {
         const mongoStatus = process.env.MONGODB_URI ? 'Configured' : 'NOT Configured';
+        const veiculosCount = db ? await db.count({ colecao: 'veiculos' }) : 0;
+        const sitesCount = getDynamicSites().length;
+
         res.json({
             status: 'ok',
             database: {
                 connected: !!db,
                 type: process.env.MONGODB_URI ? 'MongoDB' : 'JSON',
-                mongoEnv: mongoStatus
+                mongoEnv: mongoStatus,
+                veiculosTotal: veiculosCount,
+                leiloeirosTotal: sitesCount
             },
             timestamp: new Date().toISOString()
         });

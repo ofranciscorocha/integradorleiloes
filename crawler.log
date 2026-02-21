@@ -23051,3 +23051,16 @@ CHROME_PATH: Not set
 PORT: Not set
 Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB, PATHEXT
 --- ENV CHECK END --- ---
+
+--- [21/02/2026, 04:56:31] 🕵️ Running Environment Audit... ---
+
+--- [21/02/2026, 04:56:31] [AUDIT] 🌍 [ENV CHECK] Diagnosticando ambiente... ---
+
+--- [21/02/2026, 04:56:31] [AUDIT] Platform: win32
+Node Version: v24.13.0
+CWD: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes
+❌ MONGODB_URI NOT detected or INVALID format!
+CHROME_PATH: Not set
+PORT: Not set
+Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB, PATHEXT
+--- ENV CHECK END --- ---
