@@ -150,7 +150,7 @@ export const classifyVehicle = (text) => {
 
     // 1. STRONGEST INDICATORS (Specific keywords)
     if (upper.match(/\b(CAMINHÃO|CAMINHAO|ÔNIBUS|ONIBUS|TRATOR|CAVALO MECANICO|CARRETA|REBOQUE|SEMI-REBOQUE|BITREM|CAÇAMBA|CACAMBA)\b/)) return 'pesado';
-    if (upper.match(/\b(MOTO|MOTOCICLETA|QUADRICICLO|SCOOTER|BIZ|MOTONETA|CICLOMOTOR|MOPED|TRICICLO)\b/)) return 'moto';
+    if (upper.match(/\b(MOTO|MOTOCICLETA|QUADRICICLO|SCOOTER|BIZ|MOTONETA|CICLOMOTOR|MOPED|TRICICLO|TWISTER|FAZER|TITAN|FAN|BROS|INTRUDER|LANDER|TENERE|DRAG STAR|NMAX|XMAX|CITYCOM|DOWNTOWN|PEOPLE|AGILITY)\b/)) return 'moto';
 
     // 2. EXCLUSIVE BRANDS
     // Pure Moto Brands
@@ -164,7 +164,7 @@ export const classifyVehicle = (text) => {
 
     // HONDA (Cars and Motos)
     if (upper.includes('HONDA')) {
-        if (upper.match(/\b(CG|BIZ|CB|CBR|XRE|NC750|PCX|ADV|POP|HORNET|AFRICA TWIN|SH150|SH300|FORZA|ELITE|LEAD|CRF|X-ADV|TRANSALP|SHADOW|VT600|GOLDWING|SCOOTY)\b/)) return 'moto';
+        if (upper.match(/\b(CG|BIZ|CB|CBR|XRE|NC750|PCX|ADV|POP|HORNET|AFRICA TWIN|SH150|SH300|FORZA|ELITE|LEAD|CRF|X-ADV|TRANSALP|SHADOW|VT600|GOLDWING|SCOOTY|TWISTER|NXR|FALCON)\b/) || upper.match(/(CG|CB|XRE|CBR)\d+/)) return 'moto';
         if (upper.match(/\b(CIVIC|CITY|HRV|HR-V|FIT|WRV|WR-V|CRV|CR-V|ACCORD|ODYSSEY|PILOT|RIDGELINE|PRELUDE|INSIGHT|LEGEND)\b/)) return 'carro';
         return 'carro';
     }
@@ -189,12 +189,13 @@ export const classifyVehicle = (text) => {
 
     // BMW (Cars and Motos)
     if (upper.includes('BMW')) {
-        if (upper.match(/\b(R1200|R1250|F800|F850|G310|S1000RR|S1000|K1600|G650|F700|F750|C400|HP2|HP4|R1100|R1150|R1200GS|R1250GS)\b/)) return 'moto';
+        if (upper.match(/\b(R1200|R1250|F800|F850|G310|S1000RR|S1000|K1600|G650|F700|F750|C400|HP2|HP4|R1100|R1150|R1200GS|R1250GS)\b/) || upper.match(/([RGBK])\s*\d{3,4}/)) return 'moto';
         return 'carro';
     }
 
     // SUZUKI (Cars and Motos)
     if (upper.includes('SUZUKI')) {
+        if (upper.match(/\b(JIMNY|VITARA|SX4|S-CROSS|GRAND VITARA|SAMURAI|SWIFT|SIDEKICK|DR-Z|DRZ|RMZ|R-MZ|GSXR|GSX-R|HAYABUSA|BANDIT|B-KING|BKING|INTRUDER|YES|KATANA|V-STROM|VSTROM)\b/)) return 'moto';
         if (upper.match(/\b(JIMNY|VITARA|SX4|S-CROSS|GRAND VITARA|SAMURAI|SWIFT|SIDEKICK)\b/)) return 'carro';
         return 'moto';
     }

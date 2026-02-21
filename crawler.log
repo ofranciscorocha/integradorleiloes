@@ -22590,3 +22590,283 @@ CHROME_PATH: Not set
 PORT: Not set
 Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB, PATHEXT
 --- ENV CHECK END --- ---
+
+--- [21/02/2026, 04:30:41] Starting Copart (copart) - Mode: Specialized ---
+
+--- [21/02/2026, 04:30:43] Starting Palácio dos Leilões (palacio) - Mode: Specialized ---
+[Copart] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Copart] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Copart] 🚀 [copart.com.br] TURBO PUPPETEER MODE: Iniciando captura por categorias...
+[Copart] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+
+--- [21/02/2026, 04:30:45] Starting João Emílio (joaoemilio) - Mode: Specialized ---
+
+--- [21/02/2026, 04:30:45] Starting Vip Leilões (vip) - Mode: Specialized ---
+[Palácio dos Leilões] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[João Emílio] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+
+--- [21/02/2026, 04:30:48] Starting Guariglia Leilões (guariglia) - Mode: Specialized ---
+
+--- [21/02/2026, 04:30:49] Starting Freitas Leiloeiro (freitas) - Mode: Specialized ---
+[Vip Leilões] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Palácio dos Leilões] 🚀 Iniciando crawler do Palácio dos Leilões...
+[Palácio dos Leilões] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Palácio dos Leilões] 🔍 [palaciodosleiloes.com.br] Pesquisando categoria: CARROS...
+
+--- [21/02/2026, 04:30:51] Starting Sodré Santoro (sodre) - Mode: Specialized ---
+[João Emílio] 🚀 Iniciando Crawler João Emílio...
+[João Emílio] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[João Emílio] 🚀 [joaoemilio.com.br] Iniciando captura de veículos (João Emílio)...
+[João Emílio] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Guariglia Leilões] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+
+--- [21/02/2026, 04:30:52] Starting Parque dos Leilões (parque) - Mode: Specialized ---
+[Copart] 🔍 [copart.com.br] Categoria: Carros
+[Freitas Leiloeiro] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+
+--- [21/02/2026, 04:30:53] Starting Rogério Menezes (rogeriomenezes) - Mode: Specialized ---
+
+--- [21/02/2026, 04:30:54] Starting Leilo (leilo) - Mode: Specialized ---
+
+--- [21/02/2026, 04:30:55] Starting Milan Leilões (milan) - Mode: AI-Auto ---
+
+--- [21/02/2026, 04:30:56] Starting Sumaré Leilões (sumare) - Mode: AI-Auto ---
+[Guariglia Leilões] 🚀 Iniciando crawler do Guariglia Leilões...
+[Guariglia Leilões] 
+[Guariglia Leilões] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Guariglia Leilões] 🚀 [guariglialeiloes.com.br] Iniciando captura (System: Soleon/João Emílio)...
+[Guariglia Leilões] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Vip Leilões] 🚀 Iniciando crawler VIP Leilões (Turbo API Mode)...
+[Vip Leilões] 
+[Vip Leilões] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Vip Leilões] 🚀 [vipleiloes.com.br] TURBO PUPPETEER MODE: Iniciando captura por categorias...
+[Vip Leilões] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Freitas Leiloeiro] 🚀 Iniciando crawler do Freitas Leiloeiro...
+[Freitas Leiloeiro] 
+[Freitas Leiloeiro] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Freitas Leiloeiro] 🚀 [freitasleiloeiro.com.br] TURBO PUPPETEER MODE: Iniciando captura otimizada...
+[Freitas Leiloeiro] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Parque dos Leilões] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Sodré Santoro] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Sodré Santoro] 🚀 Iniciando crawler Sodré Santoro (Turbo API Mode)...
+[Sodré Santoro] 
+[Sodré Santoro] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Sodré Santoro] 🚀 [sodresantoro.com.br] TURBO API MODE: Iniciando captura massiva...
+[Sodré Santoro] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Palácio dos Leilões] ✅ [palaciodosleiloes.com.br] Categoria CARROS: 671 itens (filtrados c/ foto).
+[Palácio dos Leilões] 🔍 [palaciodosleiloes.com.br] Pesquisando categoria: MOTOS...
+[Palácio dos Leilões] ✅ [palaciodosleiloes.com.br] Categoria MOTOS: 1 itens (filtrados c/ foto).
+[Rogério Menezes] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Palácio dos Leilões] 🔍 [palaciodosleiloes.com.br] Pesquisando categoria: CAMINHÕES...
+[Palácio dos Leilões] ✅ [palaciodosleiloes.com.br] Categoria CAMINHÕES: 0 itens (filtrados c/ foto).
+[Palácio dos Leilões] 🔍 [palaciodosleiloes.com.br] Pesquisando categoria: MAQUINÁRIOS...
+[Palácio dos Leilões] ✅ [palaciodosleiloes.com.br] Categoria MAQUINÁRIOS: 0 itens (filtrados c/ foto).
+[Palácio dos Leilões] 🔍 [palaciodosleiloes.com.br] Pesquisando categoria: DIVERSOS...
+[Palácio dos Leilões] ✅ [palaciodosleiloes.com.br] Categoria DIVERSOS: 0 itens (filtrados c/ foto).
+[Leilo] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+
+--- [21/02/2026, 04:31:14] 🕵️ Running Environment Audit... ---
+[Palácio dos Leilões] 🏁 [palaciodosleiloes.com.br] TOTAL FINAL: 672 veículos com foto.
+[Palácio dos Leilões] ⚠️ Lock para veiculos expirado (10098s). Forçando liberação.
+[Palácio dos Leilões] 
+[Palácio dos Leilões] 📊 Resumo JSON: 0 inseridos, 550 atualizados, 122 sem alteração, 0 rejeitados (sem foto)
+[Palácio dos Leilões] 📈 [palaciodosleiloes.com.br] Total de veículos no banco: 745
+[Palácio dos Leilões] 
+[Palácio dos Leilões] ✅ Crawler finalizado! 672 lotes processados.
+[Palácio dos Leilões] JSON DB fechado
+[Vip Leilões] 🔍 [vipleiloes.com.br] Categoria: Carros
+
+--- [21/02/2026, 04:31:16] 🚀 Starting Dynamic Pool (Concurrency: 1) with 397 crawlers ---
+
+--- [21/02/2026, 04:31:16] Starting Copart (copart) - Mode: Specialized ---
+
+--- [21/02/2026, 04:31:20] Palácio dos Leilões finished with code 0 ---
+[Parque dos Leilões] 🚀 Iniciando crawler do Parque dos Leilões...
+[Parque dos Leilões] 
+[Parque dos Leilões] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Parque dos Leilões] 🚀 [parquedosleiloes.com.br] SUPERCRAWLER AXIOS: Iniciando captura...
+[Parque dos Leilões] 🔍 [parquedosleiloes.com.br] Buscando página 1...
+[João Emílio] 🔍 [joaoemilio.com.br] Acessando home para listar leilões...
+[Guariglia Leilões] 🔍 [guariglialeiloes.com.br] Acessando home para listar leilões...
+[Copart] ⚠️ [DEBUG] Rows found but no items. Saving debug HTML...
+[Copart]       DEBUG: Found 20 rows, extracted 0 items from page 1
+[Copart] 🔍 [copart.com.br] Categoria: Motos
+[Rogério Menezes] 🚀 Iniciando crawler do Rogério Menezes...
+[Rogério Menezes] 
+[Rogério Menezes] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Rogério Menezes] 🚀 [rogeriomenezes.com.br] High-Yield Mode: Inicializando...
+[Rogério Menezes] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Leilo] 🚀 Iniciando crawler do Leilo...
+[Leilo] 
+[Leilo] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Leilo] 🚀 [leilo.com.br] Iniciando captura - APENAS VEÍCULOS...
+[Leilo] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Parque dos Leilões] 📊 Resumo JSON: 12 inseridos, 0 atualizados, 0 sem alteração, 0 rejeitados (sem foto)
+[Parque dos Leilões] 📈 [parquedosleiloes.com.br] Total de veículos no banco: 12
+[Parque dos Leilões]    ✅ [parquedosleiloes.com.br] Página 1: 12 itens capturados.
+[Parque dos Leilões]    🔸 [parquedosleiloes.com.br] Paginação terminou.
+[Parque dos Leilões] ✅ [parquedosleiloes.com.br] Finalizado: 12 itens coletados.
+[Parque dos Leilões] 
+[Parque dos Leilões] ✅ Crawler finalizado! 12 lotes processados.
+[Parque dos Leilões] JSON DB fechado
+[Milan Leilões] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Milan Leilões] 🤖 [AI-Runner] Iniciando coleta para: Milan Leilões (milanleiloes.com.br)
+[Milan Leilões] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Milan Leilões] 🚀 [AI-Crawler] Iniciando análise de: https://milanleiloes.com.br (Milan Leilões)
+
+--- [21/02/2026, 04:31:29] 🕵️ Running Environment Audit... ---
+
+--- [21/02/2026, 04:31:31] [AUDIT] 🌍 [ENV CHECK] Diagnosticando ambiente...
+Platform: win32
+Node Version: v24.13.0
+CWD: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes
+❌ MONGODB_URI NOT detected or INVALID format!
+CHROME_PATH: Not set
+PORT: Not set
+Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB, PATHEXT
+--- ENV CHECK END --- ---
+
+--- [21/02/2026, 04:32:01] Starting Coliseum Leilões (coliseumleiloes) - Mode: AI-Auto ---
+[Coliseum Leilões] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Coliseum Leilões] 🤖 [AI-Runner] Iniciando coleta para: Coliseum Leilões (coliseumleiloes.com.br)
+[Coliseum Leilões] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Coliseum Leilões] 🚀 [AI-Crawler] Iniciando análise de: https://coliseumleiloes.com.br (Coliseum Leilões)
+[Coliseum Leilões] 🔍 Navegando...
+[Coliseum Leilões] 🤖 [AI-Crawler] Encontrados 5 prováveis veículos com heurística.
+[Coliseum Leilões] 📊 Resumo JSON: 5 inseridos, 0 atualizados, 0 sem alteração, 0 rejeitados (sem foto)
+[Coliseum Leilões] 📈 [Coliseum Leilões] Total de veículos no banco: 5
+
+--- [21/02/2026, 04:32:15] 🕵️ Running Environment Audit... ---
+
+--- [21/02/2026, 04:32:16] [AUDIT] 🌍 [ENV CHECK] Diagnosticando ambiente... ---
+
+--- [21/02/2026, 04:32:16] [AUDIT] Platform: win32 ---
+
+--- [21/02/2026, 04:32:16] [AUDIT] Node Version: v24.13.0
+CWD: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes
+❌ MONGODB_URI NOT detected or INVALID format!
+CHROME_PATH: Not set
+PORT: Not set
+Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB, PATHEXT
+--- ENV CHECK END --- ---
+
+--- [21/02/2026, 04:32:24] Starting Guariglia Leilões (guariglia) - Mode: Specialized ---
+
+--- [21/02/2026, 04:32:24] Starting Freitas Leiloeiro (freitas) - Mode: Specialized ---
+[Guariglia Leilões] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Freitas Leiloeiro] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Guariglia Leilões] 🚀 Iniciando crawler do Guariglia Leilões...
+[Guariglia Leilões] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Guariglia Leilões] 🚀 [guariglialeiloes.com.br] Iniciando captura (System: Soleon/João Emílio)...
+[Guariglia Leilões] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Freitas Leiloeiro] 🚀 Iniciando crawler do Freitas Leiloeiro...
+[Freitas Leiloeiro] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Freitas Leiloeiro] 🚀 [freitasleiloeiro.com.br] TURBO PUPPETEER MODE: Iniciando captura otimizada...
+[Freitas Leiloeiro] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Guariglia Leilões] 🔍 [guariglialeiloes.com.br] Acessando home para listar leilões...
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Descobrindo leilões pela AGENDA...
+[Freitas Leiloeiro ERROR]    ⚠️ [freitasleiloeiro.com.br] Erro ao ler Agenda: autoScroll is not defined
+
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Explorando categoria 1...
+[Freitas Leiloeiro] ⏳ [freitasleiloeiro.com.br] Expandindo lista da categoria 1...
+
+--- [21/02/2026, 04:32:49] Starting Rogério Menezes (rogeriomenezes) - Mode: Specialized ---
+[Rogério Menezes] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Guariglia Leilões] 📊 [guariglialeiloes.com.br] Encontrados 8 leilões potenciais.
+[Guariglia Leilões]    🔄 [guariglialeiloes.com.br] Processando: Leilão
+[Rogério Menezes] 🚀 Iniciando crawler do Rogério Menezes...
+[Rogério Menezes] 
+[Rogério Menezes] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Rogério Menezes] 🚀 [rogeriomenezes.com.br] High-Yield Mode: Inicializando...
+[Rogério Menezes] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Guariglia Leilões] 📊 Resumo JSON: 0 inseridos, 16 atualizados, 0 sem alteração, 0 rejeitados (sem foto)
+[Guariglia Leilões] 📈 [guariglialeiloes.com.br] Total de veículos no banco: 1
+[Guariglia Leilões]       ✅ [guariglialeiloes.com.br] +16 veículos coletados.
+[Guariglia Leilões]    🔄 [guariglialeiloes.com.br] Processando: Leilão
+
+--- [21/02/2026, 04:33:07] 🕵️ Running Environment Audit... ---
+
+--- [21/02/2026, 04:33:09] [AUDIT] 🌍 [ENV CHECK] Diagnosticando ambiente... ---
+
+--- [21/02/2026, 04:33:09] [AUDIT] Platform: win32
+Node Version: v24.13.0
+CWD: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes
+❌ MONGODB_URI NOT detected or INVALID format!
+CHROME_PATH: Not set
+PORT: Not set
+Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB, PATHEXT
+--- ENV CHECK END --- ---
+
+--- [21/02/2026, 04:34:52] Starting Rogério Menezes (rogeriomenezes) - Mode: Specialized ---
+[Rogério Menezes] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Rogério Menezes] 🚀 Iniciando crawler do Rogério Menezes...
+[Rogério Menezes] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Rogério Menezes] 🚀 [rogeriomenezes.com.br] High-Yield Mode: Inicializando...
+[Rogério Menezes] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Rogério Menezes] 🔍 [rogeriomenezes.com.br] Mapeando leilões na home e categorias...
+
+--- [21/02/2026, 04:35:11] 🕵️ Running Environment Audit... ---
+
+--- [21/02/2026, 04:35:12] [AUDIT] 🌍 [ENV CHECK] Diagnosticando ambiente... ---
+
+--- [21/02/2026, 04:35:12] [AUDIT] Platform: win32
+Node Version: v24.13.0
+CWD: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes
+❌ MONGODB_URI NOT detected or INVALID format!
+CHROME_PATH: Not set
+PORT: Not set
+Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB, PATHEXT
+--- ENV CHECK END --- ---
+
+--- [21/02/2026, 04:36:26] 🕵️ Running Environment Audit... ---
+
+--- [21/02/2026, 04:36:27] [AUDIT] 🌍 [ENV CHECK] Diagnosticando ambiente...
+Platform: win32
+Node Version: v24.13.0
+CWD: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes
+❌ MONGODB_URI NOT detected or INVALID format!
+CHROME_PATH: Not set
+PORT: Not set
+Relevant Vars found: CRAWLER_DELAY_MS, CRAWLER_TIMEOUT_MS, HOMEPATH, MONGODB_DB, PATHEXT
+--- ENV CHECK END --- ---
+
+--- [21/02/2026, 04:36:29] Starting Rogério Menezes (rogeriomenezes) - Mode: Specialized ---
+[Rogério Menezes] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Rogério Menezes] 🚀 Iniciando crawler do Rogério Menezes...
+[Rogério Menezes] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Rogério Menezes] 🚀 [rogeriomenezes.com.br] High-Yield Mode: Inicializando...
+[Rogério Menezes] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+
+--- [21/02/2026, 04:36:31] Starting Daniel Garcia (danielgarcia) - Mode: AI-Auto ---
+
+--- [21/02/2026, 04:36:32] Starting MGL (mgl) - Mode: Specialized ---
+
+--- [21/02/2026, 04:36:34] Starting Sumaré Leilões (sumare) - Mode: AI-Auto ---
+[MGL] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[MGL] 📂 Conectando ao Banco de Dados (MGL)...
+[MGL] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[MGL] 🚀 [mgl.com.br] SUPERCRAWLER: Iniciando captura...
+[Daniel Garcia] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[MGL] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[Daniel Garcia] 🤖 [AI-Runner] Iniciando coleta para: Daniel Garcia (danielgarcialeiloes.com.br)
+[Daniel Garcia] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Daniel Garcia] 🚀 [AI-Crawler] Iniciando análise de: https://danielgarcialeiloes.com.br (Daniel Garcia)
+
+--- [21/02/2026, 04:36:36] Starting Freitas Leiloeiro (freitas) - Mode: Specialized ---
+[Sumaré Leilões] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Sumaré Leilões] 🤖 [AI-Runner] Iniciando coleta para: Sumaré Leilões (sumareleiloes.com.br)
+[Sumaré Leilões] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Sumaré Leilões] 🚀 [AI-Crawler] Iniciando análise de: https://sumareleiloes.com.br (Sumaré Leilões)
+[Rogério Menezes] 🔍 [rogeriomenezes.com.br] Mapeando leilões na home e categorias...
+[Freitas Leiloeiro] 📂 Data Directory: C:\Users\Francisco\Desktop\PROJETOS\integradorleiloes\data
+[Freitas Leiloeiro] 🚀 Iniciando crawler do Freitas Leiloeiro...
+[Freitas Leiloeiro] ℹ️ MONGODB_URI não detectada ou inválida. Usando JSON Database (Modo Local).
+[Freitas Leiloeiro] 🚀 [freitasleiloeiro.com.br] TURBO PUPPETEER MODE: Iniciando captura otimizada...
+[Freitas Leiloeiro] ⚠️ [Browser] Nenhum Chrome detectado na lista padrão (win32). Usando default.
+[MGL] 🔍 [mgl.com.br] Navegando para Categoria 1 ...
+[Daniel Garcia] 🔍 Navegando...
+[Sumaré Leilões] 🔍 Navegando...
+[Freitas Leiloeiro] 🔍 [freitasleiloeiro.com.br] Descobrindo leilões pela AGENDA...
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/api/GetLogin
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/apiplugin/GetMenuV3
+[MGL] 📡 [mgl.com.br] Possível API Detectada: POST https://www.mgl.com.br/LancesHub/negotiate?negotiateVersion=1
